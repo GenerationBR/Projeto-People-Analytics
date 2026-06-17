@@ -1,0 +1,140 @@
+{
+  "funil_tic": {
+    "2019": {
+      "mat_fem": 47944,
+      "mat_masc": 306216,
+      "ing_fem": 26926,
+      "ing_masc": 156969,
+      "conc_fem": 6101,
+      "conc_masc": 38790,
+      "pct_mat_fem": 13.5,
+      "pct_ing_fem": 14.6,
+      "pct_conc_fem": 13.6
+    },
+    "2020": {
+      "mat_fem": 59022,
+      "mat_masc": 340653,
+      "ing_fem": 37683,
+      "ing_masc": 189598,
+      "conc_fem": 7197,
+      "conc_masc": 44370,
+      "pct_mat_fem": 14.8,
+      "pct_ing_fem": 16.6,
+      "pct_conc_fem": 14.0
+    },
+    "2021": {
+      "mat_fem": 75701,
+      "mat_masc": 388568,
+      "ing_fem": 51607,
+      "ing_masc": 220722,
+      "conc_fem": 8106,
+      "conc_masc": 46490,
+      "pct_mat_fem": 16.3,
+      "pct_ing_fem": 19.0,
+      "pct_conc_fem": 14.8
+    },
+    "2022": {
+      "mat_fem": 106692,
+      "mat_masc": 487888,
+      "ing_fem": 83924,
+      "ing_masc": 326530,
+      "conc_fem": 9474,
+      "conc_masc": 52286,
+      "pct_mat_fem": 17.9,
+      "pct_ing_fem": 20.4,
+      "pct_conc_fem": 15.3
+    },
+    "2023": {
+      "mat_fem": 135255,
+      "mat_masc": 589230,
+      "ing_fem": 97615,
+      "ing_masc": 375215,
+      "conc_fem": 14030,
+      "conc_masc": 66286,
+      "pct_mat_fem": 18.7,
+      "pct_ing_fem": 20.6,
+      "pct_conc_fem": 17.5
+    },
+    "2024": {
+      "mat_fem": 153931,
+      "mat_masc": 646291,
+      "ing_fem": 104176,
+      "ing_masc": 384891,
+      "conc_fem": 19253,
+      "conc_masc": 81235,
+      "pct_mat_fem": 19.2,
+      "pct_ing_fem": 21.3,
+      "pct_conc_fem": 19.2
+    }
+  },
+  "evasao": {
+    "2019": {
+      "tx_evasao_fem": 77.3,
+      "tx_evasao_masc": 75.3
+    },
+    "2020": {
+      "tx_evasao_fem": 80.9,
+      "tx_evasao_masc": 76.6
+    },
+    "2021": {
+      "tx_evasao_fem": 84.3,
+      "tx_evasao_masc": 78.9
+    },
+    "2022": {
+      "tx_evasao_fem": 88.7,
+      "tx_evasao_masc": 84.0
+    },
+    "2023": {
+      "tx_evasao_fem": 85.6,
+      "tx_evasao_masc": 82.3
+    },
+    "2024": {
+      "tx_evasao_fem": 81.5,
+      "tx_evasao_masc": 78.9
+    }
+  },
+  "regional_2024": [
+    {
+      "regiao": "",
+      "mat_fem": 164,
+      "mat_total": 422,
+      "pct_fem": 38.9
+    },
+    {
+      "regiao": "Sudeste",
+      "mat_fem": 82920,
+      "mat_total": 412969,
+      "pct_fem": 20.1
+    },
+    {
+      "regiao": "Norte",
+      "mat_fem": 7282,
+      "mat_total": 37350,
+      "pct_fem": 19.5
+    },
+    {
+      "regiao": "Centro-Oeste",
+      "mat_fem": 14500,
+      "mat_total": 76416,
+      "pct_fem": 19.0
+    },
+    {
+      "regiao": "Nordeste",
+      "mat_fem": 24999,
+      "mat_total": 138779,
+      "pct_fem": 18.0
+    },
+    {
+      "regiao": "Sul",
+      "mat_fem": 24066,
+      "mat_total": 134286,
+      "pct_fem": 17.9
+    }
+  ],
+  "tendencia": {
+    "pct_mat_fem_inicial": 13.5,
+    "pct_mat_fem_final": 19.2,
+    "variacao_pp": 5.7,
+    "periodo": "2019–2024"
+  }
+}

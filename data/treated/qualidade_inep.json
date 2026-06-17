@@ -1,0 +1,38 @@
+[
+  {
+    "ano": 2019,
+    "total_cursos": 253139,
+    "cursos_tech": 29377,
+    "pct_tech": 11.61
+  },
+  {
+    "ano": 2020,
+    "total_cursos": 344691,
+    "cursos_tech": 43262,
+    "pct_tech": 12.55
+  },
+  {
+    "ano": 2021,
+    "total_cursos": 444786,
+    "cursos_tech": 60785,
+    "pct_tech": 13.67
+  },
+  {
+    "ano": 2022,
+    "total_cursos": 573019,
+    "cursos_tech": 82805,
+    "pct_tech": 14.45
+  },
+  {
+    "ano": 2023,
+    "total_cursos": 671610,
+    "cursos_tech": 101864,
+    "pct_tech": 15.17
+  },
+  {
+    "ano": 2024,
+    "total_cursos": 720349,
+    "cursos_tech": 112676,
+    "pct_tech": 15.64
+  }
+]

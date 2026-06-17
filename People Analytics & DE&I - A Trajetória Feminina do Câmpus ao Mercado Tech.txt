@@ -1,0 +1,35 @@
+﻿People Analytics & DE&I - A Trajetória Feminina do Câmpus ao Mercado Tech
+O Problema de Negócio
+Empresas de tecnologia globais têm metas agressivas de equidade de gênero, mas frequentemente esbarram na escassez de talentos femininos. Seu desafio como equipe de dados é mapear o "funil" da mulher na tecnologia no Brasil e no mundo. A equipe deve analisar desde a entrada feminina em cursos de Exatas e Computação até a realidade do mercado de trabalho (empregabilidade, posições de liderança e disparidade salarial). O produto final será um painel estratégico de People Analytics projetado para equipes de Recursos Humanos e diretorias, auxiliando-os a entender o cenário real do mercado para fundamentar políticas de contratação mais assertivas.
+🔗 Fontes de Dados Sugeridas
+(Nota para a equipe: O desafio aqui é cruzar bases de naturezas diferentes: Educação e Mercado de Trabalho).
+* Dados Educacionais (Brasil): Microdados do Censo da Educação Superior (INEP) - Melhor que o ENEM para este fim, pois foca nas matrículas e conclusões efetivas em cursos específicos de TI/Engenharia.
+* Dados de Mercado/Salários:
+   * Kaggle - Data Science and STEM Salaries https://www.kaggle.com/datasets/sazidthe1/data-science-salaries/data  
+   * ou StackOverflow Annual Developer Survey (Visão global e cargos).
+   * RAIS/CAGED (Gov.br) (Visão nacional de empregabilidade formal).
+⚙️ Requisitos Técnicos e Pipeline (ETL)
+* Extração: Baixar os microdados educacionais de pelo menos os últimos 5 anos e bases de pesquisas salariais/empregabilidade do setor tech.
+* Transformação:
+   * Filtrar os dados educacionais exclusivamente para os eixos de Computação, TI e Engenharias.
+   * Tratar anomalias salariais (outliers) nas bases de mercado.
+   * Harmonizar os dados: Como não é possível cruzar o CPF de quem estudou com quem está no mercado, a equipe deve agregar os dados em categorias comuns (ex: Ano, Região, Gênero, Faixa Salarial, Cargo).
+* Carga: Modelar um banco de dados estruturado que alimente o painel de forma performática, separando claramente o escopo acadêmico do escopo profissional.
+________________
+Entregas Obrigatórias 
+Para que o projeto seja aprovado e finalizado, a equipe precisa entregar:
+1. A Base de Dados Analítica e Dicionário de Dados:
+   * As tabelas tratadas e prontas para consumo.
+   * Um dicionário documentando como os cursos foram agrupados na categoria "Tech" e como os cargos foram padronizados.
+2. Repositório Versionado (GitHub):
+   * Scripts de ETL e análise (Python ou SQL).
+   * Um README.md detalhando as premissas adotadas pela equipe (ex: "Consideramos posições de liderança apenas os cargos de nível Sênior, Staff e C-Level").
+3. Dashboard de Diversidade (Power BI):
+   * Um painel interativo dividido em duas visões: A Base (evolução de alunas matriculadas e formadas em TI ao longo dos anos) e O Mercado (proporção de mulheres empregadas em tech e análise de Gender Pay Gap - disparidade salarial).
+4. Apresentação Executiva (O Pitch):
+   * Atenção aos detalhes técnicos: Explicar como lidaram com arquivos tão pesados como o do INEP e como trataram outliers na base de salários.
+   * Storytelling com Dados: Mostrar o funil. Exemplo: "Identificamos que enquanto as mulheres representam X% das matrículas iniciais em Ciência da Computação, elas são apenas Y% dos concluintes e ocupam somente Z% das vagas de liderança de dados no mercado. O gargalo real está na evasão universitária".
+Diferenciais
+* Aplicação Web para RH (Data App): Criação de uma calculadora interativa onde um recrutador insere o cargo e a região, e o sistema informa a média salarial por gênero e a disponibilidade histórica de mulheres formadas naquela área.
+* Testes Estatísticos de Hipótese: O membro "estudioso" do grupo pode aplicar um Teste T (T-Test) em Python para provar estatisticamente que a diferença salarial entre homens e mulheres na base analisada é significativa, e não apenas obra do acaso.
+* Web Scraping Complementar: Desenvolver um script para raspar vagas de tecnologia atuais no LinkedIn, quantificando quantas citam iniciativas de diversidade na descrição  (opcional, pode ser criado com ia).

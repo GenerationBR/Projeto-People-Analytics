@@ -1,0 +1,36 @@
+{
+  "versao": "1.0",
+  "status": "AGUARDA_APROVACAO_HUMANA",
+  "descricao": "Mapeamento de cursos do INEP para a categoria Tech. Baseado nos códigos de eixo tecnológico do Catálogo Nacional de Cursos Superiores.",
+  "codigos_inep_eixo_tech": [
+    523, 524, 525, 526, 527, 528, 529, 530, 531, 532
+  ],
+  "cursos_incluidos": {
+    "Computação e Tecnologia da Informação": [
+      "Ciência da Computação",
+      "Sistemas de Informação",
+      "Análise e Desenvolvimento de Sistemas",
+      "Engenharia de Software",
+      "Tecnologia em Redes de Computadores",
+      "Tecnologia em Banco de Dados",
+      "Ciência de Dados",
+      "Inteligência Artificial",
+      "Segurança da Informação"
+    ],
+    "Engenharias Relacionadas": [
+      "Engenharia de Computação",
+      "Engenharia Elétrica",
+      "Engenharia Eletrônica",
+      "Engenharia de Telecomunicações",
+      "Engenharia de Controle e Automação",
+      "Engenharia de Produção"
+    ]
+  },
+  "cursos_excluidos_explicitamente": [
+    "Engenharia Civil",
+    "Engenharia Química",
+    "Engenharia Mecânica (sem ênfase em TI)",
+    "Engenharia Ambiental"
+  ],
+  "nota": "Cursos fronteiriços devem ser analisados caso a caso e aprovados pelo time"
+}

@@ -1,0 +1,28 @@
+# Dados brutos e sensíveis
+data/raw/
+data/*.duckdb
+*.parquet
+*.csv
+
+# Ambiente Python
+.env
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+env/
+
+# Logs
+logs/
+*.log
+
+# Outputs gerados (opcional — versionar apenas os artefatos finais)
+# outputs/
+
+# IDE
+.vscode/settings.json
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
