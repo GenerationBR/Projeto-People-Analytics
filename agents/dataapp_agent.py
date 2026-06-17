@@ -195,7 +195,7 @@ else:
 
 st.divider()
 st.caption(
-    "Fonte: INEP Censo Superior · RAIS/CAGED · Kaggle STEM Salaries · StackOverflow Survey | "
+    "Fonte: INEP Censo Superior · Base de Mercado Tech Brasil (Brasscom + State of Data + McKinsey) | "
     "Cruzamento AGREGADO (sem dados individuais, conforme LGPD) | "
     "People Analytics & DE&I — Generation Brasil"
 )
@@ -233,7 +233,7 @@ Sugestões a avaliar:
 3. Benchmark: comparar empresa com média do setor
 4. Mapa de calor por região (Plotly choropleth)
 5. Alerta automático: cargos com gap > 10%
-6. Filtro por fonte de dados (RAIS vs Kaggle vs StackOverflow)
+6. Filtro por nível hierárquico e gênero (para explorar gargalo de liderança McKinsey)
 
 Para cada: viabilidade técnica, esforço estimado (P/M/G), valor para o RH."""
         )

@@ -1,7 +1,0 @@
-{
-  "total_linhas": 6599,
-  "p01_usd": 24322.0,
-  "p99_usd": 345600.0,
-  "linhas_winsorized": 130,
-  "aviso": "Dataset não possui coluna de gênero. Pay gap requer RAIS/CAGED."
-}

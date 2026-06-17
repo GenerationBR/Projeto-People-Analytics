@@ -59,8 +59,14 @@ VIEWS:
 
 ARQUIVOS PARQUET em data/treated/:
 - fato_educacao_raw.parquet (origem: INEP microdados)
-- fato_mercado_kaggle_raw.parquet (origem: Kaggle STEM Salaries)
-- fato_mercado_stackoverflow_raw.parquet (origem: StackOverflow Survey)
+- fato_mercado_basemercadobrasil_raw.parquet (origem: base_mercado_tech_brasil.csv — dataset simulado)
+
+METODOLOGIA DO DATASET DE MERCADO (base_mercado_tech_brasil.csv):
+Dataset simulado para fins pedagógicos, construído sobre três referências reais:
+1. Brasscom — salario_base: multiplicador que gera ~27% de gap salarial entre gêneros (intencional)
+2. State of Data Brazil — nomes de cargos e experiência média por nível hierárquico
+3. McKinsey Women in the Workplace — lógica de promoção com gargalo estatístico para mulheres
+   alcançarem Diretoria e CTO (padrão embutido para exploração na visualização)
 
 Premissas registradas:
 {json.dumps(premises, ensure_ascii=False, indent=2)[:2000]}
@@ -83,7 +89,7 @@ Título: "A Trajetória Feminina do Câmpus ao Mercado Tech — People Analytics
 
 Contexto do projeto:
 - Objetivo: mapear o funil da mulher na tecnologia no Brasil (e dados globais)
-- Fontes: INEP Censo Superior (≥5 anos), RAIS/CAGED, Kaggle STEM Salaries, StackOverflow Survey
+- Fontes: INEP Censo Superior (≥5 anos), base_mercado_tech_brasil.csv (dataset simulado: Brasscom + State of Data Brazil + McKinsey)
 - Entregas: banco analítico, dicionário de dados, dashboard Power BI, pitch executivo
 
 Premissas críticas registradas:
@@ -92,7 +98,7 @@ Premissas críticas registradas:
 O README deve conter:
 1. Descrição do projeto e problema de negócio
 2. Estrutura de pastas do repositório (tree detalhada)
-3. Fontes de dados e como baixá-las (links e instruções)
+3. Fontes de dados e como obtê-las (INEP: links gov.br; base de mercado: dataset simulado incluso no repo)
 4. Como instalar dependências (pip install -r requirements.txt)
 5. Como executar o pipeline completo (python main.py)
 6. Como rodar o Data App (streamlit run app/calculadora.py)

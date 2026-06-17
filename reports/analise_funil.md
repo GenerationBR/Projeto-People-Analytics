@@ -1,6 +1,7 @@
 # Relatório de Análise — Funil da Mulher na Tech
-**Fonte:** INEP Censo da Educação Superior 2019–2024
+**Fonte educacional:** INEP Censo da Educação Superior 2019–2024
 **Filtro:** Cursos de TIC (Computação e Tecnologias da Informação e Comunicação)
+**Fonte de mercado:** base_mercado_tech_brasil.csv — dataset simulado (Brasscom + State of Data Brazil + McKinsey)
 
 ## 1. Tendência de Participação Feminina
 - **2019–2024:** de **13.5%** para **19.2%** de matrículas femininas
@@ -49,9 +50,13 @@ na entrada (de 13.5% para 19.2%), mas
 a conversão em conclusão ainda é proporcionalmente menor.
 
 ## 6. Limitações e Próximos Passos
-- **Pay gap:** O Kaggle Salaries não possui coluna de gênero. Para análise de disparidade salarial,
-  adicionar RAIS/CAGED em `data/raw/` e reprocessar.
+- **Pay gap:** A base de mercado (`base_mercado_tech_brasil.csv`) possui coluna de gênero e gap salarial
+  intencional de ~27% (ref. Brasscom). Execute `python etl_pipeline.py` para popular a view `v_pay_gap`
+  no DuckDB e habilitar a análise completa de disparidade salarial.
+- **Gargalo de liderança:** A base de mercado modela dificuldade estatística maior para mulheres
+  alcançarem Diretoria e CTO (ref. McKinsey). Explore a tabela `fato_mercado_tech_brasil` filtrando
+  `nivel IN ('Diretoria', 'C-Level')` para identificar o padrão.
 - **Engenharia:** Os dados incluem 'Engenharia e profissões correlatas' — validar com o time se
   cursos como Engenharia Civil devem ser excluídos.
 - **Evasão:** A métrica (ingressantes − concluintes) é cross-sectional, não longitudinal.
-  Idealmente rastrear cortes, mas INEP não disponibiliza dado individual (LGPD).
+  Idealmente rastrear coortes, mas INEP não disponibiliza dado individual (LGPD).

@@ -27,6 +27,12 @@ Procedimento:
    (Cohen's d). Interprete em linguagem clara: significância estatística não é o mesmo
    que relevância prática.
 Seja honesto sobre limitações da amostra. Não force significância.
+
+CONTEXTO DA BASE:
+A `base_mercado_tech_brasil.csv` foi simulada com base no relatório Brasscom, aplicando um
+multiplicador que gera um gap salarial médio de ~27% entre homens e mulheres. Espera-se que
+o teste identifique e confirme estatisticamente esse padrão. Documente o efeito em Cohen's d
+e contextualize: um gap de 27% é economicamente relevante, não apenas estatisticamente.
 """
 
     def __init__(self, db_path: str = "data/analytics.duckdb", output_dir: str = "outputs", alpha: float = 0.05):
@@ -52,10 +58,11 @@ Seja honesto sobre limitações da amostra. Não force significância.
             return masc, fem
         except Exception as e:
             logger.warning(f"Banco vazio ou indisponível: {e}. Usando dados simulados para demonstração.")
-            # Dados simulados para demonstração de pipeline
+            # Dados simulados alinhados à metodologia da base_mercado_tech_brasil.csv:
+            # gap de ~27% entre homens e mulheres (referência: Brasscom via multiplicador)
             rng = np.random.default_rng(42)
             masc = rng.normal(loc=8500, scale=2000, size=500).clip(2000, 30000)
-            fem = rng.normal(loc=7100, scale=1800, size=350).clip(2000, 30000)
+            fem = rng.normal(loc=6200, scale=1800, size=350).clip(2000, 30000)  # ~27% abaixo
             return masc, fem
 
     def run_full_test(self) -> TestResult:
@@ -159,6 +166,7 @@ honesta sobre limitações. NÃO force conclusão além dos dados."""
                 f"Teste escolhido automaticamente com base nos pressupostos: {result.test_name}",
                 "Cohen's d reportado para avaliar relevância prática além da significância",
                 "Grupos comparáveis controlam cargo, senioridade e região",
+                "Gap salarial esperado de ~27% na base de mercado (metodologia Brasscom aplicada no mock)",
             ],
             open_questions=[
                 "Validar se amostra disponível é representativa do mercado tech brasileiro",

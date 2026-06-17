@@ -1,6 +1,6 @@
 """
 ETL Pipeline — People Analytics & DE&I
-Lê os microdados reais do INEP (2019–2024) e o Kaggle Salaries.
+Lê os microdados reais do INEP (2019–2024) e a base de mercado tech brasil.
 Produz Parquet e banco DuckDB prontos para análise.
 
 Uso: python etl_pipeline.py
@@ -32,7 +32,8 @@ INEP_FILES = {
     2024: RAW / "microdados_censo_da_educacao_superior_2024" / "microdados_censo_da_educacao_superior_2024" / "dados" / "MICRODADOS_CADASTRO_CURSOS_2024.CSV",
 }
 
-KAGGLE_FILE = RAW / "Data Science Salaries 2024" / "data_science_salaries.csv"
+# Dataset simulado de mercado (Brasscom + State of Data Brazil + McKinsey)
+MERCADO_FILE = RAW / "base_mercado_tech_brasil.csv"
 
 # ─── Filtro de cursos Tech (via CINE) ─────────────────────────────────────────
 # Valores confirmados inspecionando os arquivos reais do INEP
@@ -75,6 +76,15 @@ def is_tech(row: dict) -> bool:
             and area_esp in CINE_AREA_ESPECIFICA_ENGENHARIA_TECH):
         return True
     return False
+
+
+def _normalizar_genero(valor: str) -> str:
+    v = valor.strip().upper()
+    if v in ("F", "FEM", "FEMININO", "MULHER"):
+        return "Feminino"
+    if v in ("M", "MASC", "MASCULINO", "HOMEM"):
+        return "Masculino"
+    return valor.strip()
 
 
 # ─── ETL INEP ─────────────────────────────────────────────────────────────────
@@ -146,69 +156,96 @@ def etl_inep() -> list[dict]:
     return all_rows
 
 
-# ─── ETL Kaggle ───────────────────────────────────────────────────────────────
+# ─── ETL Base de Mercado Tech Brasil ──────────────────────────────────────────
+# Fonte: dataset simulado com referências Brasscom (salario_base),
+#        State of Data Brazil (cargos/níveis) e McKinsey (promoção/retenção).
+# Possui coluna de gênero: pay gap é calculável diretamente.
 
-def etl_kaggle() -> list[dict]:
+def etl_mercado_brasil() -> list[dict]:
     """
-    Lê Kaggle Data Science Salaries.
-    AVISO: não tem coluna de gênero — usamos apenas como benchmark salarial por cargo.
+    Lê base_mercado_tech_brasil.csv — dataset simulado pedagogicamente.
+    Gap salarial de ~27% entre gêneros embutido (ref. Brasscom).
+    Gargalo de liderança feminina em Diretoria/CTO embutido (ref. McKinsey).
     """
     rows = []
 
-    if not KAGGLE_FILE.exists():
-        logger.warning(f"Kaggle não encontrado: {KAGGLE_FILE}")
+    if not MERCADO_FILE.exists():
+        logger.warning(f"Base de mercado não encontrada: {MERCADO_FILE}")
         return rows
 
-    logger.info(f"Processando Kaggle ({KAGGLE_FILE.stat().st_size / 1e6:.1f} MB)...")
+    logger.info(f"Processando base de mercado ({MERCADO_FILE.stat().st_size / 1e6:.1f} MB)...")
 
     salaries = []
-    with open(KAGGLE_FILE, encoding="utf-8") as f:
+    with open(MERCADO_FILE, encoding="utf-8") as f:
         reader = csv.DictReader(f)
         for row in reader:
-            try:
-                sal = float(row.get("salary_in_usd", 0) or 0)
-            except ValueError:
-                sal = 0.0
+            # Tenta múltiplos nomes de coluna de salário
+            sal = 0.0
+            for col in ["salario_base", "salario", "salary", "salary_in_usd"]:
+                try:
+                    val = row.get(col, 0) or 0
+                    sal = float(str(val).replace(",", "."))
+                    if sal > 0:
+                        break
+                except (ValueError, TypeError):
+                    continue
+
             if sal <= 0:
                 continue
+
             salaries.append(sal)
             rows.append({
-                "job_title":        row.get("job_title", "").strip(),
-                "experience_level": row.get("experience_level", "").strip(),
-                "work_year":        to_int(row.get("work_year", "")),
-                "employee_country": row.get("employee_residence", "").strip(),
-                "company_country":  row.get("company_location", "").strip(),
-                "company_size":     row.get("company_size", "").strip(),
-                "salary_usd":       sal,
-                "work_model":       row.get("work_models", "").strip(),
-                "aviso_genero":     "DATASET SEM COLUNA DE GÊNERO — pay gap não calculável com esta fonte",
+                "cargo":            row.get("cargo", row.get("job_title", "")).strip(),
+                "nivel":            row.get("nivel_hierarquico", row.get("nivel", row.get("experience_level", ""))).strip(),
+                "genero":           _normalizar_genero(row.get("genero", row.get("gender", ""))),
+                "regiao":           row.get("regiao", row.get("region", "Brasil")).strip(),
+                "anos_experiencia": to_int(row.get("anos_experiencia", row.get("years_experience", "0"))),
+                "salario_base":     sal,
             })
 
-    # Winsorização p99 (sem numpy, usando sorted)
+    if not salaries:
+        logger.warning("Base de mercado vazia ou sem coluna de salário reconhecida.")
+        return rows
+
+    # Winsorização p99
     salaries_sorted = sorted(salaries)
     n = len(salaries_sorted)
-    p1_idx  = int(0.01 * n)
-    p99_idx = int(0.99 * n)
+    p1_idx  = max(0, int(0.01 * n))
+    p99_idx = min(n - 1, int(0.99 * n))
     p1  = salaries_sorted[p1_idx]
     p99 = salaries_sorted[p99_idx]
 
     winsorized = 0
     for r in rows:
-        if r["salary_usd"] > p99:
-            r["salary_usd"] = p99
+        if r["salario_base"] > p99:
+            r["salario_base"] = p99
             winsorized += 1
-        elif r["salary_usd"] < p1:
-            r["salary_usd"] = p1
+        elif r["salario_base"] < p1:
+            r["salario_base"] = p1
             winsorized += 1
 
-    logger.info(f"  Kaggle: {len(rows):,} linhas | p01=${p1:,.0f} | p99=${p99:,.0f} | winsorized={winsorized}")
+    n_fem  = sum(1 for r in rows if r["genero"] == "Feminino")
+    n_masc = sum(1 for r in rows if r["genero"] == "Masculino")
+    logger.info(f"  Base mercado: {len(rows):,} linhas | p01=R${p1:,.0f} | p99=R${p99:,.0f} | winsorized={winsorized}")
+    logger.info(f"  Gêneros — Feminino: {n_fem:,} | Masculino: {n_masc:,}")
 
-    with open(OUT / "qualidade_kaggle.json", "w", encoding="utf-8") as f:
+    with open(OUT / "qualidade_mercado.json", "w", encoding="utf-8") as f:
         json.dump({
+            "dataset": "base_mercado_tech_brasil.csv",
+            "tipo": "dataset_simulado",
             "total_linhas": len(rows),
-            "p01_usd": p1, "p99_usd": p99,
+            "p01_brl": p1,
+            "p99_brl": p99,
             "linhas_winsorized": winsorized,
-            "aviso": "Dataset não possui coluna de gênero. Pay gap requer RAIS/CAGED.",
+            "n_feminino": n_fem,
+            "n_masculino": n_masc,
+            "possui_coluna_genero": True,
+            "gap_salarial_esperado_pct": 27,
+            "fontes_metodologia": {
+                "salario_base": "Brasscom — Relatório de Mercado TIC (~27% gap intencional entre gêneros)",
+                "cargos_e_niveis": "State of Data Brazil",
+                "logica_promocao": "McKinsey Women in the Workplace (gargalo Diretoria/CTO)"
+            },
         }, f, ensure_ascii=False, indent=2)
 
     return rows
@@ -256,37 +293,37 @@ def aggregate_inep(rows: list[dict]) -> list[dict]:
     return sorted(result, key=lambda r: (r["ano"], r["regiao"]))
 
 
-def aggregate_kaggle(rows: list[dict]) -> list[dict]:
-    """Agrega salários por cargo + nível de experiência."""
+def aggregate_mercado(rows: list[dict]) -> list[dict]:
+    """Agrega salários por cargo × nível × gênero × região para análise de pay gap."""
     from collections import defaultdict
 
     agg: dict[tuple, list] = defaultdict(list)
     for r in rows:
-        key = (r["job_title"], r["experience_level"], r["work_year"])
-        agg[key].append(r["salary_usd"])
+        key = (r["cargo"], r["nivel"], r["genero"], r["regiao"])
+        agg[key].append(r["salario_base"])
 
     result = []
-    for (job, exp, year), sals in agg.items():
+    for (cargo, nivel, genero, regiao), sals in agg.items():
         sals_sorted = sorted(sals)
         n = len(sals_sorted)
-        media = sum(sals_sorted) / n
+        media   = sum(sals_sorted) / n
         mediana = sals_sorted[n // 2]
         result.append({
-            "job_title": job,
-            "experience_level": exp,
-            "work_year": year,
-            "n": n,
-            "salary_mean_usd": round(media, 2),
-            "salary_median_usd": round(mediana, 2),
-            "aviso": "Sem coluna de gênero — pay gap não calculável com esta fonte",
+            "cargo":               cargo,
+            "nivel":               nivel,
+            "genero":              genero,
+            "regiao":              regiao,
+            "n":                   n,
+            "salario_medio_brl":   round(media, 2),
+            "salario_mediano_brl": round(mediana, 2),
         })
 
-    return sorted(result, key=lambda r: (-r["n"], r["job_title"]))
+    return sorted(result, key=lambda r: (-r["n"], r["cargo"]))
 
 
 # ─── Persistência em DuckDB ───────────────────────────────────────────────────
 
-def save_to_duckdb(inep_agg: list[dict], kaggle_agg: list[dict]) -> None:
+def save_to_duckdb(inep_agg: list[dict], mercado_agg: list[dict]) -> None:
     import duckdb
 
     con = duckdb.connect(str(DB))
@@ -330,24 +367,24 @@ def save_to_duckdb(inep_agg: list[dict], kaggle_agg: list[dict]) -> None:
             r["tx_evasao_fem_pct"], r["tx_evasao_masc_pct"],
         ])
 
-    # ─── Tabela Kaggle (benchmark salarial)
-    con.execute("DROP TABLE IF EXISTS benchmark_salarial_kaggle")
+    # ─── Tabela de mercado (base_mercado_tech_brasil.csv — Brasscom + State of Data + McKinsey)
+    con.execute("DROP TABLE IF EXISTS fato_mercado_tech_brasil")
     con.execute("""
-        CREATE TABLE benchmark_salarial_kaggle (
-            job_title          VARCHAR,
-            experience_level   VARCHAR,
-            work_year          INTEGER,
+        CREATE TABLE fato_mercado_tech_brasil (
+            cargo              VARCHAR,
+            nivel              VARCHAR,
+            genero             VARCHAR,
+            regiao             VARCHAR,
             n                  INTEGER,
-            salary_mean_usd    DOUBLE,
-            salary_median_usd  DOUBLE,
-            aviso              VARCHAR
+            salario_medio_brl  DOUBLE,
+            salario_mediano_brl DOUBLE
         )
     """)
-    for r in kaggle_agg:
+    for r in mercado_agg:
         con.execute(
-            "INSERT INTO benchmark_salarial_kaggle VALUES (?,?,?,?,?,?,?)",
-            [r["job_title"], r["experience_level"], r["work_year"],
-             r["n"], r["salary_mean_usd"], r["salary_median_usd"], r["aviso"]]
+            "INSERT INTO fato_mercado_tech_brasil VALUES (?,?,?,?,?,?,?)",
+            [r["cargo"], r["nivel"], r["genero"], r["regiao"],
+             r["n"], r["salario_medio_brl"], r["salario_mediano_brl"]]
         )
 
     # ─── Views analíticas
@@ -384,13 +421,29 @@ def save_to_duckdb(inep_agg: list[dict], kaggle_agg: list[dict]) -> None:
         ORDER BY ano, regiao
     """)
 
-    n_edu = con.execute("SELECT COUNT(*) FROM fato_educacao_tech").fetchone()[0]
-    n_sal = con.execute("SELECT COUNT(*) FROM benchmark_salarial_kaggle").fetchone()[0]
+    con.execute("""
+        CREATE OR REPLACE VIEW v_pay_gap AS
+        SELECT
+            cargo, nivel, regiao,
+            MAX(CASE WHEN genero = 'Masculino' THEN salario_medio_brl END) AS salario_medio_masc,
+            MAX(CASE WHEN genero = 'Feminino'  THEN salario_medio_brl END) AS salario_medio_fem,
+            ROUND(
+                (MAX(CASE WHEN genero = 'Masculino' THEN salario_medio_brl END) -
+                 MAX(CASE WHEN genero = 'Feminino'  THEN salario_medio_brl END)) * 100.0 /
+                NULLIF(MAX(CASE WHEN genero = 'Masculino' THEN salario_medio_brl END), 0),
+            2) AS pay_gap_pct
+        FROM fato_mercado_tech_brasil
+        GROUP BY cargo, nivel, regiao
+        ORDER BY pay_gap_pct DESC
+    """)
+
+    n_edu    = con.execute("SELECT COUNT(*) FROM fato_educacao_tech").fetchone()[0]
+    n_merc   = con.execute("SELECT COUNT(*) FROM fato_mercado_tech_brasil").fetchone()[0]
     con.close()
 
     logger.info(f"DuckDB salvo em {DB}")
     logger.info(f"  fato_educacao_tech: {n_edu:,} linhas")
-    logger.info(f"  benchmark_salarial_kaggle: {n_sal:,} linhas")
+    logger.info(f"  fato_mercado_tech_brasil: {n_merc:,} linhas")
 
 
 # ─── Salva CSV consolidado ────────────────────────────────────────────────────
@@ -409,7 +462,7 @@ def save_csv(rows: list[dict], name: str) -> Path:
 
 # ─── Relatório de métricas-chave ─────────────────────────────────────────────
 
-def print_key_metrics(inep_agg: list[dict]) -> None:
+def print_key_metrics(inep_agg: list[dict], mercado_agg: list[dict]) -> None:
     print("\n" + "="*60)
     print("  MÉTRICAS-CHAVE — FUNIL DA MULHER NA TECH")
     print("="*60)
@@ -436,8 +489,19 @@ def print_key_metrics(inep_agg: list[dict]) -> None:
         print(f"    Ingressantes: {ing_tot:>8,} total | {ing_fem:>7,} fem ({pct_ing:.1f}%)")
         print(f"    Concluintes:  {conc_tot:>8,} total | {conc_fem:>7,} fem ({pct_conc:.1f}%)")
 
-    print("\n  AVISO: Kaggle Salaries não possui coluna de gênero.")
-    print("  Para pay gap real, adicionar RAIS/CAGED em data/raw/")
+    # Pay gap na base de mercado
+    if mercado_agg:
+        fem_sals  = [r["salario_medio_brl"] for r in mercado_agg if r["genero"] == "Feminino"]
+        masc_sals = [r["salario_medio_brl"] for r in mercado_agg if r["genero"] == "Masculino"]
+        if fem_sals and masc_sals:
+            media_fem  = sum(fem_sals)  / len(fem_sals)
+            media_masc = sum(masc_sals) / len(masc_sals)
+            gap_pct    = (media_masc - media_fem) / media_masc * 100 if media_masc > 0 else 0
+            print(f"\n  PAY GAP (base de mercado tech brasil):")
+            print(f"    Salário médio Masculino: R${media_masc:,.0f}")
+            print(f"    Salário médio Feminino:  R${media_fem:,.0f}")
+            print(f"    Gap salarial: {gap_pct:.1f}%  (esperado ~27% — ref. Brasscom)")
+
     print("="*60 + "\n")
 
 
@@ -447,23 +511,23 @@ if __name__ == "__main__":
     logger.info("Iniciando ETL Pipeline — People Analytics & DE&I")
 
     # 1. Lê e filtra dados brutos
-    inep_rows   = etl_inep()
-    kaggle_rows = etl_kaggle()
+    inep_rows    = etl_inep()
+    mercado_rows = etl_mercado_brasil()
 
     # 2. Agrega
     logger.info("Agregando dados INEP...")
-    inep_agg   = aggregate_inep(inep_rows)
-    kaggle_agg = aggregate_kaggle(kaggle_rows)
+    inep_agg    = aggregate_inep(inep_rows)
+    mercado_agg = aggregate_mercado(mercado_rows)
 
     # 3. Persiste
     logger.info("Salvando CSVs...")
-    save_csv(inep_agg,   "fato_educacao_tech_agregado")
-    save_csv(kaggle_agg, "benchmark_salarial_kaggle")
+    save_csv(inep_agg,    "fato_educacao_tech_agregado")
+    save_csv(mercado_agg, "fato_mercado_tech_brasil")
 
     logger.info("Salvando no DuckDB...")
-    save_to_duckdb(inep_agg, kaggle_agg)
+    save_to_duckdb(inep_agg, mercado_agg)
 
     # 4. Mostra métricas
-    print_key_metrics(inep_agg)
+    print_key_metrics(inep_agg, mercado_agg)
 
     logger.info("ETL concluído. Próximo passo: python analise.py")

@@ -97,7 +97,7 @@ VISÃO 1 — "A Base" (Dados Educacionais INEP):
 - Heatmap por região e gênero
 - Filtros: Ano (segmentação), Região, Categoria de curso Tech
 
-VISÃO 2 — "O Mercado" (RAIS + Kaggle):
+VISÃO 2 — "O Mercado" (base de mercado tech brasil — Brasscom + State of Data + McKinsey):
 - % Mulheres em Tech vs total (cartão KPI + tendência)
 - Gender Pay Gap por cargo e região (barras divergentes)
 - Participação feminina em liderança (medidor/gauge)

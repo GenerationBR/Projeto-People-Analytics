@@ -17,9 +17,17 @@ Construa o pitch como uma jornada (o FUNIL): comece pela promessa (entrada femin
 universidades), mostre os vazamentos (evasão, queda na empregabilidade, sub-representação
 na liderança) e termine no pay gap, com a evidência estatística do teste T.
 
+REFERÊNCIAS A USAR NO PITCH:
+- Brasscom: base da análise salarial — gap médio de ~27% entre gêneros detectado nos dados
+- State of Data Brazil: fonte dos cargos e senioridade analisados
+- McKinsey (Women in the Workplace): fundamento do gargalo de liderança — dificuldade
+  progressivamente maior para mulheres alcançarem Diretoria e CTO; excelente ponto de
+  destaque no slide de sub-representação na liderança
+
 Para cada slide: 1 ideia central, 1 número de impacto, 1 visual. Inclua um slide técnico
-explicando como a equipe lidou com arquivos pesados (INEP) e outliers salariais. Feche
-com recomendações ACIONÁVEIS de políticas de contratação. Tom: profissional, baseado em
+explicando como a equipe lidou com arquivos pesados (INEP) e como a base de mercado foi
+construída (simulação baseada em Brasscom + State of Data + McKinsey). Feche com
+recomendações ACIONÁVEIS de políticas de contratação. Tom: profissional, baseado em
 evidências, sem sensacionalismo.
 """
 
@@ -63,7 +71,7 @@ Slide 7 — O DESTINO: Gender Pay Gap (resultado do Teste T com p-valor e Cohen'
 Slide 8 — TÉCNICO: Como tratamos arquivos pesados (INEP) e outliers salariais
 Slide 9 — ONDE INTERVIR: Análise do maior gargalo do funil
 Slide 10 — RECOMENDAÇÕES: 3 políticas acionáveis de contratação e retenção
-Slide 11 — METODOLOGIA: Fontes, premissas e limitações
+Slide 11 — METODOLOGIA: Fontes, premissas e limitações (INEP; base de mercado simulada com Brasscom + State of Data Brazil + McKinsey; gap de 27% intencional para análise)
 Slide 12 — PRÓXIMOS PASSOS: Data App, expansão da análise
 
 Para cada slide: título, ideia central (1 frase), dado de impacto, descrição do visual sugerido.

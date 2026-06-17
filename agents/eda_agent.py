@@ -21,6 +21,14 @@ Para cada etapa, calcule a participação feminina e a variação ao longo dos a
 4. Posições de liderança (conforme definição aprovada: ex. Sênior, Staff, C-Level)
 5. Gender Pay Gap por cargo/região
 
+CONTEXTO DA BASE DE MERCADO:
+A base `base_mercado_tech_brasil.csv` foi simulada a partir de relatórios reais com padrões
+intencionais que devem ser identificados na análise:
+- Gap salarial esperado de ~27% entre homens e mulheres (Brasscom), visível em `salario_base`
+- Cargos e senioridade baseados no State of Data Brazil
+- Gargalo de promoção feminina nos níveis de Diretoria e CTO (McKinsey Women in the Workplace)
+  Explore a sub-representação feminina que aumenta progressivamente nos níveis mais altos.
+
 Entregue métricas claras e comparáveis (sempre % e variação YoY), gráficos exploratórios
 e uma síntese em linguagem de negócio. Aponte onde está o maior "vazamento" do funil.
 Não tire conclusões causais sem suporte — separe correlação de causalidade.

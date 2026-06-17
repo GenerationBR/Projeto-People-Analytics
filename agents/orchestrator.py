@@ -30,7 +30,7 @@ como risco e proponha alternativas. Mantenha um log de premissas versionado.
 
     # Fases e ordem de dependências
     PIPELINE = [
-        ("T-001", "etl",        "Extrair e tratar bases INEP, RAIS e Kaggle"),
+        ("T-001", "etl",        "Extrair e tratar INEP e base de mercado tech brasil (Brasscom+StateOfData+McKinsey)"),
         ("T-002", "modeling",   "Modelar banco analítico (esquema estrela)"),
         ("T-003", "eda",        "Análise exploratória e funil feminino"),
         ("T-004", "statistics", "Teste de hipótese — Gender Pay Gap"),

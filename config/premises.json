@@ -1,6 +1,7 @@
 {
-  "version": "1.0",
+  "version": "1.1",
   "data_criacao": "2026-06-15",
+  "data_atualizacao": "2026-06-17",
   "aprovado_por": null,
   "premissas": {
     "escopo_temporal": {
@@ -26,6 +27,31 @@
     "cruzamento_bases": {
       "tipo": "AGREGADO",
       "nota": "Não há CPF para cruzar educação x mercado. Cruzamento exclusivamente por dimensões agregadas: Ano, Região, Gênero"
+    },
+    "metodologia_base_mercado": {
+      "descricao": "base_mercado_tech_brasil.csv é um dataset simulado (mockado) para fins pedagógicos, construído a partir de relatórios de mercado reais. Os padrões são intencionais e detectáveis na análise.",
+      "arquivo": "data/raw/base_mercado_tech_brasil.csv",
+      "status": "APROVADO",
+      "fontes": [
+        {
+          "nome": "Brasscom — Relatório de Mercado TIC",
+          "uso": "Referência para a variável salario_base. Os valores salariais foram derivados do relatório Brasscom e um multiplicador foi aplicado para gerar, em média, uma diferença salarial de 27% entre gêneros — padrão identificável durante a análise de People Analytics.",
+          "variavel_afetada": "salario_base",
+          "gap_salarial_esperado_pct": 27
+        },
+        {
+          "nome": "State of Data Brazil",
+          "uso": "Referência para os nomes dos cargos e o tempo médio de experiência necessário para cada nível hierárquico (Júnior, Pleno, Sênior, Liderança, Diretoria, C-Level).",
+          "variaveis_afetadas": ["cargo", "nivel_hierarquico", "anos_experiencia"]
+        },
+        {
+          "nome": "McKinsey — Women in the Workplace / Pipeline Study",
+          "uso": "Lógica de promoção e retenção. Baseada no estudo do gargalo no meio da pirâmide corporativa. Na base, foi modelada uma dificuldade estatística maior para mulheres alcançarem cargos de Diretoria ou CTO — ponto intencionalmente explorado na visualização de dados.",
+          "variaveis_afetadas": ["nivel_hierarquico", "genero"],
+          "padrao_esperado": "Sub-representação feminina progressivamente maior nos níveis Diretoria e C-Level/CTO"
+        }
+      ],
+      "nota_pedagogica": "Os padrões embutidos (gap salarial de ~27% e gargalo de liderança) foram inspirados em estudos reais e devem ser identificados e explorados pela equipe durante a análise. A base é adequada para fins de treinamento e apresentação — não representa dados reais de nenhuma empresa específica."
     }
   }
 }

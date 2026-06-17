@@ -58,7 +58,7 @@ CREATE TABLE IF NOT EXISTS fato_educacao (
     tx_evasao       DOUBLE PRECISION
 );
 
--- Escopo PROFISSIONAL (RAIS/Kaggle/StackOverflow)
+-- Escopo PROFISSIONAL (base_mercado_tech_brasil.csv — Brasscom + State of Data + McKinsey)
 CREATE TABLE IF NOT EXISTS fato_mercado (
     id             BIGINT PRIMARY KEY,
     ano            INTEGER REFERENCES dim_tempo(ano),
@@ -69,7 +69,7 @@ CREATE TABLE IF NOT EXISTS fato_mercado (
     qt_empregados  INTEGER DEFAULT 0,
     salario_medio  DOUBLE PRECISION,
     salario_mediano DOUBLE PRECISION,
-    fonte          VARCHAR  -- "RAIS", "Kaggle", "StackOverflow"
+    fonte          VARCHAR  -- "base_mercado_tech_brasil" (Brasscom+StateOfData+McKinsey)
 );
 
 -- ─── Views de consumo BI ────────────────────────────────────────────────────

@@ -5,9 +5,10 @@ Empresas de tecnologia globais têm metas agressivas de equidade de gênero, mas
 (Nota para a equipe: O desafio aqui é cruzar bases de naturezas diferentes: Educação e Mercado de Trabalho).
 * Dados Educacionais (Brasil): Microdados do Censo da Educação Superior (INEP) - Melhor que o ENEM para este fim, pois foca nas matrículas e conclusões efetivas em cursos específicos de TI/Engenharia.
 * Dados de Mercado/Salários:
-   * Kaggle - Data Science and STEM Salaries https://www.kaggle.com/datasets/sazidthe1/data-science-salaries/data  
-   * ou StackOverflow Annual Developer Survey (Visão global e cargos).
-   * RAIS/CAGED (Gov.br) (Visão nacional de empregabilidade formal).
+   * base_mercado_tech_brasil.csv — dataset simulado construído sobre referências reais:
+     Brasscom (salario_base com gap de ~27% entre gêneros), State of Data Brazil (cargos e níveis)
+     e McKinsey Women in the Workplace (lógica de promoção e gargalo de liderança feminina).
+   * RAIS/CAGED (Gov.br) (Visão nacional de empregabilidade formal — opcional/complementar).
 ⚙️ Requisitos Técnicos e Pipeline (ETL)
 * Extração: Baixar os microdados educacionais de pelo menos os últimos 5 anos e bases de pesquisas salariais/empregabilidade do setor tech.
 * Transformação:

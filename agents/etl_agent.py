@@ -13,7 +13,18 @@ logger = logging.getLogger(__name__)
 class ETLAgent(BaseAgent):
     SYSTEM_PROMPT = """
 Você é o Engenheiro de Dados (ETL) do projeto. Trabalha com bases massivas de educação
-(INEP) e de mercado (RAIS/CAGED, Kaggle salaries, StackOverflow).
+(INEP) e de mercado (base_mercado_tech_brasil.csv — dataset simulado).
+
+ATENÇÃO — Base de mercado:
+A base `data/raw/base_mercado_tech_brasil.csv` é um dataset mockado pedagogicamente a
+partir de três referências de mercado:
+  1. Brasscom (salario_base): valores derivados do relatório Brasscom com multiplicador
+     que gera ~27% de gap salarial entre gêneros — padrão intencional e detectável.
+  2. State of Data Brazil (cargos): nomes de cargos e tempo médio de experiência por
+     nível hierárquico (Júnior → Pleno → Sênior → Liderança → Diretoria → C-Level).
+  3. McKinsey — Women in the Workplace (promoção/retenção): lógica de gargalo no meio
+     da pirâmide corporativa; dificuldade estatística maior para mulheres em Diretoria/CTO.
+Esta base possui coluna de gênero e é adequada para análise de pay gap e liderança.
 
 Diretrizes técnicas:
 - Para o INEP, NUNCA carregue o arquivo inteiro em memória. Use leitura por chunks ou
@@ -61,8 +72,13 @@ removidos, distribuições). Reporte qualquer anomalia ao Orquestrador.
     # ─── Salários (Kaggle / StackOverflow) ────────────────────────────────────
 
     def process_salaries(self, filepath: str, source: str = "Kaggle") -> dict:
-        """Pipeline para base de salários externos."""
+        """Pipeline para base de salários externos ou dataset simulado de mercado."""
         import polars as pl
+
+        # Detecta a base mockada pelo nome do arquivo
+        fname = Path(filepath).name.lower()
+        if "base_mercado_tech_brasil" in fname:
+            source = "BaseMercadoBrasil (Brasscom+StateOfData+McKinsey)"
 
         self.log_action(f"Processando salários ({source}): {filepath}")
 
@@ -141,12 +157,18 @@ removidos, distribuições). Reporte qualquer anomalia ao Orquestrador.
             "Filtro de cursos Tech aplicado via course_mapping.json",
             "Outliers salariais tratados com winsorization_p99",
             "Cruzamento educação × mercado é AGREGADO (sem CPF individual)",
+            "base_mercado_tech_brasil.csv é dataset simulado (Brasscom + State of Data + McKinsey) com gap salarial intencional de ~27% e gargalo de liderança feminina embutidos",
         ]
 
         # Descoberta automática de arquivos brutos
         raw_dir = Path(self.tools.raw_dir)
         inep_files = list(raw_dir.glob("*INEP*.*")) + list(raw_dir.glob("*inep*.*")) + list(raw_dir.glob("*microdados*.*"))
-        salary_files = list(raw_dir.glob("*salary*.*")) + list(raw_dir.glob("*salaries*.*")) + list(raw_dir.glob("*stackoverflow*.*"))
+        salary_files = (
+            list(raw_dir.glob("*salary*.*")) +
+            list(raw_dir.glob("*salaries*.*")) +
+            list(raw_dir.glob("*stackoverflow*.*")) +
+            list(raw_dir.glob("*base_mercado*.*"))
+        )
 
         if not inep_files and not salary_files:
             open_questions.append(

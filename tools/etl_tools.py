@@ -1,4 +1,4 @@
-"""Ferramentas de ETL para processamento de bases pesadas (INEP, RAIS, Kaggle)."""
+"""Ferramentas de ETL para processamento de bases pesadas (INEP) e base de mercado tech brasil."""
 
 import json
 import logging
