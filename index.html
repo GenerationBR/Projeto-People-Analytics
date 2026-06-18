@@ -3,126 +3,336 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Trajetória Feminina na Tech</title>
+<title>Trajetória Feminina na Tech — People Analytics</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdn.plot.ly/plotly-2.32.0.min.js"></script>
 <style>
-:root{--sb:#0D1B3E;--sbw:215px;--pk:#E91E8C;--bg:#EEF1F8;--card:#fff;--txt:#1A202C;--muted:#6B7280;--bdr:#E5E7EB;}
-*{box-sizing:border-box;margin:0;padding:0;}
-html{font-family:'Segoe UI',system-ui,sans-serif;}
-body{background:var(--bg);color:var(--txt);display:flex;min-height:100vh;}
+/* ── TOKENS ── */
+:root {
+  --blue:        #1D4ED8;
+  --blue-dark:   #1E40AF;
+  --blue-pale:   #EFF6FF;
+  --blue-mid:    #DBEAFE;
+  --blue-border: #BFDBFE;
+  --pink:        #EC4899;
+  --pink-dark:   #DB2777;
+  --pink-pale:   #FDF2F8;
+  --pink-border: #FBCFE8;
+  --white:       #FFFFFF;
+  --bg:          #F8FAFC;
+  --sb-bg:       #F0F7FF;
+  --txt:         #0F172A;
+  --txt2:        #334155;
+  --muted:       #94A3B8;
+  --border:      #E2E8F0;
+  --shadow-sm:   0 1px 3px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.04);
+  --radius:      10px;
+  --sb-w:        210px;
+  --font:        'Inter', system-ui, sans-serif;
+}
 
-/* ─── SIDEBAR ─── */
-.sb{width:var(--sbw);min-height:100vh;background:var(--sb);display:flex;flex-direction:column;position:fixed;top:0;left:0;z-index:20;}
-.sb-brand{padding:1.4rem 1.1rem 1rem;border-bottom:1px solid rgba(255,255,255,.08);text-align:center;}
-.sb-icon{width:58px;height:58px;background:linear-gradient(135deg,var(--pk),#9333ea);border-radius:50%;margin:0 auto .7rem;display:flex;align-items:center;justify-content:center;font-size:1.7rem;}
-.sb-title{color:rgba(255,255,255,.85);font-size:.7rem;font-weight:700;line-height:1.45;text-transform:uppercase;letter-spacing:.04em;}
-.sb-title strong{color:var(--pk);font-size:.82rem;display:block;margin-bottom:.2rem;}
-.sb-nav{flex:1;padding:.75rem 0;}
-.nav-i{display:flex;align-items:center;gap:.6rem;padding:.62rem 1.1rem;color:rgba(255,255,255,.55);font-size:.81rem;font-weight:500;cursor:pointer;border-left:3px solid transparent;transition:all .15s;user-select:none;}
-.nav-i:hover{color:rgba(255,255,255,.9);background:rgba(255,255,255,.04);}
-.nav-i.on{color:#fff;background:rgba(233,30,140,.14);border-left-color:var(--pk);}
-.nav-ic{font-size:.95rem;width:20px;text-align:center;}
-.sb-foot{padding:1rem 1.1rem;border-top:1px solid rgba(255,255,255,.07);}
-.sb-img{width:100%;height:72px;background:linear-gradient(135deg,rgba(233,30,140,.25),rgba(107,33,168,.25));border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1.8rem;margin-bottom:.65rem;}
-.sb-quote{color:rgba(255,255,255,.4);font-size:.7rem;font-style:italic;line-height:1.45;text-align:center;}
+/* ── RESET ── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-family: var(--font); font-size: 14px; -webkit-font-smoothing: antialiased; }
+body { background: var(--bg); color: var(--txt); display: flex; min-height: 100vh; }
+button { font-family: inherit; cursor: pointer; }
+select { font-family: inherit; }
 
-/* ─── MAIN ─── */
-.main{margin-left:var(--sbw);flex:1;display:flex;flex-direction:column;min-height:100vh;}
+/* ══════════════════════════════════
+   SIDEBAR
+══════════════════════════════════ */
+.sb {
+  width: var(--sb-w);
+  min-height: 100vh;
+  background: var(--sb-bg);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  top: 0; left: 0;
+  z-index: 20;
+}
 
-/* ─── TOPBAR ─── */
-.topbar{background:#fff;padding:.85rem 1.4rem;border-bottom:1px solid var(--bdr);display:flex;align-items:flex-start;justify-content:space-between;position:sticky;top:0;z-index:10;box-shadow:0 1px 4px rgba(0,0,0,.06);}
-.tb-tit{font-size:1.3rem;font-weight:700;color:var(--sb);}
-.tb-sub{color:var(--muted);font-size:.78rem;margin-top:.1rem;}
-.tb-btns{display:flex;gap:.6rem;align-items:center;margin-top:.1rem;}
-.btn-period{display:flex;align-items:center;gap:.35rem;border:1px solid var(--bdr);background:#fff;border-radius:8px;padding:.4rem .85rem;font-size:.78rem;cursor:pointer;color:var(--txt);}
-.btn-filter{background:var(--pk);color:#fff;border:none;border-radius:8px;padding:.4rem .85rem;font-size:.78rem;cursor:pointer;font-weight:600;display:flex;align-items:center;gap:.35rem;}
+.sb-brand {
+  padding: 1.5rem 1.25rem 1.25rem;
+  border-bottom: 1px solid var(--border);
+}
+.sb-logo {
+  display: flex;
+  align-items: center;
+  gap: .6rem;
+  margin-bottom: .75rem;
+}
+.sb-dot {
+  width: 32px; height: 32px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, var(--pink), var(--blue));
+  flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  color: white; font-size: .85rem; font-weight: 700;
+}
+.sb-title-main {
+  font-size: .72rem;
+  font-weight: 700;
+  color: var(--txt);
+  line-height: 1.35;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+}
+.sb-title-main span { color: var(--pink); }
+.sb-title-sub {
+  font-size: .68rem;
+  color: var(--muted);
+  line-height: 1.4;
+}
 
-/* ─── PAGES ─── */
-.pg{display:none;padding:1.1rem 1.4rem;flex:1;}
-.pg.on{display:block;}
+.sb-nav { flex: 1; padding: .6rem 0; overflow-y: auto; }
 
-/* ─── KPI ROW ─── */
-.kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:.85rem;margin-bottom:1rem;}
-.kpi{background:#fff;border-radius:12px;padding:.9rem 1.1rem;border:1px solid var(--bdr);display:flex;align-items:center;gap:.85rem;box-shadow:0 1px 3px rgba(0,0,0,.05);}
-.kpi-ic{width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0;}
-.ic-pk{background:#FDE8F3;}
-.ic-bl{background:#EFF6FF;}
-.ic-pu{background:#F5F0FF;}
-.ic-gr{background:#ECFDF5;}
-.kpi-lbl{font-size:.68rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:.18rem;}
-.kpi-val{font-size:1.45rem;font-weight:800;color:var(--sb);line-height:1;}
-.kpi-val.pk{color:var(--pk);}
-.kpi-val.rd{color:#ef4444;}
-.kpi-val.gr{color:#059669;}
-.kpi-note{font-size:.67rem;color:var(--muted);margin-top:.18rem;}
+.nav-group-label {
+  padding: .65rem 1.25rem .3rem;
+  font-size: .6rem;
+  font-weight: 700;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: .08em;
+}
 
-/* ─── GRID LAYOUTS ─── */
-.g2{display:grid;grid-template-columns:1fr 1fr;gap:.85rem;margin-bottom:.85rem;}
-.g3-1{display:grid;grid-template-columns:3fr 1.1fr;gap:.85rem;margin-bottom:.85rem;}
-.g1{margin-bottom:.85rem;}
+.nav-i {
+  display: flex;
+  align-items: center;
+  gap: .55rem;
+  padding: .55rem 1.25rem;
+  color: var(--txt2);
+  font-size: .8rem;
+  font-weight: 500;
+  cursor: pointer;
+  border-left: 2px solid transparent;
+  transition: all .12s;
+  user-select: none;
+  line-height: 1.2;
+}
+.nav-i:hover { background: var(--blue-mid); color: var(--blue); }
+.nav-i.on { background: var(--blue-pale); color: var(--blue); border-left-color: var(--blue); font-weight: 600; }
+.nav-ic { font-size: .85rem; width: 18px; text-align: center; flex-shrink: 0; opacity: .75; }
+.nav-i.on .nav-ic { opacity: 1; }
 
-/* ─── CARD ─── */
-.cd{background:#fff;border-radius:12px;padding:1.1rem 1.25rem;border:1px solid var(--bdr);box-shadow:0 1px 3px rgba(0,0,0,.05);}
-.cd-tit{font-size:.9rem;font-weight:700;color:var(--sb);margin-bottom:.15rem;display:flex;align-items:center;gap:.35rem;}
-.cd-sub{font-size:.71rem;color:var(--muted);margin-bottom:.9rem;}
+.sb-foot {
+  padding: 1rem 1.25rem;
+  border-top: 1px solid var(--border);
+}
+.sb-quote {
+  font-size: .68rem;
+  color: var(--muted);
+  font-style: italic;
+  line-height: 1.5;
+}
+.sb-quote strong { color: var(--pink); font-style: normal; }
 
-/* ─── FUNNEL ─── */
-.fn-row{display:flex;align-items:center;margin-bottom:3px;}
-.fn-bar{flex:1;padding:.55rem .8rem;border-radius:5px;display:flex;align-items:center;gap:.4rem;font-size:.75rem;font-weight:600;white-space:nowrap;}
-.fn-pct{flex-shrink:0;width:50px;text-align:right;font-size:.82rem;font-weight:700;color:var(--txt);padding-left:.4rem;}
-.fn-pct.rd{color:#ef4444;}
+/* ══════════════════════════════════
+   MAIN
+══════════════════════════════════ */
+.main { margin-left: var(--sb-w); flex: 1; display: flex; flex-direction: column; }
 
-/* ─── HIGHLIGHTS ─── */
-.hl{display:flex;gap:.65rem;align-items:flex-start;padding:.8rem;border-radius:9px;background:#F9FAFB;margin-bottom:.6rem;}
-.hl-ic{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.95rem;flex-shrink:0;}
-.hl-txt{font-size:.74rem;color:var(--txt);line-height:1.45;}
-.hl-txt strong{color:var(--sb);font-size:.77rem;display:block;margin-bottom:.15rem;}
+/* ── TOPBAR ── */
+.topbar {
+  background: var(--white);
+  padding: .9rem 1.5rem;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky; top: 0; z-index: 10;
+  box-shadow: var(--shadow-sm);
+  gap: 1rem;
+}
+.tb-left {}
+.tb-tit { font-size: 1.05rem; font-weight: 700; color: var(--txt); line-height: 1.2; }
+.tb-sub { font-size: .72rem; color: var(--muted); margin-top: .15rem; }
+.tb-btns { display: flex; gap: .5rem; align-items: center; flex-shrink: 0; }
+.btn-period {
+  display: flex; align-items: center; gap: .35rem;
+  border: 1px solid var(--blue-border);
+  background: var(--blue-pale);
+  color: var(--blue);
+  border-radius: 7px;
+  padding: .38rem .8rem;
+  font-size: .72rem;
+  font-weight: 600;
+}
+.btn-filter {
+  background: var(--blue);
+  color: var(--white);
+  border: none;
+  border-radius: 7px;
+  padding: .38rem .85rem;
+  font-size: .72rem;
+  font-weight: 600;
+  display: flex; align-items: center; gap: .35rem;
+  transition: background .12s;
+}
+.btn-filter:hover { background: var(--blue-dark); }
 
-/* ─── MOTIVOS ─── */
-.mot-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:.7rem;margin-top:.75rem;}
-.mot{background:#fff;border:1px solid var(--bdr);border-radius:9px;padding:.8rem 1rem;}
-.mot-pct{font-size:1.35rem;font-weight:800;color:var(--pk);}
-.mot-txt{font-size:.74rem;color:var(--txt);margin-top:.15rem;}
-.mot-bar{background:#f3f4f6;border-radius:3px;height:5px;margin-top:.55rem;}
-.mot-fill{height:5px;border-radius:3px;background:var(--pk);}
+/* ── PAGES ── */
+.pg { display: none; padding: 1.25rem 1.5rem; }
+.pg.on { display: block; }
 
-/* ─── ROI ─── */
-.roi-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:.85rem;margin-bottom:.85rem;}
-.roi-cd{background:#fff;border-radius:12px;padding:1.1rem 1.25rem;border-left:4px solid var(--sb);box-shadow:0 1px 3px rgba(0,0,0,.05);}
-.roi-val{font-size:2rem;font-weight:900;color:var(--sb);}
-.roi-val.gr{color:#059669;}
-.roi-val.pk{color:var(--pk);}
-.roi-val.or{color:#ea580c;}
-.roi-desc{font-size:.76rem;color:var(--muted);margin-top:.3rem;line-height:1.4;}
-.roi-src{font-size:.65rem;color:#9ca3af;margin-top:.4rem;}
+/* ── KPI ROW ── */
+.kpi-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: .75rem; margin-bottom: 1rem; }
+.kpi {
+  background: var(--white);
+  border-radius: var(--radius);
+  padding: .9rem 1.1rem;
+  border: 1px solid var(--border);
+  display: flex; align-items: center; gap: .8rem;
+  box-shadow: var(--shadow-sm);
+}
+.kpi-ic {
+  width: 40px; height: 40px; border-radius: 9px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.1rem; flex-shrink: 0;
+}
+.ic-pk  { background: var(--pink-pale); }
+.ic-bl  { background: var(--blue-pale); }
+.ic-gr  { background: #ECFDF5; }
+.ic-neu { background: #F1F5F9; }
+.kpi-lbl {
+  font-size: .62rem; font-weight: 700; color: var(--muted);
+  text-transform: uppercase; letter-spacing: .05em; margin-bottom: .2rem;
+}
+.kpi-val { font-size: 1.3rem; font-weight: 800; color: var(--txt); line-height: 1; }
+.kpi-val.pk  { color: var(--pink); }
+.kpi-val.bl  { color: var(--blue); }
+.kpi-val.gr  { color: #059669; }
+.kpi-val.or  { color: #D97706; }
+.kpi-note { font-size: .62rem; color: var(--muted); margin-top: .2rem; }
 
-/* ─── SIM ─── */
-.sim-ctrl{display:flex;gap:.85rem;flex-wrap:wrap;margin-bottom:1rem;}
-.sim-ctrl label{display:block;font-size:.76rem;font-weight:700;color:var(--sb);margin-bottom:.3rem;}
-.sim-ctrl select{padding:.45rem .85rem;border:2px solid var(--bdr);border-radius:8px;font-size:.88rem;background:#fff;cursor:pointer;min-width:175px;}
-.sim-ctrl select:focus{outline:none;border-color:var(--pk);}
-.sim-res{display:grid;grid-template-columns:repeat(4,1fr);gap:.85rem;margin-bottom:1rem;}
-.sim-c{border-radius:10px;padding:.9rem;text-align:center;}
-.sim-c.f{background:#FDE8F3;border:2px solid var(--pk);}
-.sim-c.m{background:#EFF6FF;border:2px solid var(--sb);}
-.sim-c.g{background:#FFF7ED;border:2px solid #ea580c;}
-.sim-c.p{background:#ECFDF5;border:2px solid #059669;}
-.sim-v{font-size:1.45rem;font-weight:800;}
-.sim-l{font-size:.68rem;color:var(--muted);margin-top:.2rem;font-weight:600;}
-.warn-box{background:#FFF3CD;border:1px solid #FFEAA7;border-radius:8px;padding:.6rem .9rem;font-size:.78rem;color:#854d0e;margin-bottom:.85rem;display:none;}
-.info-box{background:#EFF6FF;border:1px solid #BEE3F8;border-radius:8px;padding:.55rem .85rem;font-size:.75rem;color:#1e40af;margin-bottom:.75rem;}
+/* ── LAYOUTS ── */
+.g2   { display: grid; grid-template-columns: 1fr 1fr; gap: .75rem; margin-bottom: .75rem; }
+.g3-1 { display: grid; grid-template-columns: 3fr 1.1fr; gap: .75rem; margin-bottom: .75rem; }
+.g1   { margin-bottom: .75rem; }
 
-/* ─── SOURCES ─── */
-.src-list{list-style:none;padding:0;}
-.src-list li{padding:.55rem .9rem;background:#fff;border-radius:8px;border-left:4px solid var(--pk);margin-bottom:.5rem;font-size:.78rem;line-height:1.5;}
-.src-list li strong{color:var(--sb);}
+/* ── CARD ── */
+.cd {
+  background: var(--white);
+  border-radius: var(--radius);
+  padding: 1.1rem 1.25rem;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+}
+.cd-tit {
+  font-size: .82rem; font-weight: 700; color: var(--txt);
+  margin-bottom: .12rem;
+  display: flex; align-items: center; gap: .3rem;
+}
+.cd-sub { font-size: .68rem; color: var(--muted); margin-bottom: .85rem; }
+.legend-dot { display: inline-flex; align-items: center; gap: .3rem; font-size: .68rem; color: var(--muted); }
+.legend-dot::before { content: ''; display: inline-block; width: 8px; height: 8px; border-radius: 50%; }
+.leg-f::before { background: var(--pink); }
+.leg-m::before { background: var(--blue); }
 
-@media(max-width:860px){
-  .sb{display:none;} .main{margin-left:0;}
-  .kpi-row{grid-template-columns:repeat(2,1fr);}
-  .g2,.g3-1{grid-template-columns:1fr;}
-  .sim-res{grid-template-columns:repeat(2,1fr);}
-  .mot-grid{grid-template-columns:repeat(2,1fr);}
+/* ── FUNNEL ── */
+.fn-wrap { padding: .35rem 0; }
+.fn-row { display: flex; align-items: center; margin-bottom: 4px; }
+.fn-bar {
+  flex: 1; padding: .52rem .85rem; border-radius: 6px;
+  display: flex; align-items: center; gap: .4rem;
+  font-size: .73rem; font-weight: 600;
+}
+.fn-pct {
+  flex-shrink: 0; width: 48px; text-align: right;
+  font-size: .78rem; font-weight: 700; color: var(--txt); padding-left: .4rem;
+}
+
+/* ── HIGHLIGHTS ── */
+.hl {
+  display: flex; gap: .6rem; align-items: flex-start;
+  padding: .75rem; border-radius: 8px;
+  background: var(--bg); margin-bottom: .55rem;
+  border: 1px solid var(--border);
+}
+.hl:last-child { margin-bottom: 0; }
+.hl-ic {
+  width: 30px; height: 30px; border-radius: 7px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: .85rem; flex-shrink: 0;
+}
+.hl-txt { font-size: .71rem; color: var(--txt2); line-height: 1.45; }
+.hl-txt strong { color: var(--txt); font-size: .74rem; display: block; margin-bottom: .1rem; }
+
+/* ── MOTIVOS ── */
+.mot-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: .6rem; margin-top: .75rem; }
+.mot {
+  background: var(--white); border: 1px solid var(--border);
+  border-radius: 8px; padding: .75rem .9rem;
+}
+.mot-pct { font-size: 1.25rem; font-weight: 800; color: var(--pink); }
+.mot-txt { font-size: .7rem; color: var(--txt2); margin-top: .15rem; line-height: 1.35; }
+.mot-bar { background: #f1f5f9; border-radius: 3px; height: 4px; margin-top: .55rem; }
+.mot-fill { height: 4px; border-radius: 3px; background: var(--pink); }
+
+/* ── ROI ── */
+.roi-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: .75rem; margin-bottom: .75rem; }
+.roi-cd {
+  background: var(--white); border-radius: var(--radius);
+  padding: 1.1rem 1.25rem;
+  border: 1px solid var(--border);
+  border-top: 3px solid var(--blue);
+  box-shadow: var(--shadow-sm);
+}
+.roi-val { font-size: 1.8rem; font-weight: 900; color: var(--blue); line-height: 1; }
+.roi-val.pk { color: var(--pink); }
+.roi-val.gr { color: #059669; }
+.roi-val.or { color: #D97706; }
+.roi-desc { font-size: .72rem; color: var(--txt2); margin-top: .4rem; line-height: 1.45; }
+.roi-src  { font-size: .62rem; color: var(--muted); margin-top: .45rem; }
+
+/* ── SIMULATOR ── */
+.sim-ctrl { display: flex; gap: .75rem; flex-wrap: wrap; margin-bottom: 1rem; }
+.sim-ctrl label { display: block; font-size: .72rem; font-weight: 700; color: var(--txt); margin-bottom: .3rem; }
+.sim-ctrl select {
+  padding: .42rem .85rem; border: 1.5px solid var(--border);
+  border-radius: 7px; font-size: .82rem; background: var(--white);
+  cursor: pointer; min-width: 170px; color: var(--txt);
+}
+.sim-ctrl select:focus { outline: none; border-color: var(--blue); }
+.sim-res { display: grid; grid-template-columns: repeat(4, 1fr); gap: .75rem; margin-bottom: 1rem; }
+.sim-c { border-radius: 9px; padding: .9rem; text-align: center; }
+.sim-c.f { background: var(--pink-pale); border: 1.5px solid var(--pink-border); }
+.sim-c.m { background: var(--blue-pale); border: 1.5px solid var(--blue-border); }
+.sim-c.g { background: #FFFBEB; border: 1.5px solid #FDE68A; }
+.sim-c.p { background: #ECFDF5; border: 1.5px solid #A7F3D0; }
+.sim-v { font-size: 1.3rem; font-weight: 800; }
+.sim-l { font-size: .63rem; color: var(--muted); margin-top: .2rem; font-weight: 600; }
+.warn-box {
+  background: #FFFBEB; border: 1px solid #FDE68A; border-radius: 7px;
+  padding: .55rem .85rem; font-size: .73rem; color: #92400E;
+  margin-bottom: .85rem; display: none;
+}
+.info-box {
+  background: var(--blue-pale); border: 1px solid var(--blue-border);
+  border-radius: 7px; padding: .5rem .85rem;
+  font-size: .7rem; color: var(--blue-dark); margin-bottom: .7rem;
+}
+
+/* ── SOURCES ── */
+.src-list { list-style: none; padding: 0; }
+.src-list li {
+  padding: .55rem .9rem; background: var(--white); border-radius: 7px;
+  border-left: 3px solid var(--pink); margin-bottom: .45rem;
+  font-size: .73rem; line-height: 1.5; color: var(--txt2);
+}
+.src-list li strong { color: var(--txt); }
+
+/* ── RESPONSIVE ── */
+@media (max-width: 900px) {
+  .sb { display: none; }
+  .main { margin-left: 0; }
+  .kpi-row { grid-template-columns: repeat(2, 1fr); }
+  .g2, .g3-1 { grid-template-columns: 1fr; }
+  .sim-res { grid-template-columns: repeat(2, 1fr); }
+  .mot-grid { grid-template-columns: repeat(2, 1fr); }
+  .roi-grid { grid-template-columns: 1fr; }
 }
 </style>
 </head>
@@ -131,22 +341,31 @@ body{background:var(--bg);color:var(--txt);display:flex;min-height:100vh;}
 <!-- ════ SIDEBAR ════ -->
 <aside class="sb">
   <div class="sb-brand">
-    <div class="sb-icon">&#9792;</div>
-    <div class="sb-title"><strong>A Trajetória Feminina</strong>do Campus ao<br>Mercado Tech</div>
+    <div class="sb-logo">
+      <div class="sb-dot">♀</div>
+      <div>
+        <div class="sb-title-main">Trajetória <span>Feminina</span></div>
+        <div class="sb-title-sub">People Analytics &amp; DE&amp;I</div>
+      </div>
+    </div>
   </div>
+
   <nav class="sb-nav">
-    <div class="nav-i on"  data-pg="p-geral"    onclick="go(this)"><span class="nav-ic">&#127968;</span>Visão Geral</div>
-    <div class="nav-i"     data-pg="p-talento"   onclick="go(this)"><span class="nav-ic">&#128200;</span>Talento &amp; Pipeline</div>
-    <div class="nav-i"     data-pg="p-remuner"   onclick="go(this)"><span class="nav-ic">&#128178;</span>Remuneração</div>
-    <div class="nav-i"     data-pg="p-retencao"  onclick="go(this)"><span class="nav-ic">&#128100;</span>Retenção</div>
-    <div class="nav-i"     data-pg="p-lider"     onclick="go(this)"><span class="nav-ic">&#128081;</span>Liderança</div>
-    <div class="nav-i"     data-pg="p-di"        onclick="go(this)"><span class="nav-ic">&#10084;</span>Diversidade &amp; Inclusão</div>
-    <div class="nav-i"     data-pg="p-sim"       onclick="go(this)"><span class="nav-ic">&#127919;</span>Simulador RH</div>
-    <div class="nav-i"     data-pg="p-metod"     onclick="go(this)"><span class="nav-ic">&#128196;</span>Dados &amp; Metodologia</div>
+    <div class="nav-group-label">Análise</div>
+    <div class="nav-i on" data-pg="p-geral"    onclick="go(this)"><span class="nav-ic">◻</span>Visão Geral</div>
+    <div class="nav-i"    data-pg="p-talento"   onclick="go(this)"><span class="nav-ic">◈</span>Talento &amp; Pipeline</div>
+    <div class="nav-i"    data-pg="p-remuner"   onclick="go(this)"><span class="nav-ic">◎</span>Remuneração</div>
+    <div class="nav-i"    data-pg="p-retencao"  onclick="go(this)"><span class="nav-ic">◷</span>Retenção</div>
+    <div class="nav-i"    data-pg="p-lider"     onclick="go(this)"><span class="nav-ic">◇</span>Liderança</div>
+    <div class="nav-group-label">Estratégia</div>
+    <div class="nav-i"    data-pg="p-di"        onclick="go(this)"><span class="nav-ic">◉</span>Diversidade &amp; Inclusão</div>
+    <div class="nav-i"    data-pg="p-sim"       onclick="go(this)"><span class="nav-ic">◫</span>Simulador RH</div>
+    <div class="nav-group-label">Referência</div>
+    <div class="nav-i"    data-pg="p-metod"     onclick="go(this)"><span class="nav-ic">◻</span>Dados &amp; Metodologia</div>
   </nav>
+
   <div class="sb-foot">
-    <div class="sb-img">&#9792;&#128101;</div>
-    <p class="sb-quote">"Mais mulheres na tecnologia,<br>mais inovação para o futuro."</p>
+    <p class="sb-quote">"Mais mulheres na tecnologia,<br><strong>mais inovação para o futuro.</strong>"</p>
   </div>
 </aside>
 
@@ -154,104 +373,186 @@ body{background:var(--bg);color:var(--txt);display:flex;min-height:100vh;}
 <main class="main">
 
 <div class="topbar">
-  <div>
+  <div class="tb-left">
     <div class="tb-tit" id="tb-tit">Visão Geral</div>
     <div class="tb-sub" id="tb-sub">Panorama da presença feminina no mercado de tecnologia</div>
   </div>
   <div class="tb-btns">
-    <button class="btn-period">&#128197; Período: 2019–2022 &#9660;</button>
-    <button class="btn-filter">&#9878; Filtros</button>
+    <button class="btn-period">&#128197; 2019–2022 &#9660;</button>
+    <button class="btn-filter">&#9878;&#xFE0E; Filtros</button>
   </div>
 </div>
 
-<!-- ══════════════════════════════════
-     VISÃO GERAL
-══════════════════════════════════ -->
+<!-- ══════ VISÃO GERAL ══════ -->
 <section class="pg on" id="p-geral">
 
   <div class="kpi-row">
     <div class="kpi">
-      <div class="kpi-ic ic-pk">&#128101;</div>
-      <div><div class="kpi-lbl">Total de Mulheres</div><div class="kpi-val pk">173</div><div class="kpi-note">34,6% do total da amostra</div></div>
+      <div class="kpi-ic ic-pk">♀</div>
+      <div>
+        <div class="kpi-lbl">Total de Mulheres</div>
+        <div class="kpi-val pk">173</div>
+        <div class="kpi-note">34,6% do total da amostra</div>
+      </div>
     </div>
     <div class="kpi">
-      <div class="kpi-ic ic-bl">&#128182;</div>
-      <div><div class="kpi-lbl">Gender Pay Gap</div><div class="kpi-val">~27%</div><div class="kpi-note">Salário médio fem. vs. masc.</div></div>
+      <div class="kpi-ic ic-bl">≠</div>
+      <div>
+        <div class="kpi-lbl">Gender Pay Gap</div>
+        <div class="kpi-val bl">~24%</div>
+        <div class="kpi-note">Salário médio fem. vs. masc.</div>
+      </div>
     </div>
     <div class="kpi">
-      <div class="kpi-ic ic-pu">&#128081;</div>
-      <div><div class="kpi-lbl">Representação em Liderança</div><div class="kpi-val pk">28–40%</div><div class="kpi-note">Mulheres em Gerência, Diretoria e CTO</div></div>
+      <div class="kpi-ic ic-pk">▲</div>
+      <div>
+        <div class="kpi-lbl">Representação em Liderança</div>
+        <div class="kpi-val pk">28–40%</div>
+        <div class="kpi-note">Gerência, Diretoria e CTO/CIO</div>
+      </div>
     </div>
     <div class="kpi">
-      <div class="kpi-ic ic-gr">&#127919;</div>
-      <div><div class="kpi-lbl">Vagas D&amp;I Ativas</div><div class="kpi-val gr">10,5%</div><div class="kpi-note">21 de 200 vagas (LinkedIn)</div></div>
+      <div class="kpi-ic ic-gr">✓</div>
+      <div>
+        <div class="kpi-lbl">Vagas D&amp;I Ativas</div>
+        <div class="kpi-val gr">10,5%</div>
+        <div class="kpi-note">21 de 200 vagas — LinkedIn</div>
+      </div>
     </div>
   </div>
 
   <div class="g2">
     <!-- FUNNEL -->
     <div class="cd">
-      <div class="cd-tit">Funil de Talentos &#9432;</div>
-      <div class="cd-sub">Da Universidade ao Executivo</div>
-      <div class="fn-row"><div class="fn-bar" style="background:#FBCFE8;color:#831843">&#127891; Universidade</div><span class="fn-pct">22%</span></div>
-      <div class="fn-row"><div class="fn-bar" style="background:#F9A8D4;color:#831843;margin:0 5%">&#128188; Estágio / Trainee</div><span class="fn-pct">32%</span></div>
-      <div class="fn-row"><div class="fn-bar" style="background:#F472B6;color:#fff;margin:0 10%">&#128187; Profissional Júnior</div><span class="fn-pct">43,5%</span></div>
-      <div class="fn-row"><div class="fn-bar" style="background:#E91E8C;color:#fff;margin:0 15%">&#128187; Profissional Pleno</div><span class="fn-pct">46,2%</span></div>
-      <div class="fn-row"><div class="fn-bar" style="background:#9D174D;color:#fff;margin:0 20%">&#128101; Gerência / Especialista</div><span class="fn-pct">36–40%</span></div>
-      <div class="fn-row"><div class="fn-bar" style="background:#4C1130;color:#fff;margin:0 25%">&#128081; Execução / C-Level</div><span class="fn-pct">29–32%</span></div>
+      <div class="cd-tit">Funil de Talentos</div>
+      <div class="cd-sub">% de participação feminina — da universidade ao executivo</div>
+      <div class="fn-wrap">
+        <div class="fn-row">
+          <div class="fn-bar" style="background:#FCE7F3;color:#9D174D">Universidade</div>
+          <span class="fn-pct">22%</span>
+        </div>
+        <div class="fn-row">
+          <div class="fn-bar" style="background:#FBCFE8;color:#9D174D;margin:0 4%">Estágio / Trainee</div>
+          <span class="fn-pct">33%</span>
+        </div>
+        <div class="fn-row">
+          <div class="fn-bar" style="background:#F9A8D4;color:#831843;margin:0 8%">Profissional Júnior</div>
+          <span class="fn-pct">33%</span>
+        </div>
+        <div class="fn-row">
+          <div class="fn-bar" style="background:#F472B6;color:#fff;margin:0 12%">Profissional Pleno</div>
+          <span class="fn-pct">32%</span>
+        </div>
+        <div class="fn-row">
+          <div class="fn-bar" style="background:#EC4899;color:#fff;margin:0 16%">Gerência / Especialista</div>
+          <span class="fn-pct">37–40%</span>
+        </div>
+        <div class="fn-row">
+          <div class="fn-bar" style="background:#9D174D;color:#fff;margin:0 20%">Execução / C-Level</div>
+          <span class="fn-pct">29–32%</span>
+        </div>
+      </div>
     </div>
-    <!-- SALARY -->
+
+    <!-- SALARY CHART -->
     <div class="cd">
-      <div class="cd-tit">Comparativo de Salários por Cargo &#9432;</div>
-      <div class="cd-sub">Salário médio (R$) — <span style="color:var(--pk)">&#9679; Mulheres</span> &nbsp;<span style="color:var(--sb)">&#9679; Homens</span></div>
-      <div id="cv-sal" style="height:270px"></div>
+      <div class="cd-tit">Salários por Área</div>
+      <div class="cd-sub" style="display:flex;gap:1rem">
+        <span class="legend-dot leg-f">Mulheres</span>
+        <span class="legend-dot leg-m">Homens</span>
+      </div>
+      <div id="cv-sal" style="height:265px"></div>
     </div>
   </div>
 
   <div class="g3-1">
     <div class="cd">
-      <div class="cd-tit">Taxa de Permanência ao Longo do Tempo &#9432;</div>
-      <div class="cd-sub">% de estudantes que não evadiram — por gênero (2019–2022)</div>
-      <div id="cv-ret" style="height:210px"></div>
+      <div class="cd-tit">Taxa de Permanência ao Longo do Tempo</div>
+      <div class="cd-sub" style="display:flex;gap:1rem">
+        <span class="legend-dot leg-f">Mulheres</span>
+        <span class="legend-dot leg-m">Homens</span>
+      </div>
+      <div id="cv-ret" style="height:205px"></div>
     </div>
     <div class="cd">
-      <div class="cd-tit">Em destaque</div>
-      <div class="hl" style="margin-top:.6rem"><div class="hl-ic ic-pk">&#11088;</div><div class="hl-txt"><strong>+25% de lucratividade</strong>Empresas diversas superam a média do setor (McKinsey, 2021).</div></div>
-      <div class="hl"><div class="hl-ic" style="background:#FFF3E0">&#128176;</div><div class="hl-txt"><strong>Gap salarial persistente</strong>Produto (45,7%) e Gestão (35%) têm os maiores gaps por setor — mesmo com mulheres em todos os níveis.</div></div>
-      <div class="hl"><div class="hl-ic ic-gr">&#9992;</div><div class="hl-txt"><strong>Evasão feminina sobe</strong>De 71,7% (2019) para 83,6% (2022) — tendência oposta à masculina.</div></div>
+      <div class="cd-tit">Destaques</div>
+      <div style="margin-top:.6rem">
+        <div class="hl">
+          <div class="hl-ic" style="background:var(--pink-pale)">+</div>
+          <div class="hl-txt"><strong>+25% de lucratividade</strong>Empresas diversas superam a média do setor — McKinsey (2021).</div>
+        </div>
+        <div class="hl">
+          <div class="hl-ic" style="background:#FFFBEB">!</div>
+          <div class="hl-txt"><strong>Gap salarial estrutural</strong>Setor Produto (45,7%) e Gestão (35%) — maior disparidade observada.</div>
+        </div>
+        <div class="hl">
+          <div class="hl-ic" style="background:#ECFDF5">↑</div>
+          <div class="hl-txt"><strong>Promoção feminina supera masculina</strong>16,8% fem. vs 14,7% masc. — dado positivo na amostra.</div>
+        </div>
+      </div>
     </div>
   </div>
 
 </section>
 
-<!-- ══════════════════════════════════
-     TALENTO & PIPELINE
-══════════════════════════════════ -->
+<!-- ══════ TALENTO & PIPELINE ══════ -->
 <section class="pg" id="p-talento">
-  <div class="cd g1"><div class="cd-tit">Funil Completo de Talentos</div><div class="cd-sub">Participação feminina (%) em cada etapa — da universidade ao C-Level</div><div id="ct-fun" style="height:340px"></div></div>
-  <div class="cd"><div class="cd-tit">Distribuição por Nível Hierárquico</div><div class="cd-sub">Número de profissionais por gênero em cada cargo</div><div id="ct-pir" style="height:300px"></div></div>
+  <div class="cd g1">
+    <div class="cd-tit">Funil Completo de Talentos</div>
+    <div class="cd-sub">Participação feminina (%) em cada etapa — da universidade ao C-Level</div>
+    <div id="ct-fun" style="height:340px"></div>
+  </div>
+  <div class="cd">
+    <div class="cd-tit">Distribuição por Nível Hierárquico</div>
+    <div class="cd-sub" style="display:flex;gap:1rem">
+      <span class="legend-dot leg-f">Mulheres</span>
+      <span class="legend-dot leg-m">Homens</span>
+    </div>
+    <div id="ct-pir" style="height:295px"></div>
+  </div>
 </section>
 
-<!-- ══════════════════════════════════
-     REMUNERAÇÃO
-══════════════════════════════════ -->
+<!-- ══════ REMUNERAÇÃO ══════ -->
 <section class="pg" id="p-remuner">
-  <div class="cd g1"><div class="cd-tit">Pay Gap por Nível Hierárquico</div><div class="cd-sub">Salário médio (R$) — cargos com representação feminina no dataset</div><div id="cr-car" style="height:300px"></div></div>
-  <div class="cd"><div class="cd-tit">Pay Gap por Setor de Atuação</div><div class="cd-sub">Salário médio (R$) por área de especialização</div><div id="cr-set" style="height:280px"></div></div>
+  <div class="cd g1">
+    <div class="cd-tit">Pay Gap por Nível Hierárquico</div>
+    <div class="cd-sub" style="display:flex;gap:1rem">
+      <span class="legend-dot leg-f">Mulheres</span>
+      <span class="legend-dot leg-m">Homens</span>
+    </div>
+    <div id="cr-car" style="height:295px"></div>
+  </div>
+  <div class="cd">
+    <div class="cd-tit">Pay Gap por Setor de Atuação</div>
+    <div class="cd-sub" style="display:flex;gap:1rem">
+      <span class="legend-dot leg-f">Mulheres</span>
+      <span class="legend-dot leg-m">Homens</span>
+    </div>
+    <div id="cr-set" style="height:275px"></div>
+  </div>
 </section>
 
-<!-- ══════════════════════════════════
-     RETENÇÃO
-══════════════════════════════════ -->
+<!-- ══════ RETENÇÃO ══════ -->
 <section class="pg" id="p-retencao">
   <div class="g2">
-    <div class="cd"><div class="cd-tit">Ingressantes vs. Concluintes Femininas</div><div class="cd-sub">% de mulheres em cada etapa — INEP mock, Sudeste (2019–2022)</div><div id="cret-con" style="height:240px"></div></div>
-    <div class="cd"><div class="cd-tit">Taxa de Evasão por Gênero</div><div class="cd-sub">% estimado de evasão em TIC (2019–2022)</div><div id="cret-ev" style="height:240px"></div></div>
+    <div class="cd">
+      <div class="cd-tit">Ingressantes vs. Concluintes Femininas</div>
+      <div class="cd-sub">% de mulheres em TIC — INEP mock, Sudeste (2019–2022)</div>
+      <div id="cret-con" style="height:235px"></div>
+    </div>
+    <div class="cd">
+      <div class="cd-tit">Taxa de Evasão por Gênero</div>
+      <div class="cd-sub" style="display:flex;gap:1rem">
+        <span class="legend-dot leg-f">Feminina</span>
+        <span class="legend-dot leg-m">Masculina</span>
+      </div>
+      <div id="cret-ev" style="height:235px"></div>
+    </div>
   </div>
   <div class="cd">
     <div class="cd-tit">Por que mulheres deixam a área de tecnologia?</div>
-    <div class="cd-sub">Principais fatores — pesquisa qualitativa Tech4Humans (2025)</div>
-    <div class="info-box">&#9432; Dados qualitativos de pesquisa de campo — não derivados do dataset do projeto.</div>
+    <div class="cd-sub">Pesquisa qualitativa — Tech4Humans (2025)</div>
+    <div class="info-box">Dados qualitativos de pesquisa de campo — não derivados do dataset do projeto.</div>
     <div class="mot-grid">
       <div class="mot"><div class="mot-pct">67%</div><div class="mot-txt">Ambiente hostil e cultura "bro culture"</div><div class="mot-bar"><div class="mot-fill" style="width:67%"></div></div></div>
       <div class="mot"><div class="mot-pct">58%</div><div class="mot-txt">Falta de representatividade na liderança</div><div class="mot-bar"><div class="mot-fill" style="width:58%"></div></div></div>
@@ -263,256 +564,340 @@ body{background:var(--bg);color:var(--txt);display:flex;min-height:100vh;}
   </div>
 </section>
 
-<!-- ══════════════════════════════════
-     LIDERANÇA
-══════════════════════════════════ -->
+<!-- ══════ LIDERANÇA ══════ -->
 <section class="pg" id="p-lider">
-  <div class="cd g1"><div class="cd-tit">Pirâmide de Liderança por Gênero</div><div class="cd-sub">Distribuição por cargo — mulheres presentes em todos os níveis, incluindo Diretoria e CTO/CIO</div><div id="cl-pir" style="height:360px"></div></div>
+  <div class="cd g1">
+    <div class="cd-tit">Pirâmide de Liderança por Gênero</div>
+    <div class="cd-sub">Mulheres presentes em todos os níveis hierárquicos — incluindo Diretoria e CTO/CIO</div>
+    <div id="cl-pir" style="height:355px"></div>
+  </div>
   <div class="kpi-row">
-    <div class="kpi"><div class="kpi-ic ic-pk">&#128200;</div><div><div class="kpi-lbl">Promoção Feminina</div><div class="kpi-val pk">16,8%</div><div class="kpi-note">vs. 14,7% masculino &#128200;</div></div></div>
-    <div class="kpi"><div class="kpi-ic ic-bl">&#128101;</div><div><div class="kpi-lbl">Gerência — Mulheres</div><div class="kpi-val gr">10</div><div class="kpi-note">de 25 profissionais (40%)</div></div></div>
-    <div class="kpi"><div class="kpi-ic ic-pu">&#128081;</div><div><div class="kpi-lbl">CTO/CIO — Mulheres</div><div class="kpi-val">2</div><div class="kpi-note">de 7 profissionais (28,6%)</div></div></div>
-    <div class="kpi"><div class="kpi-ic ic-gr">&#128176;</div><div><div class="kpi-lbl">Maior Gap Salarial</div><div class="kpi-val" style="color:#ea580c">45,7%</div><div class="kpi-note">Setor Produto — gap persistente</div></div></div>
+    <div class="kpi"><div class="kpi-ic ic-gr">↑</div><div><div class="kpi-lbl">Promoção Feminina</div><div class="kpi-val gr">16,8%</div><div class="kpi-note">vs. 14,7% masculino</div></div></div>
+    <div class="kpi"><div class="kpi-ic ic-pk">♀</div><div><div class="kpi-lbl">Gerência — Mulheres</div><div class="kpi-val pk">10</div><div class="kpi-note">de 25 profissionais (40%)</div></div></div>
+    <div class="kpi"><div class="kpi-ic ic-bl">▲</div><div><div class="kpi-lbl">CTO/CIO — Mulheres</div><div class="kpi-val bl">2</div><div class="kpi-note">de 7 profissionais (28,6%)</div></div></div>
+    <div class="kpi"><div class="kpi-ic ic-neu">!</div><div><div class="kpi-lbl">Maior Gap Salarial</div><div class="kpi-val or">45,7%</div><div class="kpi-note">Setor Produto</div></div></div>
   </div>
 </section>
 
-<!-- ══════════════════════════════════
-     DIVERSIDADE & INCLUSÃO
-══════════════════════════════════ -->
+<!-- ══════ D&I ══════ -->
 <section class="pg" id="p-di">
   <div class="roi-grid">
-    <div class="roi-cd"><div class="roi-val gr">+25%</div><div class="roi-desc">mais chances de lucro acima da média do setor em empresas com alta diversidade de gênero na liderança</div><div class="roi-src">McKinsey — Women in the Workplace (2021)</div></div>
-    <div class="roi-cd"><div class="roi-val pk">+21%</div><div class="roi-desc">de lucratividade em empresas com maior representação feminina em cargos executivos</div><div class="roi-src">McKinsey — Women in the Workplace (2021)</div></div>
-    <div class="roi-cd"><div class="roi-val or">+15%</div><div class="roi-desc">de inovações patenteadas em equipes com maior participação feminina em funções técnicas</div><div class="roi-src">Tech4Humans — Mulheres na Tecnologia (2025)</div></div>
-    <div class="roi-cd"><div class="roi-val">87%</div><div class="roi-desc">das decisões tomadas por equipes diversas são mais eficazes — menor viés cognitivo e mais pontos de vista</div><div class="roi-src">McKinsey — Women in the Workplace (2021)</div></div>
+    <div class="roi-cd"><div class="roi-val gr">+25%</div><div class="roi-desc">mais chances de lucro acima da média do setor em empresas com diversidade de gênero na liderança</div><div class="roi-src">McKinsey — Women in the Workplace (2021)</div></div>
+    <div class="roi-cd" style="border-top-color:var(--pink)"><div class="roi-val pk">+21%</div><div class="roi-desc">de lucratividade em empresas com maior representação feminina em cargos executivos</div><div class="roi-src">McKinsey — Women in the Workplace (2021)</div></div>
+    <div class="roi-cd" style="border-top-color:#D97706"><div class="roi-val or">+15%</div><div class="roi-desc">de inovações patenteadas em equipes com maior participação feminina em funções técnicas</div><div class="roi-src">Tech4Humans — Mulheres na Tecnologia (2025)</div></div>
+    <div class="roi-cd"><div class="roi-val">87%</div><div class="roi-desc">das decisões de equipes diversas são mais eficazes — menor viés cognitivo e mais perspectivas</div><div class="roi-src">McKinsey — Women in the Workplace (2021)</div></div>
   </div>
-  <div class="cd"><div class="cd-tit">Vagas com Iniciativa D&amp;I — LinkedIn (cedido pela Generation Brasil)</div><div class="cd-sub">Classificação das 200 vagas coletadas — período ago/2025 a mai/2026</div><div id="cdi-pie" style="height:280px"></div></div>
+  <div class="cd">
+    <div class="cd-tit">Vagas com Iniciativa D&amp;I — LinkedIn</div>
+    <div class="cd-sub">Dataset cedido pela Generation Brasil — ago/2025 a mai/2026 (200 vagas)</div>
+    <div id="cdi-pie" style="height:270px"></div>
+  </div>
 </section>
 
-<!-- ══════════════════════════════════
-     SIMULADOR RH
-══════════════════════════════════ -->
+<!-- ══════ SIMULADOR RH ══════ -->
 <section class="pg" id="p-sim">
   <div class="cd">
-    <div class="cd-tit">&#127919; Simulador RH — Pay Gap por Cargo</div>
+    <div class="cd-tit">Simulador RH — Pay Gap por Cargo</div>
     <div class="cd-sub">Selecione um cargo para comparar salários e visualizar o histórico de formação feminina em TIC.</div>
     <div class="sim-ctrl">
-      <div><label for="sel-c">Nível / Cargo</label>
-      <select id="sel-c" onchange="upSim()">
-        <option value="Estagiario">Estagiário</option>
-        <option value="Junior" selected>Júnior</option>
-        <option value="Pleno">Pleno</option>
-        <option value="Senior">Sênior</option>
-        <option value="Especialista">Especialista</option>
-        <option value="Gerente">Gerente</option>
-        <option value="Diretor">Diretor</option>
-        <option value="CTO/CIO">CTO / CIO</option>
-      </select></div>
+      <div>
+        <label for="sel-c">Nível / Cargo</label>
+        <select id="sel-c" onchange="upSim()">
+          <option value="Estagiario">Estagiário</option>
+          <option value="Junior" selected>Júnior</option>
+          <option value="Pleno">Pleno</option>
+          <option value="Senior">Sênior</option>
+          <option value="Especialista">Especialista</option>
+          <option value="Gerente">Gerente</option>
+          <option value="Diretor">Diretor</option>
+          <option value="CTO/CIO">CTO / CIO</option>
+        </select>
+      </div>
     </div>
-    <div class="warn-box" id="sim-warn">&#9888; Nenhuma mulher identificada neste nível no dataset. O gap de 100% reflete ausência total de representação feminina.</div>
+    <div class="warn-box" id="sim-warn">Nenhuma mulher identificada neste nível. O gap reflete ausência de representação — não paridade salarial.</div>
     <div class="sim-res">
-      <div class="sim-c f"><div class="sim-v" id="sv-f" style="color:var(--pk)">—</div><div class="sim-l">Salário médio Feminino</div></div>
-      <div class="sim-c m"><div class="sim-v" id="sv-m" style="color:var(--sb)">—</div><div class="sim-l">Salário médio Masculino</div></div>
-      <div class="sim-c g"><div class="sim-v" id="sv-g" style="color:#ea580c">—</div><div class="sim-l">Pay Gap</div></div>
+      <div class="sim-c f"><div class="sim-v" id="sv-f" style="color:var(--pink)">—</div><div class="sim-l">Salário médio Feminino</div></div>
+      <div class="sim-c m"><div class="sim-v" id="sv-m" style="color:var(--blue)">—</div><div class="sim-l">Salário médio Masculino</div></div>
+      <div class="sim-c g"><div class="sim-v" id="sv-g" style="color:#D97706">—</div><div class="sim-l">Pay Gap</div></div>
       <div class="sim-c p"><div class="sim-v" id="sv-p" style="color:#059669">—</div><div class="sim-l">% Mulheres no Cargo</div></div>
     </div>
-    <p style="font-size:.75rem;color:var(--muted);margin-bottom:.5rem">&#128197; Histórico de formação feminina em TIC — INEP mock (Sudeste, 2019–2022)</p>
-    <div id="csim-h" style="height:220px"></div>
+    <p style="font-size:.68rem;color:var(--muted);margin-bottom:.5rem">Histórico de formação feminina em TIC — INEP mock (Sudeste, 2019–2022)</p>
+    <div id="csim-h" style="height:215px"></div>
   </div>
 </section>
 
-<!-- ══════════════════════════════════
-     DADOS & METODOLOGIA
-══════════════════════════════════ -->
+<!-- ══════ METODOLOGIA ══════ -->
 <section class="pg" id="p-metod">
   <div class="cd">
     <div class="cd-tit">Fontes e Metodologia</div>
-    <div class="cd-sub">Todos os datasets são pedagógicos/simulados, baseados nos relatórios reais abaixo.</div>
+    <div class="cd-sub">Todos os datasets são pedagógicos/simulados, baseados nos relatórios reais listados abaixo.</div>
     <ul class="src-list" style="margin-top:.85rem">
       <li><strong>base_campus_ti_brasil.csv</strong> — 1.000 registros individuais de estudantes. Dataset simulado (ref.: INEP — Censo da Educação Superior). Cobertura: Sudeste (USP, UFRJ, UFMG, PUC-SP, FIAP, FATEC, Insper). Anos: 2019–2022.</li>
-      <li><strong>base_mercado_tech_brasil.csv</strong> — 861 registros de profissionais de TI. Dataset simulado (ref.: Brasscom — Relatório de Diversidade 2025; Tech4Humans — Artigo Mulheres na Tecnologia; McKinsey — Women in the Workplace 2021).</li>
+      <li><strong>base_mercado_tech_brasil.csv</strong> — 500 registros de profissionais de TI. Dataset simulado (ref.: Brasscom — Relatório de Diversidade 2025; Tech4Humans — Artigo Mulheres na Tecnologia; McKinsey — Women in the Workplace 2021).</li>
       <li><strong>generation_linkedin_vagas_tecnologia.csv</strong> — 200 vagas de tecnologia. Dataset de webscraping <strong>cedido pela Generation Brasil</strong> ao projeto. Período: ago/2025 a mai/2026.</li>
-      <li><strong>Tech4Humans (2025)</strong> — Dados qualitativos sobre motivos de evasão (seção Retenção). Utilizados como referência, não integrados ao dataset.</li>
-      <li><strong>McKinsey — Women in the Workplace (2021)</strong> — Estatísticas de ROI de diversidade (seção D&amp;I). Valores hardcoded.</li>
+      <li><strong>Tech4Humans (2025)</strong> — Dados qualitativos sobre motivos de evasão (seção Retenção). Utilizados como referência qualitativa, não integrados ao dataset.</li>
+      <li><strong>McKinsey — Women in the Workplace (2021)</strong> — Estatísticas de ROI de diversidade (seção D&amp;I).</li>
     </ul>
-    <div class="info-box" style="margin-top:.85rem">&#9888; Limitações: cobertura geográfica restrita ao Sudeste (dados de câmpus), ausência de microdados reais de empresas, matrículas aproximadas por ingressantes no mock INEP.</div>
+    <div class="info-box" style="margin-top:.85rem">Limitações: cobertura geográfica restrita ao Sudeste (campus), ausência de microdados reais de empresas, matrículas aproximadas por ingressantes no mock INEP.</div>
   </div>
 </section>
 
-</main><!-- /main -->
+</main>
 
 <script>
 /* ── DATA ── */
-const CD={
-  Estagiario:  {sf:1895, sm:2587, gap:26.7, nf:26, nm:52, pct:33.3},
-  Junior:      {sf:3841, sm:5275, gap:27.2, nf:45, nm:90, pct:33.3},
-  Pleno:       {sf:7091, sm:8996, gap:21.2, nf:37, nm:80, pct:31.6},
-  Senior:      {sf:11056,sm:15111,gap:26.8, nf:26, nm:35, pct:42.6},
-  Especialista:{sf:13983,sm:18439,gap:24.2, nf:19, nm:33, pct:36.5},
-  Gerente:     {sf:18150,sm:23978,gap:24.3, nf:10, nm:15, pct:40.0},
-  Diretor:     {sf:27997,sm:34845,gap:19.7, nf:8,  nm:17, pct:32.0},
-  'CTO/CIO':   {sf:47656,sm:53722,gap:11.3, nf:2,  nm:5,  pct:28.6}
+const CD = {
+  Estagiario:  {sf:1895,  sm:2587,  gap:26.7, nf:26, nm:52,  pct:33.3},
+  Junior:      {sf:3841,  sm:5275,  gap:27.2, nf:45, nm:90,  pct:33.3},
+  Pleno:       {sf:7091,  sm:8996,  gap:21.2, nf:37, nm:80,  pct:31.6},
+  Senior:      {sf:11056, sm:15111, gap:26.8, nf:26, nm:35,  pct:42.6},
+  Especialista:{sf:13983, sm:18439, gap:24.2, nf:19, nm:33,  pct:36.5},
+  Gerente:     {sf:18150, sm:23978, gap:24.3, nf:10, nm:15,  pct:40.0},
+  Diretor:     {sf:27997, sm:34845, gap:19.7, nf:8,  nm:17,  pct:32.0},
+  'CTO/CIO':   {sf:47656, sm:53722, gap:11.3, nf:2,  nm:5,   pct:28.6}
 };
-const CK=['Estagiario','Junior','Pleno','Senior','Especialista','Gerente','Diretor','CTO/CIO'];
-const CL=['Estagiário','Júnior','Pleno','Sênior','Especialista','Gerente','Diretor','CTO/CIO'];
-const SL=['Desenvolv.','Dados','Gestão','Infra.','Produto','UX/UI'];
-const SF=[10927, 9707,  7193,  9248,  6538,  8903 ];
-const SM=[12657, 10332, 11065, 11131, 12043, 10815];
-const SG=[13.7,  6.0,   35.0,  16.9,  45.7,  17.7 ];
-const ANOS=[2019,2020,2021,2022];
-const PIF=[23.0,18.6,18.1,21.7];
-const PCF=[25.4,22.9,14.1,13.0];
-const EF=[71.7,63.6,77.8,83.6];
-const EM=[75.1,72.0,70.1,69.7];
-const PERMF=EF.map(v=>+(100-v).toFixed(1));
-const PERMM=EM.map(v=>+(100-v).toFixed(1));
+const CK = ['Estagiario','Junior','Pleno','Senior','Especialista','Gerente','Diretor','CTO/CIO'];
+const CL = ['Estagiário','Júnior','Pleno','Sênior','Especialista','Gerente','Diretor','CTO/CIO'];
+const SL = ['Desenvolv.','Dados','Gestão','Infra.','Produto','UX/UI'];
+const SF = [10927, 9707,  7193,  9248,  6538,  8903 ];
+const SM = [12657, 10332, 11065, 11131, 12043, 10815];
+const SG = [13.7,  6.0,   35.0,  16.9,  45.7,  17.7 ];
+const ANOS = [2019, 2020, 2021, 2022];
+const PIF  = [23.0, 18.6, 18.1, 21.7];
+const PCF  = [25.4, 22.9, 14.1, 13.0];
+const EF   = [71.7, 63.6, 77.8, 83.6];
+const EM   = [75.1, 72.0, 70.1, 69.7];
+const PERMF = EF.map(v => +(100 - v).toFixed(1));
+const PERMM = EM.map(v => +(100 - v).toFixed(1));
 
-const C={displayModeBar:false,responsive:true};
-const F={family:"'Segoe UI',system-ui,sans-serif",size:11};
-const PK='#E91E8C', NV='#0D1B3E';
+const BLUE = '#1D4ED8', PINK = '#EC4899';
+const C = {displayModeBar: false, responsive: true};
+const F = {family: "'Inter', system-ui, sans-serif", size: 11, color: '#334155'};
+const AX = {gridcolor: '#F1F5F9', zerolinecolor: '#E2E8F0'};
 
 /* ── NAV ── */
-const TITLES={
-  'p-geral':   ['Visão Geral','Panorama da presença feminina no mercado de tecnologia'],
-  'p-talento': ['Talento & Pipeline','Funil completo de talentos — do câmpus ao mercado'],
-  'p-remuner': ['Remuneração','Disparidade salarial de gênero em TI'],
-  'p-retencao':['Retenção','Conclusão de cursos e motivos de evasão'],
-  'p-lider':   ['Liderança','Colapso da representação feminina nos cargos de gestão'],
-  'p-di':      ['Diversidade & Inclusão','ROI da diversidade e vagas com iniciativa D&I'],
-  'p-sim':     ['Simulador RH','Explore o pay gap e a formação feminina por cargo'],
-  'p-metod':   ['Dados & Metodologia','Fontes, premissas e limitações do projeto']
+const TITLES = {
+  'p-geral':    ['Visão Geral',             'Panorama da presença feminina no mercado de tecnologia'],
+  'p-talento':  ['Talento & Pipeline',      'Funil completo — do câmpus ao mercado'],
+  'p-remuner':  ['Remuneração',             'Disparidade salarial de gênero em TI'],
+  'p-retencao': ['Retenção',                'Conclusão de cursos e motivos de evasão'],
+  'p-lider':    ['Liderança',               'Representação feminina nos cargos de gestão'],
+  'p-di':       ['Diversidade & Inclusão',  'ROI da diversidade e vagas com iniciativa D&I'],
+  'p-sim':      ['Simulador RH',            'Explore o pay gap e a formação feminina por cargo'],
+  'p-metod':    ['Dados & Metodologia',     'Fontes, premissas e limitações do projeto']
 };
-const inited={};
+const inited = {};
 
-function go(el){
-  document.querySelectorAll('.nav-i').forEach(n=>n.classList.remove('on'));
-  document.querySelectorAll('.pg').forEach(p=>p.classList.remove('on'));
+function go(el) {
+  document.querySelectorAll('.nav-i').forEach(n => n.classList.remove('on'));
+  document.querySelectorAll('.pg').forEach(p => p.classList.remove('on'));
   el.classList.add('on');
-  const id=el.dataset.pg;
+  const id = el.dataset.pg;
   document.getElementById(id).classList.add('on');
-  const t=TITLES[id];
-  document.getElementById('tb-tit').textContent=t[0];
-  document.getElementById('tb-sub').textContent=t[1];
-  if(!inited[id]){inited[id]=true; lazy(id);}
+  const t = TITLES[id];
+  document.getElementById('tb-tit').textContent = t[0];
+  document.getElementById('tb-sub').textContent = t[1];
+  if (!inited[id]) { inited[id] = true; lazy(id); }
 }
 
-/* ── INIT VISÃO GERAL ── */
-inited['p-geral']=true;
-Plotly.newPlot('cv-sal',[
-  {type:'bar',name:'Mulheres',x:SL,y:SF,marker:{color:PK},hovertemplate:'<b>%{x}</b><br>Fem: R$ %{y:,.0f}<extra></extra>'},
-  {type:'bar',name:'Homens',  x:SL,y:SM,marker:{color:NV},hovertemplate:'<b>%{x}</b><br>Masc: R$ %{y:,.0f}<extra></extra>'}
-],{barmode:'group',xaxis:{tickfont:{size:10}},yaxis:{tickformat:',.0f',tickprefix:'R$ ',gridcolor:'#f0f0f0',tickfont:{size:10}},
-  legend:{orientation:'h',y:-0.35,font:{size:10}},margin:{l:65,r:10,t:8,b:80},
-  plot_bgcolor:'#fff',paper_bgcolor:'#fff',font:F},C);
+/* ── VISÃO GERAL (init on load) ── */
+inited['p-geral'] = true;
 
-Plotly.newPlot('cv-ret',[
-  {type:'scatter',mode:'lines+markers',name:'Mulheres',x:ANOS,y:PERMF,line:{color:PK,width:3},marker:{size:8},hovertemplate:'%{x}<br>Perm. fem: %{y}%<extra></extra>'},
-  {type:'scatter',mode:'lines+markers',name:'Homens',  x:ANOS,y:PERMM,line:{color:NV,width:3,dash:'dot'},marker:{size:8},hovertemplate:'%{x}<br>Perm. masc: %{y}%<extra></extra>'}
-],{xaxis:{tickvals:ANOS,gridcolor:'#f0f0f0'},yaxis:{title:'% Permanência',range:[0,45],gridcolor:'#f0f0f0',tickfont:{size:10}},
-  legend:{orientation:'h',y:-0.4,font:{size:10}},margin:{l:55,r:10,t:8,b:60},
-  plot_bgcolor:'#fff',paper_bgcolor:'#fff',font:F},C);
+Plotly.newPlot('cv-sal', [
+  {type:'bar', name:'Mulheres', x:SL, y:SF, marker:{color:PINK},
+   hovertemplate:'<b>%{x}</b><br>Fem: R$ %{y:,.0f}<extra></extra>'},
+  {type:'bar', name:'Homens',   x:SL, y:SM, marker:{color:BLUE},
+   hovertemplate:'<b>%{x}</b><br>Masc: R$ %{y:,.0f}<extra></extra>'}
+], {
+  barmode: 'group', showlegend: false,
+  xaxis: {tickfont:{size:10}, ...AX},
+  yaxis: {tickformat:',.0f', tickprefix:'R$ ', gridcolor:AX.gridcolor, tickfont:{size:10}},
+  margin: {l:65, r:10, t:8, b:65},
+  plot_bgcolor:'#fff', paper_bgcolor:'#fff', font:F
+}, C);
+
+Plotly.newPlot('cv-ret', [
+  {type:'scatter', mode:'lines+markers', name:'Mulheres',
+   x:ANOS, y:PERMF, line:{color:PINK, width:2.5}, marker:{size:7, color:PINK},
+   hovertemplate:'%{x}<br>Permanência fem.: %{y}%<extra></extra>'},
+  {type:'scatter', mode:'lines+markers', name:'Homens',
+   x:ANOS, y:PERMM, line:{color:BLUE, width:2.5, dash:'dot'}, marker:{size:7, color:BLUE},
+   hovertemplate:'%{x}<br>Permanência masc.: %{y}%<extra></extra>'}
+], {
+  showlegend: false,
+  xaxis: {tickvals:ANOS, ...AX},
+  yaxis: {title:'% Permanência', range:[0,45], gridcolor:AX.gridcolor, tickfont:{size:10}},
+  margin: {l:55, r:10, t:8, b:45},
+  plot_bgcolor:'#fff', paper_bgcolor:'#fff', font:F
+}, C);
 
 /* ── LAZY INIT ── */
-function lazy(id){
-  if(id==='p-talento'){
-    const FL=['Univ. Ingressantes','Univ. Concluintes','Estagiário','Júnior','Pleno','Sênior','Especialista','Gerente','Diretor','CTO/CIO'];
-    const FP=[22.0,19.4,33.3,33.3,31.6,42.6,36.5,40.0,32.0,28.6];
-    const FC=FP.map(v=>v===0?'#ef4444':v<25?'#f97316':v<40?'#eab308':'#27AE60');
-    Plotly.newPlot('ct-fun',[{type:'bar',orientation:'h',y:FL,x:FP,marker:{color:FC},
-      text:FP.map(v=>v===0?'0% ⚠':v+'%'),textposition:'outside',
-      hovertemplate:'<b>%{y}</b><br>% Feminino: %{x}%<extra></extra>'}],
-    {xaxis:{range:[0,70],gridcolor:'#f0f0f0'},yaxis:{autorange:'reversed'},
-      shapes:[{type:'line',x0:22,x1:22,y0:-0.5,y1:9.5,line:{color:NV,width:1,dash:'dot'}}],
-      margin:{l:170,r:70,t:10,b:40},plot_bgcolor:'#fff',paper_bgcolor:'#fff',font:F},C);
+function lazy(id) {
 
-    Plotly.newPlot('ct-pir',[
-      {type:'bar',orientation:'h',name:'Homens',  y:CL,x:CK.map(k=>CD[k].nm),marker:{color:NV},text:CK.map(k=>String(CD[k].nm)),textposition:'outside',hovertemplate:'<b>%{y}</b><br>Homens: %{x}<extra></extra>'},
-      {type:'bar',orientation:'h',name:'Mulheres',y:CL,x:CK.map(k=>CD[k].nf),marker:{color:PK}, text:CK.map(k=>String(CD[k].nf)),textposition:'outside',hovertemplate:'<b>%{y}</b><br>Mulheres: %{x}<extra></extra>'}
-    ],{barmode:'group',xaxis:{gridcolor:'#f0f0f0'},yaxis:{autorange:'reversed'},
-      legend:{orientation:'h',y:-0.18,font:{size:10}},margin:{l:100,r:55,t:10,b:55},
-      plot_bgcolor:'#fff',paper_bgcolor:'#fff',font:F},C);
+  if (id === 'p-talento') {
+    const FL = ['Univ. Ingressantes','Univ. Concluintes','Estagiário','Júnior','Pleno','Sênior','Especialista','Gerente','Diretor','CTO/CIO'];
+    const FP = [22.0, 19.4, 33.3, 33.3, 31.6, 42.6, 36.5, 40.0, 32.0, 28.6];
+    const FC = FP.map(v => v < 25 ? '#F97316' : v < 35 ? '#EC4899' : '#1D4ED8');
+    Plotly.newPlot('ct-fun', [{
+      type:'bar', orientation:'h', y:FL, x:FP, marker:{color:FC},
+      text:FP.map(v => v + '%'), textposition:'outside',
+      hovertemplate:'<b>%{y}</b><br>% Feminino: %{x}%<extra></extra>'
+    }], {
+      showlegend:false,
+      xaxis: {range:[0,65], gridcolor:AX.gridcolor, ticksuffix:'%'},
+      yaxis: {autorange:'reversed'},
+      shapes: [{type:'line', x0:22, x1:22, y0:-0.5, y1:9.5,
+        line:{color:BLUE, width:1, dash:'dot'}}],
+      annotations: [{x:22, y:-0.8, xref:'x', yref:'y', text:'Ref. 22%',
+        showarrow:false, font:{size:9, color:BLUE}}],
+      margin: {l:165, r:70, t:10, b:35},
+      plot_bgcolor:'#fff', paper_bgcolor:'#fff', font:F
+    }, C);
+
+    Plotly.newPlot('ct-pir', [
+      {type:'bar', orientation:'h', name:'Homens',
+       y:CL, x:CK.map(k => CD[k].nm), marker:{color:BLUE},
+       text:CK.map(k => String(CD[k].nm)), textposition:'outside',
+       hovertemplate:'<b>%{y}</b><br>Homens: %{x}<extra></extra>'},
+      {type:'bar', orientation:'h', name:'Mulheres',
+       y:CL, x:CK.map(k => CD[k].nf), marker:{color:PINK},
+       text:CK.map(k => String(CD[k].nf)), textposition:'outside',
+       hovertemplate:'<b>%{y}</b><br>Mulheres: %{x}<extra></extra>'}
+    ], {
+      barmode:'group', showlegend:false,
+      xaxis:{gridcolor:AX.gridcolor}, yaxis:{autorange:'reversed'},
+      margin:{l:100, r:55, t:10, b:40},
+      plot_bgcolor:'#fff', paper_bgcolor:'#fff', font:F
+    }, C);
   }
 
-  if(id==='p-remuner'){
-    const VK=CK.filter(k=>CD[k].sf!==null);
-    const VL=VK.map(k=>k==='Estagiario'?'Estagiário':k==='Junior'?'Júnior':k==='Senior'?'Sênior':k);
-    Plotly.newPlot('cr-car',[
-      {type:'bar',name:'Homens',  x:VL,y:VK.map(k=>CD[k].sm),marker:{color:NV},hovertemplate:'<b>%{x}</b><br>Masc: R$ %{y:,.0f}<extra></extra>'},
-      {type:'bar',name:'Mulheres',x:VL,y:VK.map(k=>CD[k].sf),marker:{color:PK},hovertemplate:'<b>%{x}</b><br>Fem: R$ %{y:,.0f}<extra></extra>'}
-    ],{barmode:'group',yaxis:{tickformat:',.0f',tickprefix:'R$ ',gridcolor:'#f0f0f0'},
-      legend:{orientation:'h',y:-0.28,font:{size:10}},margin:{l:80,r:30,t:15,b:65},
-      annotations:VK.map((k,i)=>({x:VL[i],y:Math.max(CD[k].sf,CD[k].sm)+500,xref:'x',yref:'y',
-        text:`Gap: ${CD[k].gap}%`,showarrow:false,
-        font:{size:10,color:CD[k].gap>25?'#ef4444':CD[k].gap<10?'#059669':'#ea580c'}})),
-      plot_bgcolor:'#fff',paper_bgcolor:'#fff',font:F},C);
+  if (id === 'p-remuner') {
+    const VK = CK.filter(k => CD[k].sf !== null);
+    const VL = VK.map(k => k==='Estagiario'?'Estagiário':k==='Junior'?'Júnior':k==='Senior'?'Sênior':k);
+    const anns = (keys, labels, getF, getM, getG, offset) =>
+      keys.map((k,i) => ({x:labels[i], y:Math.max(getF(k),getM(k))+offset,
+        xref:'x', yref:'y', text:`${getG(k)}%`, showarrow:false,
+        font:{size:9.5, color: getG(k)>30?'#DC2626':getG(k)<12?'#059669':'#D97706'}}));
 
-    Plotly.newPlot('cr-set',[
-      {type:'bar',name:'Homens',  x:SL,y:SM,marker:{color:NV},hovertemplate:'<b>%{x}</b><br>Masc: R$ %{y:,.0f}<extra></extra>'},
-      {type:'bar',name:'Mulheres',x:SL,y:SF,marker:{color:PK},hovertemplate:'<b>%{x}</b><br>Fem: R$ %{y:,.0f}<extra></extra>'}
-    ],{barmode:'group',yaxis:{tickformat:',.0f',tickprefix:'R$ ',gridcolor:'#f0f0f0'},
-      legend:{orientation:'h',y:-0.28,font:{size:10}},margin:{l:80,r:30,t:15,b:65},
-      annotations:SL.map((s,i)=>({x:s,y:Math.max(SF[i],SM[i])+400,xref:'x',yref:'y',
-        text:`Gap: ${SG[i]}%`,showarrow:false,
-        font:{size:10,color:SG[i]>30?'#ef4444':SG[i]<15?'#059669':'#ea580c'}})),
-      plot_bgcolor:'#fff',paper_bgcolor:'#fff',font:F},C);
+    Plotly.newPlot('cr-car', [
+      {type:'bar', name:'Homens',   x:VL, y:VK.map(k=>CD[k].sm), marker:{color:BLUE}, showlegend:false,
+       hovertemplate:'<b>%{x}</b><br>Masc: R$ %{y:,.0f}<extra></extra>'},
+      {type:'bar', name:'Mulheres', x:VL, y:VK.map(k=>CD[k].sf), marker:{color:PINK}, showlegend:false,
+       hovertemplate:'<b>%{x}</b><br>Fem: R$ %{y:,.0f}<extra></extra>'}
+    ], {
+      barmode:'group', showlegend:false,
+      yaxis:{tickformat:',.0f', tickprefix:'R$ ', gridcolor:AX.gridcolor},
+      annotations: anns(VK, VL, k=>CD[k].sf, k=>CD[k].sm, k=>CD[k].gap, 700),
+      margin:{l:80, r:30, t:15, b:60},
+      plot_bgcolor:'#fff', paper_bgcolor:'#fff', font:F
+    }, C);
+
+    Plotly.newPlot('cr-set', [
+      {type:'bar', name:'Homens',   x:SL, y:SM, marker:{color:BLUE}, showlegend:false,
+       hovertemplate:'<b>%{x}</b><br>Masc: R$ %{y:,.0f}<extra></extra>'},
+      {type:'bar', name:'Mulheres', x:SL, y:SF, marker:{color:PINK}, showlegend:false,
+       hovertemplate:'<b>%{x}</b><br>Fem: R$ %{y:,.0f}<extra></extra>'}
+    ], {
+      barmode:'group', showlegend:false,
+      yaxis:{tickformat:',.0f', tickprefix:'R$ ', gridcolor:AX.gridcolor},
+      annotations: SL.map((s,i) => ({x:s, y:Math.max(SF[i],SM[i])+400,
+        xref:'x', yref:'y', text:`${SG[i]}%`, showarrow:false,
+        font:{size:9.5, color:SG[i]>30?'#DC2626':SG[i]<12?'#059669':'#D97706'}})),
+      margin:{l:80, r:30, t:15, b:60},
+      plot_bgcolor:'#fff', paper_bgcolor:'#fff', font:F
+    }, C);
   }
 
-  if(id==='p-retencao'){
-    Plotly.newPlot('cret-con',[
-      {type:'scatter',mode:'lines+markers',name:'% Ingressantes Fem.',x:ANOS,y:PIF,line:{color:NV,width:3},marker:{size:8}},
-      {type:'scatter',mode:'lines+markers',name:'% Concluintes Fem.', x:ANOS,y:PCF,line:{color:PK,width:3,dash:'dot'},marker:{size:8}}
-    ],{xaxis:{tickvals:ANOS,gridcolor:'#f0f0f0'},yaxis:{range:[0,35],ticksuffix:'%',gridcolor:'#f0f0f0'},
-      legend:{orientation:'h',y:-0.38,font:{size:10}},margin:{l:50,r:10,t:8,b:65},
-      plot_bgcolor:'#fff',paper_bgcolor:'#fff',font:F},C);
+  if (id === 'p-retencao') {
+    Plotly.newPlot('cret-con', [
+      {type:'scatter', mode:'lines+markers', name:'% Ingressantes Fem.',
+       x:ANOS, y:PIF, line:{color:BLUE, width:2.5}, marker:{size:7}},
+      {type:'scatter', mode:'lines+markers', name:'% Concluintes Fem.',
+       x:ANOS, y:PCF, line:{color:PINK, width:2.5, dash:'dot'}, marker:{size:7}}
+    ], {
+      showlegend:false,
+      xaxis:{tickvals:ANOS, gridcolor:AX.gridcolor},
+      yaxis:{range:[0,35], ticksuffix:'%', gridcolor:AX.gridcolor},
+      margin:{l:50, r:10, t:8, b:45},
+      plot_bgcolor:'#fff', paper_bgcolor:'#fff', font:F
+    }, C);
 
-    Plotly.newPlot('cret-ev',[
-      {type:'bar',name:'Evasão Feminina', x:ANOS.map(String),y:EF,marker:{color:PK},text:EF.map(v=>v+'%'),textposition:'outside'},
-      {type:'bar',name:'Evasão Masculina',x:ANOS.map(String),y:EM,marker:{color:NV},text:EM.map(v=>v+'%'),textposition:'outside'}
-    ],{barmode:'group',yaxis:{range:[0,100],ticksuffix:'%',gridcolor:'#f0f0f0'},
-      legend:{orientation:'h',y:-0.38,font:{size:10}},margin:{l:45,r:10,t:8,b:65},
-      plot_bgcolor:'#fff',paper_bgcolor:'#fff',font:F},C);
+    Plotly.newPlot('cret-ev', [
+      {type:'bar', name:'Feminina',  x:ANOS.map(String), y:EF, marker:{color:PINK},
+       text:EF.map(v=>v+'%'), textposition:'outside'},
+      {type:'bar', name:'Masculina', x:ANOS.map(String), y:EM, marker:{color:BLUE},
+       text:EM.map(v=>v+'%'), textposition:'outside'}
+    ], {
+      barmode:'group', showlegend:false,
+      yaxis:{range:[0,100], ticksuffix:'%', gridcolor:AX.gridcolor},
+      margin:{l:45, r:10, t:8, b:45},
+      plot_bgcolor:'#fff', paper_bgcolor:'#fff', font:F
+    }, C);
   }
 
-  if(id==='p-lider'){
-    Plotly.newPlot('cl-pir',[
-      {type:'bar',orientation:'h',name:'Homens',  y:CL,x:CK.map(k=>CD[k].nm),marker:{color:NV},text:CK.map(k=>String(CD[k].nm)),textposition:'outside',hovertemplate:'<b>%{y}</b><br>Homens: %{x}<extra></extra>'},
-      {type:'bar',orientation:'h',name:'Mulheres',y:CL,x:CK.map(k=>CD[k].nf),marker:{color:PK}, text:CK.map(k=>String(CD[k].nf)),textposition:'outside',hovertemplate:'<b>%{y}</b><br>Mulheres: %{x}<extra></extra>'}
-    ],{barmode:'group',xaxis:{gridcolor:'#f0f0f0'},yaxis:{autorange:'reversed'},
-      legend:{orientation:'h',y:-0.12,font:{size:10}},margin:{l:100,r:55,t:10,b:50},
-      plot_bgcolor:'#fff',paper_bgcolor:'#fff',font:F},C);
+  if (id === 'p-lider') {
+    Plotly.newPlot('cl-pir', [
+      {type:'bar', orientation:'h', name:'Homens',
+       y:CL, x:CK.map(k=>CD[k].nm), marker:{color:BLUE},
+       text:CK.map(k=>String(CD[k].nm)), textposition:'outside',
+       hovertemplate:'<b>%{y}</b><br>Homens: %{x}<extra></extra>'},
+      {type:'bar', orientation:'h', name:'Mulheres',
+       y:CL, x:CK.map(k=>CD[k].nf), marker:{color:PINK},
+       text:CK.map(k=>String(CD[k].nf)), textposition:'outside',
+       hovertemplate:'<b>%{y}</b><br>Mulheres: %{x}<extra></extra>'}
+    ], {
+      barmode:'group', showlegend:false,
+      xaxis:{gridcolor:AX.gridcolor}, yaxis:{autorange:'reversed'},
+      margin:{l:100, r:55, t:10, b:40},
+      plot_bgcolor:'#fff', paper_bgcolor:'#fff', font:F
+    }, C);
   }
 
-  if(id==='p-di'){
-    Plotly.newPlot('cdi-pie',[{
-      type:'pie',labels:['Sem iniciativa D&I','D&I Afirmativa','D&I Exclusiva','Trans-Inclusiva'],
-      values:[179,8,7,6],hole:0.45,
-      marker:{colors:['#E5E7EB',PK,NV,'#9333ea']},
+  if (id === 'p-di') {
+    Plotly.newPlot('cdi-pie', [{
+      type:'pie',
+      labels:['Sem iniciativa D&I', 'D&I Afirmativa', 'D&I Exclusiva', 'Trans-Inclusiva'],
+      values:[179, 8, 7, 6],
+      hole: 0.5,
+      marker:{colors:['#E2E8F0', PINK, BLUE, '#7C3AED']},
       textinfo:'label+percent',
       hovertemplate:'<b>%{label}</b><br>%{value} vagas (%{percent})<extra></extra>'
-    }],{margin:{l:20,r:20,t:10,b:20},legend:{orientation:'h',y:-0.12,font:{size:11}},
-      plot_bgcolor:'#fff',paper_bgcolor:'#fff',font:F},C);
+    }], {
+      showlegend:false,
+      margin:{l:10, r:10, t:10, b:10},
+      plot_bgcolor:'#fff', paper_bgcolor:'#fff', font:F
+    }, C);
   }
 
-  if(id==='p-sim'){
-    Plotly.newPlot('csim-h',[
-      {type:'scatter',mode:'lines+markers',name:'% Ingressantes Fem.',x:ANOS,y:PIF,line:{color:NV,width:3},marker:{size:8},fill:'tozeroy',fillcolor:'rgba(13,27,62,.06)'},
-      {type:'scatter',mode:'lines+markers',name:'% Concluintes Fem.', x:ANOS,y:PCF,line:{color:PK,width:3,dash:'dot'},marker:{size:8},fill:'tozeroy',fillcolor:'rgba(233,30,140,.06)'}
-    ],{xaxis:{tickvals:ANOS,gridcolor:'#f0f0f0'},yaxis:{range:[0,35],ticksuffix:'%',gridcolor:'#f0f0f0'},
-      legend:{orientation:'h',y:-0.38,font:{size:10}},margin:{l:45,r:10,t:8,b:65},
-      plot_bgcolor:'#fff',paper_bgcolor:'#fff',font:F},C);
+  if (id === 'p-sim') {
+    Plotly.newPlot('csim-h', [
+      {type:'scatter', mode:'lines+markers', name:'% Ingressantes',
+       x:ANOS, y:PIF, line:{color:BLUE, width:2.5}, marker:{size:7},
+       fill:'tozeroy', fillcolor:'rgba(29,78,216,.05)'},
+      {type:'scatter', mode:'lines+markers', name:'% Concluintes',
+       x:ANOS, y:PCF, line:{color:PINK, width:2.5, dash:'dot'}, marker:{size:7},
+       fill:'tozeroy', fillcolor:'rgba(236,72,153,.05)'}
+    ], {
+      showlegend:false,
+      xaxis:{tickvals:ANOS, gridcolor:AX.gridcolor},
+      yaxis:{range:[0,35], ticksuffix:'%', gridcolor:AX.gridcolor},
+      margin:{l:45, r:10, t:8, b:45},
+      plot_bgcolor:'#fff', paper_bgcolor:'#fff', font:F
+    }, C);
     upSim();
   }
 }
 
 /* ── SIMULATOR ── */
-function upSim(){
-  const k=document.getElementById('sel-c').value;
-  const d=CD[k];
-  document.getElementById('sim-warn').style.display=d.nf===0?'block':'none';
-  document.getElementById('sv-f').textContent=d.sf===null?'Sem dados':'R$'+d.sf.toLocaleString('pt-BR');
-  document.getElementById('sv-m').textContent='R$'+d.sm.toLocaleString('pt-BR');
-  document.getElementById('sv-g').textContent=d.gap+'%';
-  document.getElementById('sv-p').textContent=d.pct+'%';
+function upSim() {
+  const k = document.getElementById('sel-c').value;
+  const d = CD[k];
+  document.getElementById('sim-warn').style.display = d.nf === 0 ? 'block' : 'none';
+  document.getElementById('sv-f').textContent = d.sf === null
+    ? 'Sem dados' : 'R$ ' + d.sf.toLocaleString('pt-BR');
+  document.getElementById('sv-m').textContent = 'R$ ' + d.sm.toLocaleString('pt-BR');
+  document.getElementById('sv-g').textContent = d.gap + '%';
+  document.getElementById('sv-p').textContent = d.pct + '%';
 }
 </script>
 </body>
