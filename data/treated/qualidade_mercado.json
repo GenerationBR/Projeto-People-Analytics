@@ -1,17 +1,18 @@
 {
   "dataset": "base_mercado_tech_brasil.csv",
   "tipo": "dataset_simulado",
-  "total_linhas": 800,
-  "p01_brl": 1438.18,
-  "p99_brl": 54967.63,
-  "linhas_winsorized": 15,
-  "n_feminino": 326,
-  "n_masculino": 474,
+  "total_linhas": 500,
+  "p01_brl": 1694.0,
+  "p99_brl": 49607.0,
+  "linhas_winsorized": 9,
+  "n_feminino": 173,
+  "n_masculino": 327,
+  "pct_feminino": 34.6,
+  "gap_salarial_global_pct": 20.6,
   "possui_coluna_genero": true,
-  "gap_salarial_esperado_pct": 27,
   "fontes_metodologia": {
-    "salario_base": "Brasscom — Relatório de Diversidade (~27% gap intencional entre gêneros)",
+    "salario_base": "Brasscom — Relatório de Diversidade (~25% gap médio entre gêneros)",
     "cargos_e_niveis": "Tech4Humans — Artigo Mulheres na Tecnologia",
-    "logica_promocao": "McKinsey — Women in the Workplace (gargalo Diretoria/CTO)"
+    "logica_promocao": "McKinsey — Women in the Workplace (sub-representação feminina em Diretoria/CTO)"
   }
 }
