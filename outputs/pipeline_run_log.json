@@ -1,0 +1,32 @@
+{
+  "run_at": "2026-06-18T20:38:01.279611",
+  "results": {
+    "etl": {
+      "status": "done"
+    },
+    "modeling": {
+      "status": null
+    },
+    "eda": {
+      "status": "done"
+    },
+    "stats": {
+      "status": "done"
+    },
+    "bi": {
+      "status": "done"
+    },
+    "docs": {
+      "status": "done"
+    },
+    "pitch": {
+      "status": "done"
+    },
+    "qa": {
+      "status": "error"
+    },
+    "scraping": {
+      "status": "needs_human_approval"
+    }
+  }
+}

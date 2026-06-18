@@ -1,0 +1,3 @@
+[SIMULADO] Agente bi processaria: Descreva o modelo semântico do Power BI para este projeto:
+
+Tabelas disponíveis no DuckDB (data/anal...

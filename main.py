@@ -25,6 +25,8 @@ from datetime import datetime
 
 # ─── Logging ──────────────────────────────────────────────────────────────────
 
+Path("logs").mkdir(exist_ok=True)
+
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(name)s — %(message)s",
@@ -34,7 +36,6 @@ logging.basicConfig(
     ],
 )
 
-Path("logs").mkdir(exist_ok=True)
 logger = logging.getLogger("main")
 
 # ─── Imports dos agentes ──────────────────────────────────────────────────────

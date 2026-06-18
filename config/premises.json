@@ -16,13 +16,15 @@
     "lideranca": {
       "definicao": "Cargos de nível Sênior, Staff, Lead, Manager, Director, VP e C-Level",
       "termos_busca": ["senior", "sr.", "staff", "lead", "manager", "gerente", "diretor", "director", "vp", "vice", "chief", "cto", "cio", "cdo", "head"],
-      "status": "AGUARDA_APROVACAO_HUMANA"
+      "status": "APROVADO",
+      "aprovado_por":"Débora"
     },
     "outliers_salariais": {
       "metodo": "winsorization_p99",
       "descricao": "Valores acima do percentil 99 são substituídos pelo valor do p99",
       "log_obrigatorio": true,
-      "status": "AGUARDA_APROVACAO_HUMANA"
+      "status": "APROVADO",
+      "aprovado_por": "Débora"
     },
     "cruzamento_bases": {
       "tipo": "AGREGADO",

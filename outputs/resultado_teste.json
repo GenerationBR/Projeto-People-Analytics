@@ -1,0 +1,15 @@
+{
+  "test_name": "t-test de Student",
+  "statistic": 17.92009763951935,
+  "p_value": 2.8125289279993245e-60,
+  "confidence_interval": [
+    2087.1592331295487,
+    2600.603946016363
+  ],
+  "effect_size": 1.2402806347911657,
+  "effect_label": "grande",
+  "reject_h0": true,
+  "alpha": 0.05,
+  "interpretation": "Rejeitamos H0 (α=0.05). Salário médio masc: R$ 8,473.75 | fem: R$ 6,129.87. Gender Pay Gap: 27.7%. Tamanho de efeito (Cohen's d): 1.240 → grande. Significância estatística confirma diferença salarial. Lembre-se: significância ≠ relevância prática — avalie o contexto.",
+  "limitations": []
+}

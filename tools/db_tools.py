@@ -144,23 +144,27 @@ class DBTools:
     def create_schema(self) -> None:
         """Cria todo o schema estrela."""
         with self.get_connection() as con:
-            con.executescript(DDL_SCHEMA)
+            for stmt in DDL_SCHEMA.split(";"):
+                stmt = stmt.strip()
+                if stmt:
+                    con.execute(stmt)
         logger.info(f"Schema criado em {self.db_path}")
 
     def populate_dim_genero(self) -> None:
         with self.get_connection() as con:
             con.execute("""
-                INSERT OR IGNORE INTO dim_genero VALUES
+                INSERT INTO dim_genero VALUES
                 (1, 'Masculino'),
                 (2, 'Feminino'),
                 (3, 'Outro/Não informado')
+                ON CONFLICT DO NOTHING
             """)
 
     def populate_dim_tempo(self, anos: list[int]) -> None:
         with self.get_connection() as con:
             for ano in anos:
                 con.execute(
-                    "INSERT OR IGNORE INTO dim_tempo VALUES (?, ?, ?)",
+                    "INSERT INTO dim_tempo VALUES (?, ?, ?) ON CONFLICT DO NOTHING",
                     [ano, (ano // 10) * 10, f"{ano}"]
                 )
 
@@ -174,7 +178,7 @@ class DBTools:
         ]
         with self.get_connection() as con:
             for r in regioes:
-                con.execute("INSERT OR IGNORE INTO dim_regiao VALUES (?, ?, ?)", list(r))
+                con.execute("INSERT INTO dim_regiao VALUES (?, ?, ?) ON CONFLICT DO NOTHING", list(r))
 
     def query(self, sql: str) -> "duckdb.DuckDBPyRelation":
         con = self.get_connection()

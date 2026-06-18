@@ -1,6 +1,8 @@
 """Agente 9 — Dev de Data App (Calculadora para RH — Streamlit)."""
 
 import logging
+from pathlib import Path
+
 from .base_agent import AgentMessage, BaseAgent
 
 logger = logging.getLogger(__name__)

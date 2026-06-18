@@ -86,7 +86,7 @@ removidos, distribuições). Reporte qualquer anomalia ao Orquestrador.
 
         # Mapeamento de colunas common aos dois datasets
         rename_map = {
-            "salary": "salary", "total_yearly_compensation": "salary",
+            "salary": "salary", "total_yearly_compensation": "salary", "salario_base": "salary",
             "gender": "genero", "Gender": "genero",
             "job_title": "cargo", "title": "cargo", "DevType": "cargo",
             "location": "regiao", "country": "regiao", "Country": "regiao",
