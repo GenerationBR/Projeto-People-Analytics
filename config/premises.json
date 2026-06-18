@@ -1,16 +1,16 @@
 {
-  "version": "1.1",
+  "version": "1.2",
   "data_criacao": "2026-06-15",
-  "data_atualizacao": "2026-06-17",
+  "data_atualizacao": "2026-06-18",
   "aprovado_por": null,
   "premissas": {
     "escopo_temporal": {
-      "anos": [2019, 2020, 2021, 2022, 2023],
-      "justificativa": "Últimos 5 anos de microdados INEP disponíveis"
+      "anos": [2019, 2020, 2021, 2022],
+      "justificativa": "Anos de ingresso cobertos pelo dataset simulado base_campus_ti_brasil.csv (referência INEP — Censo da Educação Superior)"
     },
     "genero": {
-      "valores_feminino": ["Feminino", "F", "2"],
-      "valores_masculino": ["Masculino", "M", "1"],
+      "valores_feminino": ["Feminino", "F", "2", "Mulher"],
+      "valores_masculino": ["Masculino", "M", "1", "Homem"],
       "nota": "O INEP utiliza categorias binárias; registrar se a fonte futura permitir categorias adicionais"
     },
     "lideranca": {
@@ -40,8 +40,8 @@
           "gap_salarial_esperado_pct": 27
         },
         {
-          "nome": "State of Data Brazil",
-          "uso": "Referência para os nomes dos cargos e o tempo médio de experiência necessário para cada nível hierárquico (Júnior, Pleno, Sênior, Liderança, Diretoria, C-Level).",
+          "nome": "Tech4Humans — Artigo 'Mulheres na Tecnologia'",
+          "uso": "Referência para os nomes dos cargos e o tempo médio de experiência necessário para cada nível hierárquico (Estagiário, Júnior, Pleno, Sênior, Especialista, Gerente, Diretor, CTO/CIO). Artigo específico sobre a trajetória de mulheres em empresas de tecnologia.",
           "variaveis_afetadas": ["cargo", "nivel_hierarquico", "anos_experiencia"]
         },
         {
@@ -52,6 +52,37 @@
         }
       ],
       "nota_pedagogica": "Os padrões embutidos (gap salarial de ~27% e gargalo de liderança) foram inspirados em estudos reais e devem ser identificados e explorados pela equipe durante a análise. A base é adequada para fins de treinamento e apresentação — não representa dados reais de nenhuma empresa específica."
+    },
+    "metodologia_base_campus": {
+      "descricao": "base_campus_ti_brasil.csv é um dataset simulado com 1.000 registros individuais de estudantes, construído para representar os padrões do Censo da Educação Superior do INEP. Cada linha representa um estudante com ingresso, conclusão e área de atuação.",
+      "arquivo": "data/raw/base_campus_ti_brasil.csv",
+      "status": "APROVADO",
+      "total_registros": 1000,
+      "cobertura_regional": "Apenas Sudeste (USP, UFRJ, UFMG, PUC-SP, FIAP, FATEC, Insper) — limitação documentada",
+      "anos_cobertura": [2019, 2020, 2021, 2022],
+      "fontes": [
+        {
+          "nome": "INEP — Censo da Educação Superior",
+          "uso": "Referência para as proporções de gênero, taxas de conclusão e distribuição por curso (Análise e Desenvolvimento de Sistemas, Ciência da Computação, Data Science, Engenharia de Software, Sistemas de Informação). Os padrões no mock refletem as distribuições reportadas no Censo.",
+          "variaveis_afetadas": ["genero", "curso", "concluiu", "ano_ingresso", "instituicao"]
+        }
+      ],
+      "nota_simplificacao": "Matrículas são aproximadas como ingressantes neste dataset (o mock não possui histórico longitudinal anual de matrícula). Essa premissa está documentada no log de qualidade qualidade_inep.json."
+    },
+    "metodologia_linkedin": {
+      "descricao": "generation_linkedin_vagas_tecnologia.csv é um dataset simulado com 200 vagas de emprego em tecnologia, representando um scraping de vagas do LinkedIn no período 2025-08 a 2026-05.",
+      "arquivo": "data/raw/generation_linkedin_vagas_tecnologia.csv",
+      "status": "APROVADO",
+      "total_registros": 200,
+      "periodo_cobertura": "2025-08 a 2026-05",
+      "fontes": [
+        {
+          "nome": "LinkedIn — simulação de scraping responsável",
+          "uso": "Dataset simulado para fins pedagógicos. Contém mix de vagas afirmativas (exclusivas para mulheres) e vagas abertas, permitindo análise de iniciativas D&I no mercado tech.",
+          "variaveis_afetadas": ["job_title", "company_name", "description", "location", "inserted_at"]
+        }
+      ],
+      "nota_etica": "A coleta real de dados do LinkedIn exige conformidade com os Termos de Uso da plataforma e a LGPD. Este dataset é simulado e não contém dados pessoais reais."
     }
   }
 }

@@ -1,7 +1,13 @@
 """
 ETL Pipeline — People Analytics & DE&I
-Lê os microdados reais do INEP (2019–2024) e a base de mercado tech brasil.
-Produz Parquet e banco DuckDB prontos para análise.
+Lê os dados mockados do campus TI (referência INEP) e a base de mercado tech.
+Produz CSV tratado e banco DuckDB prontos para análise.
+
+Fontes dos dados raw:
+  - base_campus_ti_brasil.csv   → INEP — Censo da Educação Superior (dataset simulado)
+  - base_mercado_tech_brasil.csv → Brasscom (salários) + Tech4Humans (cargos/níveis)
+                                   + McKinsey Women in the Workplace (promoção/liderança)
+  - generation_linkedin_vagas_tecnologia.csv → scraping de vagas LinkedIn (dataset simulado)
 
 Uso: python etl_pipeline.py
 """
@@ -21,145 +27,190 @@ OUT    = BASE / "data" / "treated"
 DB     = BASE / "data" / "analytics.duckdb"
 OUT.mkdir(parents=True, exist_ok=True)
 
-# ─── Caminhos reais dos arquivos INEP ─────────────────────────────────────────
+# ─── Caminhos dos arquivos raw (datasets mockados) ────────────────────────────
 
-INEP_FILES = {
-    2019: RAW / "microdados_censo_da_educacao_superior_2019" / "Microdados do Censo da Educação Superior 2019" / "dados" / "MICRODADOS_CADASTRO_CURSOS_2019.CSV",
-    2020: RAW / "microdados_censo_da_educacao_superior_2020" / "Microdados do Censo da Educação Superior 2020" / "dados" / "MICRODADOS_CADASTRO_CURSOS_2020.CSV",
-    2021: RAW / "microdados_censo_da_educacao_superior_2021" / "Microdados do Censo da Educação Superior 2021" / "dados" / "MICRODADOS_CADASTRO_CURSOS_2021.CSV",
-    2022: RAW / "microdados_censo_da_educacao_superior_2022" / "microdados_educação_superior_2022" / "dados" / "MICRODADOS_CADASTRO_CURSOS_2022.CSV",
-    2023: RAW / "microdados_censo_da_educacao_superior_2023" / "microdados_censo_da_educacao_superior_2023" / "dados" / "MICRODADOS_CADASTRO_CURSOS_2023.CSV",
-    2024: RAW / "microdados_censo_da_educacao_superior_2024" / "microdados_censo_da_educacao_superior_2024" / "dados" / "MICRODADOS_CADASTRO_CURSOS_2024.CSV",
+CAMPUS_FILE   = RAW / "base_campus_ti_brasil.csv"           # INEP (mockado)
+MERCADO_FILE  = RAW / "base_mercado_tech_brasil.csv"        # Brasscom + Tech4Humans + McKinsey (mockado)
+LINKEDIN_FILE = RAW / "generation_linkedin_vagas_tecnologia.csv"  # LinkedIn (mockado)
+
+# ─── Mapeamento instituição → região ──────────────────────────────────────────
+# O dataset simulado cobre instituições do eixo Sudeste.
+# Premissa documentada: campus mock não possui cobertura regional completa.
+
+INST_TO_REGIAO: dict[str, tuple[str, int]] = {
+    "USP":    ("Sudeste", 3),
+    "UFRJ":   ("Sudeste", 3),
+    "UFMG":   ("Sudeste", 3),
+    "PUC-SP": ("Sudeste", 3),
+    "FIAP":   ("Sudeste", 3),
+    "FATEC":  ("Sudeste", 3),
+    "Insper": ("Sudeste", 3),
 }
 
-# Dataset simulado de mercado (Brasscom + State of Data Brazil + McKinsey)
-MERCADO_FILE = RAW / "base_mercado_tech_brasil.csv"
+AREA_GERAL_TIC = "Computação e Tecnologias da Informação e Comunicação (TIC)"
 
-# ─── Filtro de cursos Tech (via CINE) ─────────────────────────────────────────
-# Valores confirmados inspecionando os arquivos reais do INEP
-
-CINE_AREA_GERAL_TECH = {
-    "Computação e Tecnologias da Informação e Comunicação (TIC)",
-}
-
-CINE_AREA_ESPECIFICA_ENGENHARIA_TECH = {
-    "Engenharia e profissões correlatas",
-}
-
-# Colunas que vamos extrair de cada arquivo INEP
-INEP_COLS = [
-    "NU_ANO_CENSO", "NO_REGIAO", "CO_REGIAO",
-    "NO_CURSO", "CO_CURSO",
-    "NO_CINE_AREA_GERAL", "NO_CINE_AREA_ESPECIFICA",
-    "TP_GRAU_ACADEMICO", "TP_MODALIDADE_ENSINO",
-    "QT_MAT", "QT_MAT_FEM", "QT_MAT_MASC",
-    "QT_ING", "QT_ING_FEM", "QT_ING_MASC",
-    "QT_CONC", "QT_CONC_FEM", "QT_CONC_MASC",
-]
 
 # ─── Utilitários ──────────────────────────────────────────────────────────────
 
 def to_int(val: str) -> int:
     try:
-        return int(val.strip()) if val.strip() else 0
-    except ValueError:
+        return int(val.strip()) if str(val).strip() else 0
+    except (ValueError, TypeError):
         return 0
 
 
-def is_tech(row: dict) -> bool:
-    area_geral = row.get("NO_CINE_AREA_GERAL", "").strip()
-    area_esp   = row.get("NO_CINE_AREA_ESPECIFICA", "").strip()
-
-    if area_geral in CINE_AREA_GERAL_TECH:
-        return True
-    if (area_geral == "Engenharia, produção e construção"
-            and area_esp in CINE_AREA_ESPECIFICA_ENGENHARIA_TECH):
-        return True
-    return False
-
-
 def _normalizar_genero(valor: str) -> str:
-    v = valor.strip().upper()
+    v = str(valor).strip().upper()
     if v in ("F", "FEM", "FEMININO", "MULHER"):
         return "Feminino"
     if v in ("M", "MASC", "MASCULINO", "HOMEM"):
         return "Masculino"
-    return valor.strip()
+    return str(valor).strip()
 
 
-# ─── ETL INEP ─────────────────────────────────────────────────────────────────
+# ─── ETL Campus TI (base_campus_ti_brasil.csv — referência INEP) ─────────────
+# Cada linha representa um estudante individualmente.
+# Campos: id_estudante, genero, curso, instituicao, ano_ingresso, concluiu, trabalha_na_area
+# Premissa: ingressante = 1 por linha; concluinte = linha onde concluiu = 1.
+# Matrículas são aproximadas como ingressantes (mock não tem histórico anual de matrícula).
 
-def etl_inep() -> list[dict]:
+def etl_campus() -> list[dict]:
     """
-    Lê todos os anos INEP, filtra cursos Tech e retorna lista de dicts
-    com métricas agregadas por Ano × Região × Curso × Gênero.
+    Lê base_campus_ti_brasil.csv — dataset simulado com base no INEP.
+    Retorna lista de dicts com dados individuais por estudante.
     """
-    all_rows = []
-    quality_log = []
+    rows = []
 
-    for ano, path in INEP_FILES.items():
-        if not path.exists():
-            logger.warning(f"Arquivo não encontrado: {path}")
-            continue
+    if not CAMPUS_FILE.exists():
+        logger.warning(f"Campus TI não encontrado: {CAMPUS_FILE}")
+        return rows
 
-        logger.info(f"Processando INEP {ano} ({path.stat().st_size / 1e6:.1f} MB)...")
+    logger.info(f"Processando campus TI ({CAMPUS_FILE.stat().st_size / 1024:.1f} KB)...")
 
-        total = 0
-        kept  = 0
+    with open(CAMPUS_FILE, encoding="utf-8") as f:
+        reader = csv.DictReader(f)
+        for row in reader:
+            inst = row.get("instituicao", "").strip()
+            regiao, co_regiao = INST_TO_REGIAO.get(inst, ("Sudeste", 3))
+            genero = _normalizar_genero(row.get("genero", ""))
+            rows.append({
+                "genero":        genero,
+                "curso":         row.get("curso", "").strip(),
+                "instituicao":   inst,
+                "ano":           to_int(row.get("ano_ingresso", "")),
+                "concluiu":      to_int(row.get("concluiu", "0")),
+                "trabalha_area": to_int(row.get("trabalha_na_area", "0")),
+                "regiao":        regiao,
+                "co_regiao":     co_regiao,
+                "area_geral":    AREA_GERAL_TIC,
+            })
 
-        with open(path, encoding="latin1") as f:
-            reader = csv.DictReader(f, delimiter=";")
-            for row in reader:
-                total += 1
-                if not is_tech(row):
-                    continue
-                kept += 1
+    n_fem  = sum(1 for r in rows if r["genero"] == "Feminino")
+    n_masc = sum(1 for r in rows if r["genero"] == "Masculino")
+    n_conc = sum(1 for r in rows if r["concluiu"] == 1)
+    pct_fem = round(n_fem / len(rows) * 100, 2) if rows else 0
 
-                record = {
-                    "ano":            to_int(row.get("NU_ANO_CENSO", "")),
-                    "regiao":         row.get("NO_REGIAO", "").strip(),
-                    "co_regiao":      to_int(row.get("CO_REGIAO", "")),
-                    "no_curso":       row.get("NO_CURSO", "").strip(),
-                    "co_curso":       to_int(row.get("CO_CURSO", "")),
-                    "area_geral":     row.get("NO_CINE_AREA_GERAL", "").strip(),
-                    "area_especifica":row.get("NO_CINE_AREA_ESPECIFICA", "").strip(),
-                    "grau_academico": to_int(row.get("TP_GRAU_ACADEMICO", "")),
-                    "modalidade":     to_int(row.get("TP_MODALIDADE_ENSINO", "")),
-                    # Matrículas
-                    "qt_mat":         to_int(row.get("QT_MAT", "")),
-                    "qt_mat_fem":     to_int(row.get("QT_MAT_FEM", "")),
-                    "qt_mat_masc":    to_int(row.get("QT_MAT_MASC", "")),
-                    # Ingressantes
-                    "qt_ing":         to_int(row.get("QT_ING", "")),
-                    "qt_ing_fem":     to_int(row.get("QT_ING_FEM", "")),
-                    "qt_ing_masc":    to_int(row.get("QT_ING_MASC", "")),
-                    # Concluintes
-                    "qt_conc":        to_int(row.get("QT_CONC", "")),
-                    "qt_conc_fem":    to_int(row.get("QT_CONC_FEM", "")),
-                    "qt_conc_masc":   to_int(row.get("QT_CONC_MASC", "")),
-                }
-                all_rows.append(record)
-
-        pct_kept = kept / total * 100 if total else 0
-        quality_log.append({
-            "ano": ano,
-            "total_cursos": total,
-            "cursos_tech": kept,
-            "pct_tech": round(pct_kept, 2),
-        })
-        logger.info(f"  INEP {ano}: {kept:,} cursos Tech de {total:,} total ({pct_kept:.1f}%)")
+    logger.info(f"  Campus TI: {len(rows):,} estudantes | {n_fem} fem ({pct_fem}%) | {n_conc} concluíram")
 
     # Salva log de qualidade
+    quality = {
+        "dataset":          "base_campus_ti_brasil.csv",
+        "tipo":             "dataset_mockado",
+        "fonte_referencia": "INEP — Censo da Educação Superior",
+        "total_estudantes": len(rows),
+        "n_feminino":       n_fem,
+        "n_masculino":      n_masc,
+        "pct_feminino":     pct_fem,
+        "n_concluintes":    n_conc,
+        "pct_conclusao":    round(n_conc / len(rows) * 100, 2) if rows else 0,
+        "instituicoes":     sorted(set(r["instituicao"] for r in rows)),
+        "anos_cobertura":   sorted(set(r["ano"] for r in rows)),
+        "nota_cobertura":   "Dataset simulado abrange instituições do Sudeste. Sem cobertura regional múltipla.",
+        "nota_matriculas":  "Matrículas ≈ ingressantes (dado simplificado; mock não tem histórico anual de matrícula).",
+    }
     with open(OUT / "qualidade_inep.json", "w", encoding="utf-8") as f:
-        json.dump(quality_log, f, ensure_ascii=False, indent=2)
+        json.dump(quality, f, ensure_ascii=False, indent=2)
 
-    return all_rows
+    return rows
+
+
+# ─── Agregação Campus ─────────────────────────────────────────────────────────
+
+def aggregate_campus(rows: list[dict]) -> list[dict]:
+    """
+    Agrega registros individuais de estudantes por Ano × Região × Área CINE.
+    Produz o mesmo esquema de colunas que analise.py espera:
+      qt_mat_*, qt_ing_*, qt_conc_*, pct_*, tx_evasao_*.
+    """
+    from collections import defaultdict
+
+    agg: dict[tuple, dict] = defaultdict(lambda: {
+        "ing_fem": 0, "ing_masc": 0,
+        "conc_fem": 0, "conc_masc": 0,
+    })
+
+    for r in rows:
+        key = (r["ano"], r["regiao"], r["co_regiao"], r["area_geral"])
+        if r["genero"] == "Feminino":
+            agg[key]["ing_fem"] += 1
+            if r["concluiu"]:
+                agg[key]["conc_fem"] += 1
+        else:
+            agg[key]["ing_masc"] += 1
+            if r["concluiu"]:
+                agg[key]["conc_masc"] += 1
+
+    result = []
+    for (ano, regiao, co_regiao, area_geral), vals in agg.items():
+        ing_fem   = vals["ing_fem"]
+        ing_masc  = vals["ing_masc"]
+        conc_fem  = vals["conc_fem"]
+        conc_masc = vals["conc_masc"]
+
+        # Matrículas ≈ ingressantes (simplificação do mock — sem histórico longitudinal)
+        mat_fem  = ing_fem
+        mat_masc = ing_masc
+
+        tot_mat  = mat_fem  + mat_masc
+        tot_ing  = ing_fem  + ing_masc
+        tot_conc = conc_fem + conc_masc
+
+        pct_mat_fem  = round(mat_fem  / tot_mat  * 100, 2) if tot_mat  > 0 else 0
+        pct_ing_fem  = round(ing_fem  / tot_ing  * 100, 2) if tot_ing  > 0 else 0
+        pct_conc_fem = round(conc_fem / tot_conc * 100, 2) if tot_conc > 0 else 0
+
+        tx_evasao_fem  = round((ing_fem  - conc_fem)  / ing_fem  * 100, 2) if ing_fem  > 0 else None
+        tx_evasao_masc = round((ing_masc - conc_masc) / ing_masc * 100, 2) if ing_masc > 0 else None
+
+        result.append({
+            "ano":             ano,
+            "regiao":          regiao,
+            "co_regiao":       co_regiao,
+            "area_geral":      area_geral,
+            "qt_mat_fem":      mat_fem,
+            "qt_mat_masc":     mat_masc,
+            "qt_ing_fem":      ing_fem,
+            "qt_ing_masc":     ing_masc,
+            "qt_conc_fem":     conc_fem,
+            "qt_conc_masc":    conc_masc,
+            "qt_mat_total":    tot_mat,
+            "qt_ing_total":    tot_ing,
+            "qt_conc_total":   tot_conc,
+            "pct_mat_fem":     pct_mat_fem,
+            "pct_ing_fem":     pct_ing_fem,
+            "pct_conc_fem":    pct_conc_fem,
+            "tx_evasao_fem_pct":  tx_evasao_fem,
+            "tx_evasao_masc_pct": tx_evasao_masc,
+        })
+
+    return sorted(result, key=lambda r: (r["ano"], r["regiao"]))
 
 
 # ─── ETL Base de Mercado Tech Brasil ──────────────────────────────────────────
-# Fonte: dataset simulado com referências Brasscom (salario_base),
-#        State of Data Brazil (cargos/níveis) e McKinsey (promoção/retenção).
-# Possui coluna de gênero: pay gap é calculável diretamente.
+# Fonte: dataset simulado com referências:
+#   - Brasscom — Relatório de Diversidade (salario_base, gap ~27%)
+#   - Tech4Humans — Artigo Mulheres na Tecnologia (cargos e níveis hierárquicos)
+#   - McKinsey — Women in the Workplace (lógica de promoção e gargalo de liderança)
 
 def etl_mercado_brasil() -> list[dict]:
     """
@@ -173,13 +224,12 @@ def etl_mercado_brasil() -> list[dict]:
         logger.warning(f"Base de mercado não encontrada: {MERCADO_FILE}")
         return rows
 
-    logger.info(f"Processando base de mercado ({MERCADO_FILE.stat().st_size / 1e6:.1f} MB)...")
+    logger.info(f"Processando base de mercado ({MERCADO_FILE.stat().st_size / 1024:.1f} KB)...")
 
     salaries = []
     with open(MERCADO_FILE, encoding="utf-8") as f:
         reader = csv.DictReader(f)
         for row in reader:
-            # Tenta múltiplos nomes de coluna de salário
             sal = 0.0
             for col in ["salario_base", "salario", "salary", "salary_in_usd"]:
                 try:
@@ -207,7 +257,7 @@ def etl_mercado_brasil() -> list[dict]:
         logger.warning("Base de mercado vazia ou sem coluna de salário reconhecida.")
         return rows
 
-    # Winsorização p99
+    # Winsorização p99 — remove efeito de outliers extremos sem descartar linhas
     salaries_sorted = sorted(salaries)
     n = len(salaries_sorted)
     p1_idx  = max(0, int(0.01 * n))
@@ -231,67 +281,27 @@ def etl_mercado_brasil() -> list[dict]:
 
     with open(OUT / "qualidade_mercado.json", "w", encoding="utf-8") as f:
         json.dump({
-            "dataset": "base_mercado_tech_brasil.csv",
-            "tipo": "dataset_simulado",
-            "total_linhas": len(rows),
-            "p01_brl": p1,
-            "p99_brl": p99,
-            "linhas_winsorized": winsorized,
-            "n_feminino": n_fem,
-            "n_masculino": n_masc,
-            "possui_coluna_genero": True,
+            "dataset":                 "base_mercado_tech_brasil.csv",
+            "tipo":                    "dataset_simulado",
+            "total_linhas":            len(rows),
+            "p01_brl":                 p1,
+            "p99_brl":                 p99,
+            "linhas_winsorized":       winsorized,
+            "n_feminino":              n_fem,
+            "n_masculino":             n_masc,
+            "possui_coluna_genero":    True,
             "gap_salarial_esperado_pct": 27,
             "fontes_metodologia": {
-                "salario_base": "Brasscom — Relatório de Mercado TIC (~27% gap intencional entre gêneros)",
-                "cargos_e_niveis": "State of Data Brazil",
-                "logica_promocao": "McKinsey Women in the Workplace (gargalo Diretoria/CTO)"
+                "salario_base":    "Brasscom — Relatório de Diversidade (~27% gap intencional entre gêneros)",
+                "cargos_e_niveis": "Tech4Humans — Artigo Mulheres na Tecnologia",
+                "logica_promocao": "McKinsey — Women in the Workplace (gargalo Diretoria/CTO)",
             },
         }, f, ensure_ascii=False, indent=2)
 
     return rows
 
 
-# ─── Agregações e cálculos ────────────────────────────────────────────────────
-
-def aggregate_inep(rows: list[dict]) -> list[dict]:
-    """Agrega por Ano × Região × ÁreaCINE (para o dashboard)."""
-    from collections import defaultdict
-
-    agg: dict[tuple, dict] = defaultdict(lambda: {
-        "qt_mat_fem": 0, "qt_mat_masc": 0,
-        "qt_ing_fem": 0, "qt_ing_masc": 0,
-        "qt_conc_fem": 0, "qt_conc_masc": 0,
-    })
-
-    for r in rows:
-        key = (r["ano"], r["regiao"], r["co_regiao"], r["area_geral"])
-        for m in ["qt_mat_fem","qt_mat_masc","qt_ing_fem","qt_ing_masc","qt_conc_fem","qt_conc_masc"]:
-            agg[key][m] += r[m]
-
-    result = []
-    for (ano, regiao, co_regiao, area_geral), vals in agg.items():
-        tot_mat  = vals["qt_mat_fem"]  + vals["qt_mat_masc"]
-        tot_ing  = vals["qt_ing_fem"]  + vals["qt_ing_masc"]
-        tot_conc = vals["qt_conc_fem"] + vals["qt_conc_masc"]
-
-        pct_mat_fem  = round(vals["qt_mat_fem"]  / tot_mat  * 100, 2) if tot_mat  > 0 else 0
-        pct_ing_fem  = round(vals["qt_ing_fem"]  / tot_ing  * 100, 2) if tot_ing  > 0 else 0
-        pct_conc_fem = round(vals["qt_conc_fem"] / tot_conc * 100, 2) if tot_conc > 0 else 0
-
-        # Taxa de evasão = (ingressantes - concluintes) / ingressantes
-        tx_evasao_fem  = round((vals["qt_ing_fem"]  - vals["qt_conc_fem"])  / vals["qt_ing_fem"]  * 100, 2) if vals["qt_ing_fem"]  > 0 else None
-        tx_evasao_masc = round((vals["qt_ing_masc"] - vals["qt_conc_masc"]) / vals["qt_ing_masc"] * 100, 2) if vals["qt_ing_masc"] > 0 else None
-
-        result.append({
-            "ano": ano, "regiao": regiao, "co_regiao": co_regiao, "area_geral": area_geral,
-            **vals,
-            "qt_mat_total": tot_mat, "qt_ing_total": tot_ing, "qt_conc_total": tot_conc,
-            "pct_mat_fem": pct_mat_fem, "pct_ing_fem": pct_ing_fem, "pct_conc_fem": pct_conc_fem,
-            "tx_evasao_fem_pct": tx_evasao_fem, "tx_evasao_masc_pct": tx_evasao_masc,
-        })
-
-    return sorted(result, key=lambda r: (r["ano"], r["regiao"]))
-
+# ─── Agregação Mercado ────────────────────────────────────────────────────────
 
 def aggregate_mercado(rows: list[dict]) -> list[dict]:
     """Agrega salários por cargo × nível × gênero × região para análise de pay gap."""
@@ -321,38 +331,171 @@ def aggregate_mercado(rows: list[dict]) -> list[dict]:
     return sorted(result, key=lambda r: (-r["n"], r["cargo"]))
 
 
+# ─── ETL Vagas LinkedIn ──────────────────────────────────────────────────────
+# Fonte: generation_linkedin_vagas_tecnologia.csv — scraping simulado do LinkedIn
+# Classifica cada vaga por tipo D&I, nível, área e localização.
+
+def _classify_di(description: str) -> tuple[str, int]:
+    """Retorna (tipo_di, eh_di) com base em palavras-chave da descrição."""
+    d = description.lower()
+    if "exclusiva para mulheres" in d:
+        return ("Exclusiva", 1)
+    if "cis e trans" in d:
+        return ("Afirmativa Trans-Inclusiva", 1)
+    if "afirmativ" in d or "participacao feminina" in d or "participação feminina" in d:
+        return ("Afirmativa", 1)
+    return ("Aberta", 0)
+
+
+def _extract_nivel(title: str) -> str:
+    t = title.lower()
+    if "est" in t and ("gio" in t or "ágio" in t):
+        return "Estagiário"
+    if "aprendiz" in t:
+        return "Aprendiz"
+    if "junior" in t or "júnior" in t:
+        return "Júnior"
+    return "Outros"
+
+
+def _extract_area(title: str) -> str:
+    if "Ciência de Dados" in title:
+        return "Ciência de Dados"
+    if "Back-end" in title:
+        return "Desenvolvimento Back-end"
+    if "Front-end" in title:
+        return "Desenvolvimento Front-end"
+    if "QA" in title:
+        return "QA/Testes"
+    if "Suporte" in title:
+        return "Suporte Técnico"
+    if "Dados" in title:
+        return "Dados"
+    if "TI" in title:
+        return "TI Geral"
+    if "Desenvolvedor" in title or "Desenvolvimento" in title:
+        return "Desenvolvimento"
+    return "Outros"
+
+
+def _parse_location(loc: str) -> tuple[str | None, str | None, int]:
+    """Retorna (cidade, uf, remoto)."""
+    if "Remoto" in loc:
+        return (None, None, 1)
+    parts = [p.strip() for p in loc.split(",")]
+    cidade = parts[0] if parts else None
+    uf = parts[1] if len(parts) > 1 else None
+    return (cidade, uf, 0)
+
+
+def etl_linkedin() -> list[dict]:
+    """
+    Lê generation_linkedin_vagas_tecnologia.csv e enriquece cada vaga com:
+      - tipo_di: Exclusiva | Afirmativa Trans-Inclusiva | Afirmativa | Aberta
+      - eh_di: 1 se a vaga menciona iniciativa de D&I para mulheres, 0 caso contrário
+      - nivel: Estagiário | Aprendiz | Júnior | Outros
+      - area_tech: área técnica da vaga derivada do título
+      - cidade, uf: parseados do campo location
+      - remoto: 1 se for remota
+      - mes_ano: YYYY-MM extraído de inserted_at (para análise temporal)
+    """
+    rows = []
+
+    if not LINKEDIN_FILE.exists():
+        logger.warning(f"LinkedIn vagas não encontrado: {LINKEDIN_FILE}")
+        return rows
+
+    logger.info(f"Processando vagas LinkedIn ({LINKEDIN_FILE.stat().st_size / 1024:.1f} KB)...")
+
+    with open(LINKEDIN_FILE, encoding="utf-8") as f:
+        reader = csv.DictReader(f)
+        for row in reader:
+            title = row.get("job_title", "").strip()
+            desc  = row.get("description", "").strip()
+            loc   = row.get("location", "").strip()
+            dt    = row.get("inserted_at", "")
+
+            tipo_di, eh_di = _classify_di(desc)
+            cidade, uf, remoto = _parse_location(loc)
+
+            rows.append({
+                "id":           row.get("id", "").strip(),
+                "empresa":      row.get("company_name", "").strip(),
+                "titulo":       title,
+                "nivel":        _extract_nivel(title),
+                "area_tech":    _extract_area(title),
+                "cidade":       cidade,
+                "uf":           uf,
+                "remoto":       remoto,
+                "tipo_di":      tipo_di,
+                "eh_di":        eh_di,
+                "mes_ano":      dt[:7] if len(dt) >= 7 else None,
+                "inserted_at":  dt,
+                "descricao":    desc,
+            })
+
+    n_di   = sum(r["eh_di"] for r in rows)
+    n_open = len(rows) - n_di
+    pct_di = round(n_di / len(rows) * 100, 1) if rows else 0
+
+    tipos = {}
+    for r in rows:
+        tipos[r["tipo_di"]] = tipos.get(r["tipo_di"], 0) + 1
+
+    logger.info(f"  LinkedIn: {len(rows):,} vagas | D&I: {n_di} ({pct_di}%) | Abertas: {n_open}")
+    for tipo, n in sorted(tipos.items()):
+        logger.info(f"    {tipo}: {n}")
+
+    with open(OUT / "qualidade_linkedin.json", "w", encoding="utf-8") as f:
+        json.dump({
+            "dataset":       "generation_linkedin_vagas_tecnologia.csv",
+            "tipo":          "dataset_simulado",
+            "total_vagas":   len(rows),
+            "n_di":          n_di,
+            "n_abertas":     n_open,
+            "pct_di":        pct_di,
+            "distribuicao_tipo_di": tipos,
+            "periodo":       {
+                "inicio": min(r["mes_ano"] for r in rows if r["mes_ano"]),
+                "fim":    max(r["mes_ano"] for r in rows if r["mes_ano"]),
+            },
+        }, f, ensure_ascii=False, indent=2)
+
+    return rows
+
+
 # ─── Persistência em DuckDB ───────────────────────────────────────────────────
 
-def save_to_duckdb(inep_agg: list[dict], mercado_agg: list[dict]) -> None:
+def save_to_duckdb(campus_agg: list[dict], mercado_agg: list[dict], linkedin_rows: list[dict] = None) -> None:
     import duckdb
 
     con = duckdb.connect(str(DB))
 
-    # ─── Tabela INEP agregada
+    # ─── Tabela educação (base_campus_ti_brasil.csv — ref. INEP)
     con.execute("DROP TABLE IF EXISTS fato_educacao_tech")
     con.execute("""
         CREATE TABLE fato_educacao_tech (
-            ano               INTEGER,
-            regiao            VARCHAR,
-            co_regiao         INTEGER,
-            area_geral        VARCHAR,
-            qt_mat_fem        INTEGER,
-            qt_mat_masc       INTEGER,
-            qt_ing_fem        INTEGER,
-            qt_ing_masc       INTEGER,
-            qt_conc_fem       INTEGER,
-            qt_conc_masc      INTEGER,
-            qt_mat_total      INTEGER,
-            qt_ing_total      INTEGER,
-            qt_conc_total     INTEGER,
-            pct_mat_fem       DOUBLE,
-            pct_ing_fem       DOUBLE,
-            pct_conc_fem      DOUBLE,
-            tx_evasao_fem_pct DOUBLE,
+            ano                INTEGER,
+            regiao             VARCHAR,
+            co_regiao          INTEGER,
+            area_geral         VARCHAR,
+            qt_mat_fem         INTEGER,
+            qt_mat_masc        INTEGER,
+            qt_ing_fem         INTEGER,
+            qt_ing_masc        INTEGER,
+            qt_conc_fem        INTEGER,
+            qt_conc_masc       INTEGER,
+            qt_mat_total       INTEGER,
+            qt_ing_total       INTEGER,
+            qt_conc_total      INTEGER,
+            pct_mat_fem        DOUBLE,
+            pct_ing_fem        DOUBLE,
+            pct_conc_fem       DOUBLE,
+            tx_evasao_fem_pct  DOUBLE,
             tx_evasao_masc_pct DOUBLE
         )
     """)
-    for r in inep_agg:
+    for r in campus_agg:
         con.execute("""
             INSERT INTO fato_educacao_tech VALUES (
                 ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?
@@ -367,16 +510,16 @@ def save_to_duckdb(inep_agg: list[dict], mercado_agg: list[dict]) -> None:
             r["tx_evasao_fem_pct"], r["tx_evasao_masc_pct"],
         ])
 
-    # ─── Tabela de mercado (base_mercado_tech_brasil.csv — Brasscom + State of Data + McKinsey)
+    # ─── Tabela mercado (base_mercado_tech_brasil.csv — Brasscom + Tech4Humans + McKinsey)
     con.execute("DROP TABLE IF EXISTS fato_mercado_tech_brasil")
     con.execute("""
         CREATE TABLE fato_mercado_tech_brasil (
-            cargo              VARCHAR,
-            nivel              VARCHAR,
-            genero             VARCHAR,
-            regiao             VARCHAR,
-            n                  INTEGER,
-            salario_medio_brl  DOUBLE,
+            cargo               VARCHAR,
+            nivel               VARCHAR,
+            genero              VARCHAR,
+            regiao              VARCHAR,
+            n                   INTEGER,
+            salario_medio_brl   DOUBLE,
             salario_mediano_brl DOUBLE
         )
     """)
@@ -437,13 +580,63 @@ def save_to_duckdb(inep_agg: list[dict], mercado_agg: list[dict]) -> None:
         ORDER BY pay_gap_pct DESC
     """)
 
-    n_edu    = con.execute("SELECT COUNT(*) FROM fato_educacao_tech").fetchone()[0]
-    n_merc   = con.execute("SELECT COUNT(*) FROM fato_mercado_tech_brasil").fetchone()[0]
+    # ─── Tabela vagas LinkedIn (simulação scraping — D&I signal analysis)
+    if linkedin_rows:
+        con.execute("DROP TABLE IF EXISTS fato_vagas_linkedin")
+        con.execute("""
+            CREATE TABLE fato_vagas_linkedin (
+                id          VARCHAR,
+                empresa     VARCHAR,
+                titulo      VARCHAR,
+                nivel       VARCHAR,
+                area_tech   VARCHAR,
+                cidade      VARCHAR,
+                uf          VARCHAR,
+                remoto      INTEGER,
+                tipo_di     VARCHAR,
+                eh_di       INTEGER,
+                mes_ano     VARCHAR,
+                inserted_at VARCHAR,
+                descricao   VARCHAR
+            )
+        """)
+        for r in linkedin_rows:
+            con.execute(
+                "INSERT INTO fato_vagas_linkedin VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)",
+                [r["id"], r["empresa"], r["titulo"], r["nivel"], r["area_tech"],
+                 r["cidade"], r["uf"], r["remoto"], r["tipo_di"], r["eh_di"],
+                 r["mes_ano"], r["inserted_at"], r["descricao"]]
+            )
+
+        con.execute("""
+            CREATE OR REPLACE VIEW v_vagas_di AS
+            SELECT
+                mes_ano,
+                area_tech,
+                nivel,
+                uf,
+                COUNT(*)                                           AS total_vagas,
+                SUM(eh_di)                                         AS vagas_di,
+                ROUND(SUM(eh_di) * 100.0 / NULLIF(COUNT(*), 0), 1) AS pct_di,
+                COUNT(CASE WHEN tipo_di = 'Exclusiva'              THEN 1 END) AS n_exclusiva,
+                COUNT(CASE WHEN tipo_di = 'Afirmativa'             THEN 1 END) AS n_afirmativa,
+                COUNT(CASE WHEN tipo_di = 'Afirmativa Trans-Inclusiva' THEN 1 END) AS n_trans_inclusiva,
+                COUNT(CASE WHEN tipo_di = 'Aberta'                 THEN 1 END) AS n_aberta,
+                SUM(remoto)                                        AS vagas_remotas
+            FROM fato_vagas_linkedin
+            GROUP BY mes_ano, area_tech, nivel, uf
+            ORDER BY mes_ano, area_tech
+        """)
+
+    n_edu   = con.execute("SELECT COUNT(*) FROM fato_educacao_tech").fetchone()[0]
+    n_merc  = con.execute("SELECT COUNT(*) FROM fato_mercado_tech_brasil").fetchone()[0]
+    n_li    = con.execute("SELECT COUNT(*) FROM fato_vagas_linkedin").fetchone()[0] if linkedin_rows else 0
     con.close()
 
     logger.info(f"DuckDB salvo em {DB}")
-    logger.info(f"  fato_educacao_tech: {n_edu:,} linhas")
+    logger.info(f"  fato_educacao_tech:       {n_edu:,} linhas")
     logger.info(f"  fato_mercado_tech_brasil: {n_merc:,} linhas")
+    logger.info(f"  fato_vagas_linkedin:      {n_li:,} linhas")
 
 
 # ─── Salva CSV consolidado ────────────────────────────────────────────────────
@@ -460,36 +653,36 @@ def save_csv(rows: list[dict], name: str) -> Path:
     return path
 
 
-# ─── Relatório de métricas-chave ─────────────────────────────────────────────
+# ─── Métricas-chave no terminal ───────────────────────────────────────────────
 
-def print_key_metrics(inep_agg: list[dict], mercado_agg: list[dict]) -> None:
+def print_key_metrics(campus_agg: list[dict], mercado_agg: list[dict]) -> None:
     print("\n" + "="*60)
     print("  MÉTRICAS-CHAVE — FUNIL DA MULHER NA TECH")
     print("="*60)
 
-    # Agrupa por ano (nacional, TIC)
-    tic = [r for r in inep_agg if "Computa" in r["area_geral"]]
+    tic  = [r for r in campus_agg if "Computa" in r["area_geral"]]
     anos = sorted(set(r["ano"] for r in tic))
 
     for ano in anos:
-        ano_rows = [r for r in tic if r["ano"] == ano]
-        mat_fem  = sum(r["qt_mat_fem"]  for r in ano_rows)
-        mat_tot  = sum(r["qt_mat_total"] for r in ano_rows)
-        ing_fem  = sum(r["qt_ing_fem"]  for r in ano_rows)
-        ing_tot  = sum(r["qt_ing_total"] for r in ano_rows)
-        conc_fem = sum(r["qt_conc_fem"] for r in ano_rows)
-        conc_tot = sum(r["qt_conc_total"] for r in ano_rows)
+        ar = [r for r in tic if r["ano"] == ano]
+        mat_fem  = sum(r["qt_mat_fem"]   for r in ar)
+        mat_tot  = sum(r["qt_mat_total"] for r in ar)
+        ing_fem  = sum(r["qt_ing_fem"]   for r in ar)
+        ing_tot  = sum(r["qt_ing_total"] for r in ar)
+        conc_fem = sum(r["qt_conc_fem"]  for r in ar)
+        conc_tot = sum(r["qt_conc_total"] for r in ar)
 
         pct_mat  = mat_fem  / mat_tot  * 100 if mat_tot  > 0 else 0
         pct_ing  = ing_fem  / ing_tot  * 100 if ing_tot  > 0 else 0
         pct_conc = conc_fem / conc_tot * 100 if conc_tot > 0 else 0
 
-        print(f"\n  {ano} | TIC (Computação e TIC):")
-        print(f"    Matrículas:   {mat_tot:>8,} total | {mat_fem:>7,} fem ({pct_mat:.1f}%)")
-        print(f"    Ingressantes: {ing_tot:>8,} total | {ing_fem:>7,} fem ({pct_ing:.1f}%)")
-        print(f"    Concluintes:  {conc_tot:>8,} total | {conc_fem:>7,} fem ({pct_conc:.1f}%)")
+        print(f"\n  {ano} | TIC (ref. INEP — dataset mockado):")
+        print(f"    Ingressantes: {ing_tot:>5,} total | {ing_fem:>4,} fem ({pct_ing:.1f}%)")
+        print(f"    Concluintes:  {conc_tot:>5,} total | {conc_fem:>4,} fem ({pct_conc:.1f}%)")
+        print(f"    Matrículas*:  {mat_tot:>5,} total | {mat_fem:>4,} fem ({pct_mat:.1f}%)")
 
-    # Pay gap na base de mercado
+    print("\n  * Matriculas ~= ingressantes (simplificacao do mock)")
+
     if mercado_agg:
         fem_sals  = [r["salario_medio_brl"] for r in mercado_agg if r["genero"] == "Feminino"]
         masc_sals = [r["salario_medio_brl"] for r in mercado_agg if r["genero"] == "Masculino"]
@@ -497,7 +690,7 @@ def print_key_metrics(inep_agg: list[dict], mercado_agg: list[dict]) -> None:
             media_fem  = sum(fem_sals)  / len(fem_sals)
             media_masc = sum(masc_sals) / len(masc_sals)
             gap_pct    = (media_masc - media_fem) / media_masc * 100 if media_masc > 0 else 0
-            print(f"\n  PAY GAP (base de mercado tech brasil):")
+            print(f"\n  PAY GAP (base mercado — Brasscom + Tech4Humans + McKinsey):")
             print(f"    Salário médio Masculino: R${media_masc:,.0f}")
             print(f"    Salário médio Feminino:  R${media_fem:,.0f}")
             print(f"    Gap salarial: {gap_pct:.1f}%  (esperado ~27% — ref. Brasscom)")
@@ -510,24 +703,26 @@ def print_key_metrics(inep_agg: list[dict], mercado_agg: list[dict]) -> None:
 if __name__ == "__main__":
     logger.info("Iniciando ETL Pipeline — People Analytics & DE&I")
 
-    # 1. Lê e filtra dados brutos
-    inep_rows    = etl_inep()
-    mercado_rows = etl_mercado_brasil()
+    # 1. Lê dados brutos
+    campus_rows   = etl_campus()
+    mercado_rows  = etl_mercado_brasil()
+    linkedin_rows = etl_linkedin()
 
-    # 2. Agrega
-    logger.info("Agregando dados INEP...")
-    inep_agg    = aggregate_inep(inep_rows)
+    # 2. Agrega campus e mercado (LinkedIn permanece no nível individual para análise de texto)
+    logger.info("Agregando dados do campus TI...")
+    campus_agg  = aggregate_campus(campus_rows)
     mercado_agg = aggregate_mercado(mercado_rows)
 
     # 3. Persiste
     logger.info("Salvando CSVs...")
-    save_csv(inep_agg,    "fato_educacao_tech_agregado")
-    save_csv(mercado_agg, "fato_mercado_tech_brasil")
+    save_csv(campus_agg,   "fato_educacao_tech_agregado")
+    save_csv(mercado_agg,  "fato_mercado_tech_brasil")
+    save_csv(linkedin_rows, "fato_vagas_linkedin")
 
     logger.info("Salvando no DuckDB...")
-    save_to_duckdb(inep_agg, mercado_agg)
+    save_to_duckdb(campus_agg, mercado_agg, linkedin_rows)
 
     # 4. Mostra métricas
-    print_key_metrics(inep_agg, mercado_agg)
+    print_key_metrics(campus_agg, mercado_agg)
 
     logger.info("ETL concluído. Próximo passo: python analise.py")

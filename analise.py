@@ -1,5 +1,6 @@
 """
-Análise Exploratória — Funil da Mulher na Tech (dados reais INEP 2019-2024)
+Análise Exploratória — Funil da Mulher na Tech
+Dataset mockado: base_campus_ti_brasil.csv (ref. INEP — Censo da Educação Superior)
 Gera gráficos HTML interativos e relatório de métricas.
 
 Uso: python analise.py
@@ -88,7 +89,10 @@ def evasao_por_ano(rows: list[dict]) -> dict:
 
 # ─── Análise 3: % mulheres por região (último ano disponível) ────────────────
 
-def distribuicao_regional(rows: list[dict], ano: int = 2024) -> list[dict]:
+def distribuicao_regional(rows: list[dict], ano: int = None) -> list[dict]:
+    if ano is None:
+        anos_disp = [to_int(r["ano"]) for r in rows if r.get("ano")]
+        ano = max(anos_disp) if anos_disp else 2022
     tic = [r for r in rows if "Computa" in r.get("area_geral","") and to_int(r["ano"]) == ano]
 
     regioes: dict[str, dict] = defaultdict(lambda: {"fem": 0, "tot": 0})
@@ -136,7 +140,7 @@ def gerar_html_funil(funil: dict) -> str:
 <script src="https://cdn.plot.ly/plotly-2.32.0.min.js"></script>
 </head><body style="font-family:Inter,sans-serif;background:#f9f9f9;padding:20px">
 <h1 style="color:#1E3A5F">Funil da Mulher na TIC — Brasil {anos[0]}–{anos[-1]}</h1>
-<p style="color:#555">Fonte: INEP Censo da Educação Superior | Dados: INEP/MEC</p>
+<p style="color:#555">Fonte: base_campus_ti_brasil.csv — dataset simulado | Referência: INEP Censo da Educação Superior</p>
 <div id="chart1"></div>
 <script>
 var anos = {anos};
@@ -232,16 +236,22 @@ Plotly.newPlot('chart3', data, layout);
 
 # ─── Relatório Markdown de métricas ──────────────────────────────────────────
 
-def gerar_relatorio_md(funil: dict, evasao: dict, regional: list[dict], tendencia: dict) -> str:
+def gerar_relatorio_md(funil: dict, evasao: dict, regional: list[dict], tendencia: dict, ultimo_ano: int = None) -> str:
     anos = sorted(funil.keys())
+    if ultimo_ano is None:
+        ultimo_ano = anos[-1]
+    variacao = tendencia['variacao_pp']
+    variacao_texto = f"+{variacao} pp" if variacao >= 0 else f"{variacao} pp (queda)"
     linhas = [
         "# Relatório de Análise — Funil da Mulher na Tech",
-        "**Fonte:** INEP Censo da Educação Superior 2019–2024",
+        "**Fonte educacional:** base_campus_ti_brasil.csv — dataset simulado (referência: INEP — Censo da Educação Superior)",
         "**Filtro:** Cursos de TIC (Computação e Tecnologias da Informação e Comunicação)",
+        "**Cobertura:** Instituições do eixo Sudeste — sem cobertura regional múltipla (limitação do mock)",
+        "**Fonte de mercado:** base_mercado_tech_brasil.csv — dataset simulado (Brasscom + Tech4Humans + McKinsey)",
         "",
         "## 1. Tendência de Participação Feminina",
         f"- **{tendencia['periodo']}:** de **{tendencia['pct_mat_fem_inicial']}%** para **{tendencia['pct_mat_fem_final']}%** de matrículas femininas",
-        f"- Crescimento de **{tendencia['variacao_pp']} pontos percentuais** no período",
+        f"- Variação de **{variacao_texto}** no período",
         "",
         "## 2. Funil por Ano — TIC Nacional",
         "| Ano | Mat. Total | % Fem Mat | Ing. Total | % Fem Ing | Conc. Total | % Fem Conc |",
@@ -276,7 +286,7 @@ def gerar_relatorio_md(funil: dict, evasao: dict, regional: list[dict], tendenci
         "> **Nota:** Taxa de evasão calculada como (Ingressantes − Concluintes) / Ingressantes.",
         "> Inclui alunos que ainda estão cursando — interpretação conservadora.",
         "",
-        "## 4. Distribuição Regional (2024)",
+        f"## 4. Distribuição Regional ({ultimo_ano})",
         "| Região | % Feminino | Matrículas Femininas | Total |",
         "|---|---|---|---|",
     ]
@@ -290,17 +300,41 @@ def gerar_relatorio_md(funil: dict, evasao: dict, regional: list[dict], tendenci
         f"Enquanto as mulheres representam **{funil[anos[-1]]['pct_mat_fem']}% das matrículas** em cursos de TIC em {anos[-1]},",
         f"a participação cai para **{funil[anos[-1]]['pct_conc_fem']}% entre os concluintes**,",
         "evidenciando um gargalo na permanência e conclusão do curso.",
-        f"O período {tendencia['periodo']} mostra crescimento de {tendencia['variacao_pp']} pontos percentuais",
-        f"na entrada (de {tendencia['pct_mat_fem_inicial']}% para {tendencia['pct_mat_fem_final']}%), mas",
-        "a conversão em conclusão ainda é proporcionalmente menor.",
+        f"O período {tendencia['periodo']} registrou variação de {variacao_texto}",
+        f"na participação feminina entre ingressantes (de {tendencia['pct_mat_fem_inicial']}% para {tendencia['pct_mat_fem_final']}%),",
+        "mas a conversão em conclusão ainda é proporcionalmente menor.",
         "",
         "## 6. Limitações e Próximos Passos",
-        "- **Pay gap:** A base de mercado (`base_mercado_tech_brasil.csv`) possui coluna de gênero e gap salarial",
-        "  intencional de ~27% (ref. Brasscom). Execute `python etl_pipeline.py` para popular a view `v_pay_gap`.",
-        "- **Engenharia:** Os dados incluem 'Engenharia e profissões correlatas' — validar com o time se",
-        "  cursos como Engenharia Civil devem ser excluídos.",
-        "- **Evasão:** A métrica (ingressantes − concluintes) é cross-sectional, não longitudinal.",
-        "  Idealmente rastrear coortes, mas INEP não disponibiliza dado individual (LGPD).",
+        "",
+        "### Limitações do dataset atual",
+        "",
+        "- **Cobertura regional restrita:** `base_campus_ti_brasil.csv` cobre apenas instituições do Sudeste"
+        "  (USP, UFRJ, UFMG, PUC-SP, FIAP, FATEC, Insper). A seção 4 reflete apenas essa região —"
+        "  conclusões sobre distribuição nacional de gênero não são generalizáveis sem dados das demais regiões.",
+        "- **Matrículas ≈ Ingressantes:** O mock não possui histórico longitudinal de matrícula anual."
+        "  A coluna `qt_mat_*` é aproximada pelos ingressantes de cada coorte, o que sub-representa"
+        "  estudantes que permanecem matriculados em anos subsequentes.",
+        "- **Evasão cross-sectional:** A taxa `(ingressantes − concluintes) / ingressantes` compara coortes"
+        "  diferentes em vez de rastrear o mesmo grupo ao longo do tempo. O valor inclui alunos que ainda"
+        "  estão cursando, o que infla a evasão aparente — interpretação conservadora.",
+        "- **Gap salarial na `v_pay_gap`:** A view agrega médias por cargo × nível × gênero. A média de médias"
+        "  diverge do gap calculado em nível individual (~27% embutido no mock — ref. Brasscom)."
+        "  Para análise precisa, usar os microdados de `base_mercado_tech_brasil.csv` diretamente.",
+        "",
+        "### Próximos passos",
+        "",
+        "- **Gargalo de liderança (McKinsey):** `fato_mercado_tech_brasil` no DuckDB modela sub-representação"
+        "  feminina progressiva em Diretor e CTO/CIO."
+        "  Consulta sugerida: `SELECT nivel, genero, SUM(n) FROM fato_mercado_tech_brasil GROUP BY nivel, genero ORDER BY nivel;`",
+        "- **Análise D&I em vagas LinkedIn:** `fato_vagas_linkedin.csv` e a view `v_vagas_di` estão prontos no DuckDB."
+        "  Dos 200 anúncios (ago/2025–mai/2026), **21 (10,5%)** têm iniciativa D&I —"
+        "  8 afirmativas, 7 exclusivas e 6 afirmativas trans-inclusivas.",
+        "- **Teste T de significância salarial:** Aplicar `scipy.stats.ttest_ind` (Welch) nos salários individuais"
+        "  de `base_mercado_tech_brasil.csv`, controlando por cargo e nível, para validar estatisticamente"
+        "  o gap de ~27% (ref. Brasscom).",
+        "- **Integração Power BI:** As views `v_funil_nacional`, `v_pay_gap` e `v_vagas_di` do DuckDB"
+        "  alimentam as duas visões do dashboard — 'A Base' (funil educacional) e 'O Mercado'"
+        "  (pay gap + liderança + D&I em vagas).",
     ]
 
     return "\n".join(linhas)
@@ -314,25 +348,26 @@ if __name__ == "__main__":
     logger.info(f"  {len(rows)} linhas carregadas")
 
     logger.info("Calculando métricas...")
-    funil     = funil_nacional_tic(rows)
-    evasao    = evasao_por_ano(rows)
-    regional  = distribuicao_regional(rows, ano=2024)
-    tendencia = tendencia_crescimento(funil)
+    funil      = funil_nacional_tic(rows)
+    evasao     = evasao_por_ano(rows)
+    ultimo_ano = max(funil.keys()) if funil else 2022
+    regional   = distribuicao_regional(rows, ano=ultimo_ano)
+    tendencia  = tendencia_crescimento(funil)
 
     logger.info("Gerando relatório Markdown...")
-    relatorio = gerar_relatorio_md(funil, evasao, regional, tendencia)
+    relatorio = gerar_relatorio_md(funil, evasao, regional, tendencia, ultimo_ano=ultimo_ano)
     (REPORTS / "analise_funil.md").write_text(relatorio, encoding="utf-8")
 
     logger.info("Gerando gráficos HTML interativos...")
     (REPORTS / "grafico_funil.html").write_text(gerar_html_funil(funil), encoding="utf-8")
     (REPORTS / "grafico_evasao.html").write_text(gerar_html_evasao(evasao), encoding="utf-8")
-    (REPORTS / "grafico_regioes.html").write_text(gerar_html_regioes(regional, 2024), encoding="utf-8")
+    (REPORTS / "grafico_regioes.html").write_text(gerar_html_regioes(regional, ultimo_ano), encoding="utf-8")
 
     logger.info("Salvando métricas em JSON...")
     metricas = {
         "funil_tic": {str(k): v for k, v in funil.items()},
         "evasao":    {str(k): v for k, v in evasao.items()},
-        "regional_2024": regional,
+        f"regional_{ultimo_ano}": regional,
         "tendencia": tendencia,
     }
     (REPORTS / "metricas_funil.json").write_text(
@@ -345,12 +380,13 @@ if __name__ == "__main__":
     print("="*60)
     print(f"\n  Tendência {tendencia['periodo']}:")
     print(f"    % Matriculas femininas: {tendencia['pct_mat_fem_inicial']}% -> {tendencia['pct_mat_fem_final']}%")
-    print(f"    Crescimento: +{tendencia['variacao_pp']} pontos percentuais")
-    print(f"\n  2024 — TIC (Computação):")
-    f24 = funil[2024]
-    print(f"    Matrículas:   {f24['mat_fem']+f24['mat_masc']:,} total | {f24['mat_fem']:,} fem ({f24['pct_mat_fem']}%)")
-    print(f"    Ingressantes: {f24['ing_fem']+f24['ing_masc']:,} total | {f24['ing_fem']:,} fem ({f24['pct_ing_fem']}%)")
-    print(f"    Concluintes:  {f24['conc_fem']+f24['conc_masc']:,} total | {f24['conc_fem']:,} fem ({f24['pct_conc_fem']}%)")
+    sinal = "+" if tendencia['variacao_pp'] >= 0 else ""
+    print(f"    Variacao: {sinal}{tendencia['variacao_pp']} pontos percentuais")
+    print(f"\n  {ultimo_ano} — TIC (Computação):")
+    f_ult = funil[ultimo_ano]
+    print(f"    Matrículas:   {f_ult['mat_fem']+f_ult['mat_masc']:,} total | {f_ult['mat_fem']:,} fem ({f_ult['pct_mat_fem']}%)")
+    print(f"    Ingressantes: {f_ult['ing_fem']+f_ult['ing_masc']:,} total | {f_ult['ing_fem']:,} fem ({f_ult['pct_ing_fem']}%)")
+    print(f"    Concluintes:  {f_ult['conc_fem']+f_ult['conc_masc']:,} total | {f_ult['conc_fem']:,} fem ({f_ult['pct_conc_fem']}%)")
     print(f"\n  Arquivos gerados em reports/:")
     print("    - analise_funil.md       (relatório completo)")
     print("    - grafico_funil.html     (evolução do funil)")

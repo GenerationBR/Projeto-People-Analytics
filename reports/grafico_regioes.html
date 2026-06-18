@@ -3,17 +3,17 @@
 <title>Distribuição Regional</title>
 <script src="https://cdn.plot.ly/plotly-2.32.0.min.js"></script>
 </head><body style="font-family:Inter,sans-serif;background:#f9f9f9;padding:20px">
-<h1 style="color:#1E3A5F">% Mulheres Matriculadas em TIC por Região — 2024</h1>
+<h1 style="color:#1E3A5F">% Mulheres Matriculadas em TIC por Região — 2022</h1>
 <div id="chart3"></div>
 <script>
 var data = [{
-  x:['', 'Sudeste', 'Norte', 'Centro-Oeste', 'Nordeste', 'Sul'],
-  y:[38.9, 20.1, 19.5, 19.0, 18.0, 17.9],
+  x:['Sudeste'],
+  y:[21.7],
   type:'bar',
-  text:[38.9, 20.1, 19.5, 19.0, 18.0, 17.9].map(v => v+'%'),
+  text:[21.7].map(v => v+'%'),
   textposition:'outside',
-  marker:{color:[38.9, 20.1, 19.5, 19.0, 18.0, 17.9].map(v => v < 18 ? '#FF6B35' : v < 20 ? '#F5A623' : '#27AE60')},
-  customdata:[422, 412969, 37350, 76416, 138779, 134286],
+  marker:{color:[21.7].map(v => v < 18 ? '#FF6B35' : v < 20 ? '#F5A623' : '#27AE60')},
+  customdata:[253],
   hovertemplate:'%{x}<br>%Fem: %{y}%<br>Total matriculados: %{customdata:,}<extra></extra>'
 }];
 var layout = {

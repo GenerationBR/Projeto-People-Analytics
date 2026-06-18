@@ -1,38 +1,28 @@
-[
-  {
-    "ano": 2019,
-    "total_cursos": 253139,
-    "cursos_tech": 29377,
-    "pct_tech": 11.61
-  },
-  {
-    "ano": 2020,
-    "total_cursos": 344691,
-    "cursos_tech": 43262,
-    "pct_tech": 12.55
-  },
-  {
-    "ano": 2021,
-    "total_cursos": 444786,
-    "cursos_tech": 60785,
-    "pct_tech": 13.67
-  },
-  {
-    "ano": 2022,
-    "total_cursos": 573019,
-    "cursos_tech": 82805,
-    "pct_tech": 14.45
-  },
-  {
-    "ano": 2023,
-    "total_cursos": 671610,
-    "cursos_tech": 101864,
-    "pct_tech": 15.17
-  },
-  {
-    "ano": 2024,
-    "total_cursos": 720349,
-    "cursos_tech": 112676,
-    "pct_tech": 15.64
-  }
-]
+{
+  "dataset": "base_campus_ti_brasil.csv",
+  "tipo": "dataset_mockado",
+  "fonte_referencia": "INEP — Censo da Educação Superior",
+  "total_estudantes": 1000,
+  "n_feminino": 204,
+  "n_masculino": 796,
+  "pct_feminino": 20.4,
+  "n_concluintes": 277,
+  "pct_conclusao": 27.7,
+  "instituicoes": [
+    "FATEC",
+    "FIAP",
+    "Insper",
+    "PUC-SP",
+    "UFMG",
+    "UFRJ",
+    "USP"
+  ],
+  "anos_cobertura": [
+    2019,
+    2020,
+    2021,
+    2022
+  ],
+  "nota_cobertura": "Dataset simulado abrange instituições do Sudeste. Sem cobertura regional múltipla.",
+  "nota_matriculas": "Matrículas ≈ ingressantes (dado simplificado; mock não tem histórico anual de matrícula)."
+}
