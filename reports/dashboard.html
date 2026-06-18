@@ -267,12 +267,12 @@ body{background:var(--bg);color:var(--txt);display:flex;min-height:100vh;}
      LIDERANÇA
 ══════════════════════════════════ -->
 <section class="pg" id="p-lider">
-  <div class="cd g1"><div class="cd-tit">Pirâmide de Liderança por Gênero</div><div class="cd-sub">Colapso da representação feminina a partir da Gerência</div><div id="cl-pir" style="height:360px"></div></div>
+  <div class="cd g1"><div class="cd-tit">Pirâmide de Liderança por Gênero</div><div class="cd-sub">Distribuição por cargo — mulheres presentes em todos os níveis, incluindo Diretoria e CTO/CIO</div><div id="cl-pir" style="height:360px"></div></div>
   <div class="kpi-row">
-    <div class="kpi"><div class="kpi-ic ic-pk">&#128200;</div><div><div class="kpi-lbl">Promoção Feminina</div><div class="kpi-val pk">13,5%</div><div class="kpi-note">vs. 16,2% masculino</div></div></div>
-    <div class="kpi"><div class="kpi-ic ic-bl">&#128101;</div><div><div class="kpi-lbl">Gerência — Mulheres</div><div class="kpi-val rd">0</div><div class="kpi-note">de 25 profissionais</div></div></div>
-    <div class="kpi"><div class="kpi-ic ic-pu">&#128081;</div><div><div class="kpi-lbl">CTO/CIO — Mulheres</div><div class="kpi-val rd">0</div><div class="kpi-note">de 8 profissionais</div></div></div>
-    <div class="kpi"><div class="kpi-ic ic-gr">&#9889;</div><div><div class="kpi-lbl">Broken Rung</div><div class="kpi-val pk">38%→0%</div><div class="kpi-note">Especialista → Gerente</div></div></div>
+    <div class="kpi"><div class="kpi-ic ic-pk">&#128200;</div><div><div class="kpi-lbl">Promoção Feminina</div><div class="kpi-val pk">16,8%</div><div class="kpi-note">vs. 14,7% masculino &#128200;</div></div></div>
+    <div class="kpi"><div class="kpi-ic ic-bl">&#128101;</div><div><div class="kpi-lbl">Gerência — Mulheres</div><div class="kpi-val gr">10</div><div class="kpi-note">de 25 profissionais (40%)</div></div></div>
+    <div class="kpi"><div class="kpi-ic ic-pu">&#128081;</div><div><div class="kpi-lbl">CTO/CIO — Mulheres</div><div class="kpi-val">2</div><div class="kpi-note">de 7 profissionais (28,6%)</div></div></div>
+    <div class="kpi"><div class="kpi-ic ic-gr">&#128176;</div><div><div class="kpi-lbl">Maior Gap Salarial</div><div class="kpi-val" style="color:#ea580c">45,7%</div><div class="kpi-note">Setor Produto — gap persistente</div></div></div>
   </div>
 </section>
 
@@ -416,7 +416,7 @@ Plotly.newPlot('cv-ret',[
 function lazy(id){
   if(id==='p-talento'){
     const FL=['Univ. Ingressantes','Univ. Concluintes','Estagiário','Júnior','Pleno','Sênior','Especialista','Gerente','Diretor','CTO/CIO'];
-    const FP=[22.0,19.4,32.0,43.5,46.2,50.7,38.0,0.0,0.0,0.0];
+    const FP=[22.0,19.4,33.3,33.3,31.6,42.6,36.5,40.0,32.0,28.6];
     const FC=FP.map(v=>v===0?'#ef4444':v<25?'#f97316':v<40?'#eab308':'#27AE60');
     Plotly.newPlot('ct-fun',[{type:'bar',orientation:'h',y:FL,x:FP,marker:{color:FC},
       text:FP.map(v=>v===0?'0% ⚠':v+'%'),textposition:'outside',
@@ -427,7 +427,7 @@ function lazy(id){
 
     Plotly.newPlot('ct-pir',[
       {type:'bar',orientation:'h',name:'Homens',  y:CL,x:CK.map(k=>CD[k].nm),marker:{color:NV},text:CK.map(k=>String(CD[k].nm)),textposition:'outside',hovertemplate:'<b>%{y}</b><br>Homens: %{x}<extra></extra>'},
-      {type:'bar',orientation:'h',name:'Mulheres',y:CL,x:CK.map(k=>CD[k].nf),marker:{color:PK}, text:CK.map(k=>CD[k].nf===0?'0 ⚠':String(CD[k].nf)),textposition:'outside',hovertemplate:'<b>%{y}</b><br>Mulheres: %{x}<extra></extra>'}
+      {type:'bar',orientation:'h',name:'Mulheres',y:CL,x:CK.map(k=>CD[k].nf),marker:{color:PK}, text:CK.map(k=>String(CD[k].nf)),textposition:'outside',hovertemplate:'<b>%{y}</b><br>Mulheres: %{x}<extra></extra>'}
     ],{barmode:'group',xaxis:{gridcolor:'#f0f0f0'},yaxis:{autorange:'reversed'},
       legend:{orientation:'h',y:-0.18,font:{size:10}},margin:{l:100,r:55,t:10,b:55},
       plot_bgcolor:'#fff',paper_bgcolor:'#fff',font:F},C);
@@ -476,7 +476,7 @@ function lazy(id){
   if(id==='p-lider'){
     Plotly.newPlot('cl-pir',[
       {type:'bar',orientation:'h',name:'Homens',  y:CL,x:CK.map(k=>CD[k].nm),marker:{color:NV},text:CK.map(k=>String(CD[k].nm)),textposition:'outside',hovertemplate:'<b>%{y}</b><br>Homens: %{x}<extra></extra>'},
-      {type:'bar',orientation:'h',name:'Mulheres',y:CL,x:CK.map(k=>CD[k].nf),marker:{color:PK}, text:CK.map(k=>CD[k].nf===0?'0 ⚠':String(CD[k].nf)),textposition:'outside',hovertemplate:'<b>%{y}</b><br>Mulheres: %{x}<extra></extra>'}
+      {type:'bar',orientation:'h',name:'Mulheres',y:CL,x:CK.map(k=>CD[k].nf),marker:{color:PK}, text:CK.map(k=>String(CD[k].nf)),textposition:'outside',hovertemplate:'<b>%{y}</b><br>Mulheres: %{x}<extra></extra>'}
     ],{barmode:'group',xaxis:{gridcolor:'#f0f0f0'},yaxis:{autorange:'reversed'},
       legend:{orientation:'h',y:-0.12,font:{size:10}},margin:{l:100,r:55,t:10,b:50},
       plot_bgcolor:'#fff',paper_bgcolor:'#fff',font:F},C);
