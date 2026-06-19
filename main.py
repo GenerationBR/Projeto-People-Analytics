@@ -11,7 +11,6 @@ Uso:
   python main.py docs         # apenas Documentação
   python main.py pitch        # apenas Pitch
   python main.py qa           # apenas QA
-  python main.py scraping     # Opcional: Web Scraping
   python main.py status       # Status do projeto
 """
 
@@ -46,7 +45,6 @@ from agents import (
     StatisticsAgent,
     DocsAgent,
     StorytellerAgent,
-    ScrapingAgent,
     QAAgent,
 )
 
@@ -129,14 +127,6 @@ def run_qa(orchestrator: OrchestratorAgent) -> dict:
     return result.__dict__
 
 
-def run_scraping(orchestrator: OrchestratorAgent) -> dict:
-    logger.info("▶ Iniciando Scraping Agent (opcional)")
-    agent = ScrapingAgent(output_dir=CONFIG["output_dir"])
-    result = agent.run()
-    orchestrator.receive_result(result)
-    return result.__dict__
-
-
 # ─── Pipeline completo ────────────────────────────────────────────────────────
 
 PIPELINE_STEPS = [
@@ -149,9 +139,7 @@ PIPELINE_STEPS = [
     ("qa",        run_qa,         "T-007"),
 ]
 
-OPTIONAL_STEPS = [
-    ("scraping",  run_scraping,   "T-008"),
-]
+OPTIONAL_STEPS: list = []
 
 
 def run_full_pipeline():
@@ -224,7 +212,6 @@ if __name__ == "__main__":
         "docs":     run_docs,
         "pitch":    run_pitch,
         "qa":       run_qa,
-        "scraping": run_scraping,
         "status":   lambda o: print(o.status_report()),
     }
 

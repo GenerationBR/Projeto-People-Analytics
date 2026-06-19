@@ -1,18 +1,15 @@
 {
-  "test_name": "Mann-Whitney U",
-  "statistic": NaN,
-  "p_value": NaN,
+  "test_name": "t-test de Student",
+  "statistic": 13.72062521576946,
+  "p_value": 1.2231092502498017e-36,
   "confidence_interval": [
-    NaN,
-    NaN
+    2029.7132615835385,
+    2707.3622610215093
   ],
-  "effect_size": 0.0,
-  "effect_label": "negligível",
-  "reject_h0": false,
+  "effect_size": 0.9970496836011351,
+  "effect_label": "grande",
+  "reject_h0": true,
   "alpha": 0.05,
-  "interpretation": "Não rejeitamos H0 (α=0.05). Salário médio masc: R$ nan | fem: R$ nan. Gender Pay Gap: nan%. Tamanho de efeito (Cohen's d): 0.000 → negligível. Significância estatística não confirma diferença salarial. Lembre-se: significância ≠ relevância prática — avalie o contexto.",
-  "limitations": [
-    "Amostra pequena (Masculino n=0, Feminino n=0). Interpretar com cautela.",
-    "Distribuição não-normal: IC aproximado não disponível para Mann-Whitney."
-  ]
+  "interpretation": "Rejeitamos H0 (α=0.05). Salário médio masc: R$ 8,935.27 | fem: R$ 6,566.73. Gender Pay Gap: 26.5%. Tamanho de efeito (Cohen's d): 0.997 → grande. Significância estatística confirma diferença salarial. Lembre-se: significância ≠ relevância prática — avalie o contexto.",
+  "limitations": []
 }

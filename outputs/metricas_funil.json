@@ -1,6 +1,62 @@
 {
-  "pct_matriculas": [],
-  "taxa_evasao": [],
-  "pct_lideranca": [],
-  "pay_gap_top20": []
+  "dist_genero_por_cargo": [],
+  "pay_gap_dados_2021": [],
+  "lideranca_dados": [],
+  "funil_academico_inep": [
+    {
+      "ano": 2019,
+      "pct_mat_fem": 22.99,
+      "pct_ing_fem": 22.99,
+      "pct_conc_fem": 25.37,
+      "media_evasao_fem": 71.67,
+      "media_evasao_masc": 75.12
+    },
+    {
+      "ano": 2020,
+      "pct_mat_fem": 18.57,
+      "pct_ing_fem": 18.57,
+      "pct_conc_fem": 22.86,
+      "media_evasao_fem": 63.64,
+      "media_evasao_masc": 72.02
+    },
+    {
+      "ano": 2021,
+      "pct_mat_fem": 18.07,
+      "pct_ing_fem": 18.07,
+      "pct_conc_fem": 14.08,
+      "media_evasao_fem": 77.78,
+      "media_evasao_masc": 70.1
+    },
+    {
+      "ano": 2022,
+      "pct_mat_fem": 21.74,
+      "pct_ing_fem": 21.74,
+      "pct_conc_fem": 13.04,
+      "media_evasao_fem": 83.64,
+      "media_evasao_masc": 69.7
+    }
+  ],
+  "pay_gap_global": [],
+  "taxa_evasao": [
+    {
+      "ano": 2019,
+      "tx_evasao_fem_pct": 71.67,
+      "tx_evasao_masc_pct": 75.12
+    },
+    {
+      "ano": 2020,
+      "tx_evasao_fem_pct": 63.64,
+      "tx_evasao_masc_pct": 72.02
+    },
+    {
+      "ano": 2021,
+      "tx_evasao_fem_pct": 77.78,
+      "tx_evasao_masc_pct": 70.1
+    },
+    {
+      "ano": 2022,
+      "tx_evasao_fem_pct": 83.64,
+      "tx_evasao_masc_pct": 69.7
+    }
+  ]
 }

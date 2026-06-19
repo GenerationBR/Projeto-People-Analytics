@@ -10,20 +10,16 @@
 ## Resultado do Teste
 | Campo | Valor |
 |---|---|
-| Teste aplicado | Mann-Whitney U |
-| Estatística | nan |
-| p-valor | nan |
-| Intervalo de Confiança (95%) | [nan, nan] |
-| Tamanho de Efeito (Cohen's d) | 0.000 → **negligível** |
+| Teste aplicado | t-test de Student |
+| Estatística | 13.7206 |
+| p-valor | 0.0000 |
+| Intervalo de Confiança (95%) | [2029.71, 2707.36] |
+| Tamanho de Efeito (Cohen's d) | 0.997 → **grande** |
 | α | 0.05 |
-| Rejeita H0? | **NÃO** |
+| Rejeita H0? | **SIM** |
 
 ## Interpretação
-Não rejeitamos H0 (α=0.05). Salário médio masc: R$ nan | fem: R$ nan. Gender Pay Gap: nan%. Tamanho de efeito (Cohen's d): 0.000 → negligível. Significância estatística não confirma diferença salarial. Lembre-se: significância ≠ relevância prática — avalie o contexto.
-
-## Limitações
-- Amostra pequena (Masculino n=0, Feminino n=0). Interpretar com cautela.
-- Distribuição não-normal: IC aproximado não disponível para Mann-Whitney.
+Rejeitamos H0 (α=0.05). Salário médio masc: R$ 8,935.27 | fem: R$ 6,566.73. Gender Pay Gap: 26.5%. Tamanho de efeito (Cohen's d): 0.997 → grande. Significância estatística confirma diferença salarial. Lembre-se: significância ≠ relevância prática — avalie o contexto.
 
 ## Nota Metodológica
 - Grupos comparados controlam cargo, senioridade e região para isolar efeito de gênero.

@@ -12,26 +12,30 @@ logger = logging.getLogger(__name__)
 
 class EDAAgent(BaseAgent):
     SYSTEM_PROMPT = """
-Você é o Analista de Dados. Sua missão é revelar o FUNIL da mulher na tecnologia.
+Você é o Analista de Dados. O projeto analisa desigualdade de gênero na ÁREA DE DADOS
+(nicho tech no Brasil). A base principal é dado real verificado.
 
-Para cada etapa, calcule a participação feminina e a variação ao longo dos anos:
-1. Matrículas em cursos Tech
-2. Conclusões (e taxa de evasão por gênero)
-3. Empregabilidade no mercado tech
-4. Posições de liderança (conforme definição aprovada: ex. Sênior, Staff, C-Level)
-5. Gender Pay Gap por cargo/região
+OBJETIVO PRINCIPAL: Analisar desigualdade de gênero no mercado de dados brasileiro
+usando o State of Data Brazil 2021 (fato_dados_2021). Comparações globais são feitas
+com fato_mercado_mundial (WomenHack + Brasscom + McKinsey) apenas onde possível.
 
-CONTEXTO DA BASE DE MERCADO:
-A base `base_mercado_tech_brasil.csv` foi simulada a partir de relatórios reais com padrões
-intencionais que devem ser identificados na análise:
-- Gap salarial esperado de ~27% entre homens e mulheres (Brasscom), visível em `salario_base`
-- Cargos e senioridade baseados no State of Data Brazil
-- Gargalo de promoção feminina nos níveis de Diretoria e CTO (McKinsey Women in the Workplace)
-  Explore a sub-representação feminina que aumenta progressivamente nos níveis mais altos.
+ANÁLISES PRIORITÁRIAS (fato_dados_2021):
+1. Distribuição de gênero por cargo (DS, DE, DA, BI Analyst, Analytics Engineer, etc.)
+2. Gender Pay Gap por cargo e UF — onde a diferença é maior?
+3. Broken rung: razão mulheres/homens que chegam a posições de gestão/liderança
+4. Funil acadêmico (fato_educacao_tech — ref. INEP): ~18–21% de ingressantes femininas
+   em Computação → cruzar com % no mercado de dados para medir o "salto"
+5. D&I signal em vagas (fato_vagas_linkedin): % vagas afirmativas por área/UF
 
-Entregue métricas claras e comparáveis (sempre % e variação YoY), gráficos exploratórios
-e uma síntese em linguagem de negócio. Aponte onde está o maior "vazamento" do funil.
-Não tire conclusões causais sem suporte — separe correlação de causalidade.
+COMPARAÇÕES GLOBAIS (fato_mercado_mundial — apenas onde os dados permitem):
+- Pay gap global vs. pay gap brasileiro na área de dados
+- Referências: 29% C-Suite mulheres (WomenHack), broken rung McKinsey, 34,2% Brasscom
+
+Diretrizes:
+- Sempre use % e variação, nunca só números absolutos.
+- Separe correlação de causalidade. Não force conclusões além dos dados.
+- Tabela fato_dados_2021 tem: genero, cargo, salario_midpoint, uf, setor, is_gestor.
+- Tabela fato_mercado_mundial tem: cargo, nivel, genero, regiao, salario_medio_brl.
 """
 
     def __init__(self, db_path: str = "data/analytics.duckdb", output_dir: str = "outputs"):
@@ -49,39 +53,24 @@ Não tire conclusões causais sem suporte — separe correlação de causalidade
 
     # ─── Métricas do funil ────────────────────────────────────────────────────
 
-    def pct_matriculas(self) -> dict:
+    def dist_genero_por_cargo(self) -> dict:
+        """Distribuição de gênero por cargo na área de dados (State of Data 2021)."""
         df = self._query("""
-            SELECT ano, genero,
-                   SUM(qt_matriculas) AS total,
-                   ROUND(SUM(qt_matriculas) * 100.0 /
-                         SUM(SUM(qt_matriculas)) OVER (PARTITION BY ano), 2) AS pct
-            FROM fato_educacao fe
-            JOIN dim_genero g ON g.id_genero = fe.id_genero
-            GROUP BY ano, genero ORDER BY ano, genero
+            SELECT cargo,
+                   COUNT(*) AS total,
+                   SUM(CASE WHEN genero = 'Feminino' THEN 1 ELSE 0 END) AS n_fem,
+                   ROUND(SUM(CASE WHEN genero = 'Feminino' THEN 1 ELSE 0 END) * 100.0 / COUNT(*), 2) AS pct_fem
+            FROM fato_dados_2021
+            GROUP BY cargo
+            HAVING COUNT(*) >= 5
+            ORDER BY pct_fem
         """)
         return df.to_dict("records") if df is not None else []
 
-    def taxa_evasao(self) -> dict:
+    def pay_gap_dados_2021(self) -> dict:
+        """Pay gap por cargo na área de dados — dado real State of Data 2021."""
         df = self._query("""
-            SELECT ano, genero,
-                   ROUND(AVG(tx_evasao) * 100, 2) AS tx_evasao_pct
-            FROM fato_educacao fe
-            JOIN dim_genero g ON g.id_genero = fe.id_genero
-            WHERE tx_evasao IS NOT NULL
-            GROUP BY ano, genero ORDER BY ano, genero
-        """)
-        return df.to_dict("records") if df is not None else []
-
-    def pct_lideranca(self) -> dict:
-        df = self._query("""
-            SELECT ano, no_regiao, genero, pct_genero
-            FROM v_lideranca ORDER BY ano, no_regiao, genero
-        """)
-        return df.to_dict("records") if df is not None else []
-
-    def pay_gap_summary(self) -> dict:
-        df = self._query("""
-            SELECT ano, no_regiao, cargo_std, nivel, pay_gap_pct
+            SELECT cargo, uf, salario_medio_masc, salario_medio_fem, n_masc, n_fem, pay_gap_pct
             FROM v_pay_gap
             WHERE pay_gap_pct IS NOT NULL
             ORDER BY ABS(pay_gap_pct) DESC
@@ -89,43 +78,106 @@ Não tire conclusões causais sem suporte — separe correlação de causalidade
         """)
         return df.to_dict("records") if df is not None else []
 
+    def lideranca_dados(self) -> dict:
+        """Broken rung: % mulheres em posições de gestão por cargo."""
+        df = self._query("""
+            SELECT cargo, total, n_fem, pct_fem, n_gestores, pct_gestoras
+            FROM v_lideranca_dados
+            ORDER BY pct_fem
+        """)
+        return df.to_dict("records") if df is not None else []
+
+    def funil_academico(self) -> dict:
+        """Funil INEP — % mulheres em cursos de Computação (ref. ~18–21%)."""
+        df = self._query("""
+            SELECT ano, pct_mat_fem, pct_ing_fem, pct_conc_fem,
+                   media_evasao_fem, media_evasao_masc
+            FROM v_funil_nacional
+            ORDER BY ano
+        """)
+        return df.to_dict("records") if df is not None else []
+
+    def pay_gap_global(self) -> dict:
+        """Pay gap global para comparação (WomenHack + Brasscom + McKinsey)."""
+        df = self._query("""
+            SELECT cargo, regiao, salario_medio_masc, salario_medio_fem, pay_gap_pct
+            FROM v_pay_gap_global
+            WHERE pay_gap_pct IS NOT NULL
+            ORDER BY ABS(pay_gap_pct) DESC
+            LIMIT 15
+        """)
+        return df.to_dict("records") if df is not None else []
+
+    def pct_matriculas(self) -> dict:
+        """Mantido por compatibilidade — usa v_funil_nacional."""
+        return self.funil_academico()
+
+    def taxa_evasao(self) -> dict:
+        df = self._query("""
+            SELECT ano,
+                   ROUND(AVG(media_evasao_fem), 2)  AS tx_evasao_fem_pct,
+                   ROUND(AVG(media_evasao_masc), 2) AS tx_evasao_masc_pct
+            FROM v_funil_nacional
+            GROUP BY ano ORDER BY ano
+        """)
+        return df.to_dict("records") if df is not None else []
+
+    def pay_gap_summary(self) -> dict:
+        """Alias — usa pay_gap_dados_2021 como fonte principal."""
+        return self.pay_gap_dados_2021()
+
     # ─── Notebook de análise ──────────────────────────────────────────────────
 
     def generate_eda_notebook(self, metricas: dict) -> str:
         return self.ask_llm(
             f"""Crie um notebook Python comentado (formato Markdown com blocos de código Python)
-para análise exploratória do funil da mulher na tecnologia.
+para análise exploratória da desigualdade de gênero na área de dados no Brasil.
+
+BASE PRINCIPAL: State of Data Brazil 2021 (fato_dados_2021 — dado real).
+COMPARAÇÃO GLOBAL: fato_mercado_mundial (WomenHack + Brasscom + McKinsey).
+FUNIL ACADÊMICO: fato_educacao_tech (ref. INEP).
 
 Métricas disponíveis (podem estar vazias se banco ainda não foi populado):
 {json.dumps(metricas, ensure_ascii=False, indent=2)[:3000]}
 
 O notebook deve conter:
-1. Carregamento dos dados do DuckDB (`data/analytics.duckdb`)
-2. Funil de matrículas → conclusões → empregabilidade → liderança → pay gap
-3. Para cada etapa: % feminina, variação YoY, gráfico Plotly
-4. Síntese em linguagem de negócio identificando onde está o maior "vazamento"
-5. Nota explícita: correlação ≠ causalidade
+1. Carregamento do DuckDB (`data/analytics.duckdb`) — tabelas: fato_dados_2021, v_pay_gap,
+   v_lideranca_dados, v_funil_nacional, v_pay_gap_global
+2. Distribuição de gênero por cargo na área de dados (% feminino por cargo)
+3. Gender Pay Gap por cargo e UF — gráfico de barras divergentes
+4. Broken rung: % mulheres em gestão vs. total (funnel chart)
+5. Funil acadêmico INEP: % feminino em Computação por ano
+6. Comparação global: pay gap Brasil (dados) vs. referências internacionais
+7. D&I em vagas de dados (v_vagas_di): % afirmativas por área
+8. Síntese: onde está o maior gap e qual intervenção teria maior impacto
+9. Nota: correlação ≠ causalidade; dado de 2021 pode não refletir o presente
 
-Use Polars para leitura e Plotly para visualização. Inclua paleta de cores acessível."""
+Use Polars para leitura e Plotly para visualização. Paleta acessível (contraste ≥ 4.5:1)."""
         )
-
-    # ─── Síntese executiva ────────────────────────────────────────────────────
 
     def generate_executive_summary(self, metricas: dict) -> str:
         return self.ask_llm(
-            f"""Com base nas métricas abaixo de People Analytics & DE&I, redija uma síntese executiva
-(máx 400 palavras) em linguagem de negócio para RH e diretoria.
+            f"""Com base nas métricas abaixo, redija uma síntese executiva (máx 400 palavras)
+sobre desigualdade de gênero na área de dados no Brasil. Público: gestores e RH.
+
+Contexto do projeto:
+- Base principal: State of Data Brazil 2021 (dado real verificado)
+- Foco: profissionais de dados (DS, DE, DA, BI Analyst, Analytics Engineer)
+- Comparação global disponível: WomenHack 2026 (29% C-Suite mulheres), Brasscom 2024/25
+  (34,2% TIC Brasil, gap ~27%), McKinsey/LeanIn 2025 (broken rung: 87 vs 100)
 
 Métricas:
 {json.dumps(metricas, ensure_ascii=False, indent=2)[:3000]}
 
 Estrutura:
-1. Contexto: panorama da entrada feminina na tech
-2. O funil: onde ocorrem os maiores vazamentos
-3. Pay gap: evidências e limitações
-4. Ponto de atenção: onde intervir tem maior impacto
+1. Contexto: por que analisar especificamente a área de dados?
+2. O cenário nacional: participação feminina por cargo (dado real 2021)
+3. Pay gap: onde é maior e menor na área de dados
+4. Broken rung: barreira de acesso à gestão
+5. Comparação global: Brasil vs. referências internacionais
+6. Ponto de maior impacto: onde intervir primeiro
 
-Se os dados estiverem vazios, gere a estrutura com placeholders [X%] prontos para preenchimento."""
+Se dados estiverem vazios, use placeholders [X%] prontos para preenchimento."""
         )
 
     # ─── run() ────────────────────────────────────────────────────────────────
@@ -134,10 +186,12 @@ Se os dados estiverem vazios, gere a estrutura com placeholders [X%] prontos par
         self.log_action("EDA Agent iniciado")
 
         metricas = {
-            "pct_matriculas": self.pct_matriculas(),
-            "taxa_evasao": self.taxa_evasao(),
-            "pct_lideranca": self.pct_lideranca(),
-            "pay_gap_top20": self.pay_gap_summary(),
+            "dist_genero_por_cargo":   self.dist_genero_por_cargo(),
+            "pay_gap_dados_2021":      self.pay_gap_dados_2021(),
+            "lideranca_dados":         self.lideranca_dados(),
+            "funil_academico_inep":    self.funil_academico(),
+            "pay_gap_global":          self.pay_gap_global(),
+            "taxa_evasao":             self.taxa_evasao(),
         }
 
         notebook = self.generate_eda_notebook(metricas)

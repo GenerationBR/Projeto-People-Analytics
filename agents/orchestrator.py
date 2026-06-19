@@ -30,18 +30,16 @@ como risco e proponha alternativas. Mantenha um log de premissas versionado.
 
     # Fases e ordem de dependências
     PIPELINE = [
-        ("T-001", "etl",        "Extrair e tratar INEP e base de mercado tech brasil (Brasscom+StateOfData+McKinsey)"),
-        ("T-002", "modeling",   "Modelar banco analítico (esquema estrela)"),
-        ("T-003", "eda",        "Análise exploratória e funil feminino"),
-        ("T-004", "statistics", "Teste de hipótese — Gender Pay Gap"),
-        ("T-005", "docs",       "Dicionário de dados e README"),
-        ("T-006", "pitch",      "Montar pitch executivo"),
+        ("T-001", "etl",        "ETL: State of Data 2021 (principal) + mercado mundial + INEP + LinkedIn"),
+        ("T-002", "modeling",   "Modelar banco analítico DuckDB (fato_dados_2021 como tabela central)"),
+        ("T-003", "eda",        "EDA: desigualdade de gênero na área de dados — pay gap, broken rung, funil"),
+        ("T-004", "statistics", "Teste de hipótese — Gender Pay Gap na área de dados (State of Data 2021)"),
+        ("T-005", "docs",       "Dicionário de dados e README com novas fontes"),
+        ("T-006", "pitch",      "Pitch executivo com foco em dados e comparações globais"),
         ("T-007", "qa",         "Validar consistência de todos os entregáveis"),
     ]
 
-    OPTIONAL = [
-        ("T-008", "scraping", "Web scraping LinkedIn — vagas com menção a D&I"),
-    ]
+    OPTIONAL: list = []
 
     def __init__(self, output_dir: str = "outputs"):
         super().__init__("orchestrator", output_dir=output_dir)
@@ -160,8 +158,11 @@ Tom: objetivo e direto para um gerente de projeto."""
         # Gera o plano de execução
         plano = self.ask_llm(
             "Crie um plano de execução detalhado com dependências para o projeto de People Analytics "
-            "sobre trajetória feminina na tecnologia. Pipeline: ETL → Modelagem → EDA → Estatística → "
-            "BI → Docs → Pitch → QA. Inclua critérios de aceite para cada entregável."
+            "sobre desigualdade de gênero na área de dados no Brasil. "
+            "Base principal: State of Data Brazil 2021 (dado real). "
+            "Comparação global: WomenHack 2026 + Brasscom 2024/25 + McKinsey/LeanIn 2025. "
+            "Pipeline: ETL → Modelagem → EDA → Estatística → Docs → Pitch → QA. "
+            "Inclua critérios de aceite para cada entregável."
         )
 
         plan_path = self.save_output("plano_execucao.md", plano)

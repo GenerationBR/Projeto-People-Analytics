@@ -12,32 +12,36 @@ logger = logging.getLogger(__name__)
 
 class ETLAgent(BaseAgent):
     SYSTEM_PROMPT = """
-Você é o Engenheiro de Dados (ETL) do projeto. Trabalha com bases massivas de educação
-(INEP) e de mercado (base_mercado_tech_brasil.csv — dataset simulado).
+Você é o Engenheiro de Dados (ETL) do projeto. O foco mudou: analisamos desigualdade de
+gênero na ÁREA DE DADOS (nicho tech) no Brasil, com dado real verificado.
 
-ATENÇÃO — Base de mercado:
-A base `data/raw/base_mercado_tech_brasil.csv` é um dataset mockado pedagogicamente a
-partir de três referências de mercado:
-  1. Brasscom (salario_base): valores derivados do relatório Brasscom com multiplicador
-     que gera ~27% de gap salarial entre gêneros — padrão intencional e detectável.
-  2. State of Data Brazil (cargos): nomes de cargos e tempo médio de experiência por
-     nível hierárquico (Júnior → Pleno → Sênior → Liderança → Diretoria → C-Level).
-  3. McKinsey — Women in the Workplace (promoção/retenção): lógica de gargalo no meio
-     da pirâmide corporativa; dificuldade estatística maior para mulheres em Diretoria/CTO.
-Esta base possui coluna de gênero e é adequada para análise de pay gap e liderança.
+BASES DE DADOS DO PROJETO:
+
+1. base_mercado_dados_2021_brasil.csv — BASE PRINCIPAL (dado real)
+   Survey State of Data Brazil 2021 (Data Hackers / Bain & Company).
+   Profissionais da área de dados no Brasil: DS, DE, DA, BI Analyst, Analytics Engineer, etc.
+   Colunas no formato ('P1_a', 'Label') — parser flexível por label já implementado.
+   Extrai: gênero, cargo, faixa salarial (midpoint BRL), UF, setor, gestão, experiência.
+
+2. base_mercado_tech_mundial.csv — COMPARAÇÃO GLOBAL (não é a base principal)
+   Compilado: WomenHack 2026 + Brasscom 2024/25 + McKinsey/LeanIn Women in the Workplace 2025.
+   Dados de referência: 29% C-Suite mulheres, 15% CTOs, gap salarial ~27%, broken rung.
+   Usar APENAS para contextualização e comparação com o cenário internacional.
+
+3. base_campus_ti_brasil.csv — FUNIL ACADÊMICO (simulado com base no INEP)
+   ~18–21% mulheres ingressando em Computação no Brasil.
+   Cruzamento com mercado é AGREGADO (sem CPF individual — conforme LGPD).
+
+4. generation_linkedin_vagas_tecnologia.csv — D&I SIGNAL (já coletado, sem scraping)
+   Vagas coletadas pela Generation. Classifica tipo D&I: Exclusiva | Afirmativa | Aberta.
 
 Diretrizes técnicas:
-- Para o INEP, NUNCA carregue o arquivo inteiro em memória. Use leitura por chunks ou
-  Polars/DuckDB, selecione só as colunas necessárias e salve em Parquet.
-- Filtre os dados educacionais EXCLUSIVAMENTE para Computação, TI e Engenharias, usando
-  a tabela de mapeamento de cursos fornecida/aprovada.
-- Trate outliers salariais com método estatístico explícito (IQR ou percentis). Registre
-  quantas linhas foram afetadas e por quê. Jamais descarte dados sem documentar.
-- Harmonize as bases em categorias comuns: Ano, Região, Gênero, Faixa Salarial, Cargo.
-  Como não há CPF para cruzar educação x mercado, o cruzamento é AGREGADO, não individual.
-
-Saída esperada: arquivos Parquet + um relatório de qualidade (linhas, nulos, outliers
-removidos, distribuições). Reporte qualquer anomalia ao Orquestrador.
+- State of Data 2021: parse das colunas via label (ex.: 'gênero', 'cargo atual', 'faixa salarial').
+  Converter faixa salarial para midpoint BRL. Filtrar apenas Feminino/Masculino para análise.
+- Winsorização p01-p99 nos salários do dataset global para comparação limpa.
+- Trate outliers com método explícito. Registre linhas afetadas. Nunca descarte sem documentar.
+- Saída: fato_dados_2021 (principal), fato_mercado_mundial (global), fato_educacao_tech,
+  fato_vagas_linkedin — todos no DuckDB analytics.duckdb.
 """
 
     def __init__(self, config_dir: str = "config", data_dir: str = "data", output_dir: str = "outputs"):
@@ -162,51 +166,56 @@ removidos, distribuições). Reporte qualquer anomalia ao Orquestrador.
 
         # Descoberta automática de arquivos brutos
         raw_dir = Path(self.tools.raw_dir)
-        inep_files = list(raw_dir.glob("*INEP*.*")) + list(raw_dir.glob("*inep*.*")) + list(raw_dir.glob("*microdados*.*"))
-        salary_files = (
-            list(raw_dir.glob("*salary*.*")) +
-            list(raw_dir.glob("*salaries*.*")) +
-            list(raw_dir.glob("*stackoverflow*.*")) +
-            list(raw_dir.glob("*base_mercado*.*"))
-        )
+        campus_files  = list(raw_dir.glob("*campus*.*")) + list(raw_dir.glob("*inep*.*"))
+        dados21_files = list(raw_dir.glob("*dados_2021*.*")) + list(raw_dir.glob("*state_of_data*.*"))
+        mundial_files = list(raw_dir.glob("*mundial*.*")) + list(raw_dir.glob("*global*.*"))
+        linkedin_files = list(raw_dir.glob("*linkedin*.*")) + list(raw_dir.glob("*vagas*.*"))
 
-        if not inep_files and not salary_files:
+        all_found = campus_files or dados21_files or mundial_files or linkedin_files
+
+        if not all_found:
             open_questions.append(
                 "Nenhum arquivo bruto encontrado em data/raw/. "
-                "Baixar microdados INEP de https://www.gov.br/inep e bases salariais do Kaggle/StackOverflow."
+                "Verificar presença de: base_mercado_dados_2021_brasil.csv, "
+                "base_mercado_tech_mundial.csv, base_campus_ti_brasil.csv, "
+                "generation_linkedin_vagas_tecnologia.csv."
             )
-            self.log_action("AVISO: data/raw/ vazio. ETL aguarda dados.")
+            self.log_action("AVISO: data/raw/ vazio ou arquivos esperados ausentes.")
         else:
-            for f in inep_files:
+            for f in campus_files:
                 result = self.process_inep(str(f))
                 artifacts.append({"type": "parquet", "path": result["path"], "source": "INEP"})
 
-            for f in salary_files:
-                source = "StackOverflow" if "stackoverflow" in f.name.lower() else "Kaggle"
-                result = self.process_salaries(str(f), source=source)
+            for f in dados21_files:
+                result = self.process_salaries(str(f), source="StateOfData2021")
                 if not result.get("skipped"):
-                    artifacts.append({"type": "parquet", "path": result["path"], "source": source})
+                    artifacts.append({"type": "parquet", "path": result["path"], "source": "StateOfData2021"})
+
+            for f in mundial_files:
+                result = self.process_salaries(str(f), source="MercadoMundial")
+                if not result.get("skipped"):
+                    artifacts.append({"type": "parquet", "path": result["path"], "source": "MercadoMundial"})
+
+        # Popula o DuckDB com etl_pipeline.py (único que parseia corretamente as colunas
+        # tuple-format do State of Data 2021 e carrega fato_dados_2021 + fato_mercado_mundial)
+        try:
+            import etl_pipeline as _etl
+            _etl.main()
+            self.log_action("DuckDB populado via etl_pipeline.main()")
+            artifacts.append({"type": "duckdb", "path": str(_etl.DB)})
+        except Exception as e:
+            logger.warning(f"etl_pipeline.main() falhou: {e}")
+            open_questions.append(f"etl_pipeline.main() não executado: {e}")
 
         # Gera relatório de qualidade
         report_md = self.generate_quality_report_md()
         report_path = self.save_output("qualidade_dados_etl.md", report_md)
         artifacts.append({"type": "report", "path": str(report_path)})
 
-        # LLM gera instruções de download se não há dados
-        if not inep_files:
-            instrucoes = self.ask_llm(
-                "Gere instruções detalhadas passo a passo para baixar os microdados do "
-                "Censo da Educação Superior INEP (últimos 5 anos) e as bases do Kaggle "
-                "'Data Science and STEM Salaries' e do StackOverflow Developer Survey. "
-                "Inclua links diretos, formato esperado dos arquivos e onde salvá-los."
-            )
-            instrucoes_path = self.save_output("instrucoes_download_dados.md", instrucoes)
-            artifacts.append({"type": "instructions", "path": str(instrucoes_path)})
-
         return self.build_message(
             to_agent="modeling",
             task_id="T-001",
-            status="done" if (inep_files or salary_files) else "needs_human_approval",
+            status="done" if all_found else "needs_human_approval",
             artifacts=artifacts,
             assumptions=assumptions,
             open_questions=open_questions,

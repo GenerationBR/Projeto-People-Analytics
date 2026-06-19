@@ -12,14 +12,25 @@ logger = logging.getLogger(__name__)
 
 class DocsAgent(BaseAgent):
     SYSTEM_PROMPT = """
-Você é o agente de Documentação. Produza:
-1. DICIONÁRIO DE DADOS: cada tabela e coluna (nome, tipo, descrição, origem, regra de
-   transformação). Inclua a tabela de mapeamento "curso → categoria Tech" e
-   "cargo bruto → cargo padronizado".
-2. README.md: objetivo, fontes, pipeline ETL, como rodar, e — com destaque — TODAS as
-   premissas (ex.: definição de "liderança", critério de outliers, recorte de eixos).
-Escreva de forma que qualquer pessoa reproduza o projeto. Premissas sensíveis de DE&I
-devem estar explícitas e datadas.
+Você é o agente de Documentação. O projeto analisa desigualdade de gênero na área de
+DADOS no Brasil. Documente todas as fontes, tabelas e decisões metodológicas.
+
+Produza:
+1. DICIONÁRIO DE DADOS: cada tabela e coluna (nome, tipo, descrição, origem, regra).
+   Destaque que fato_dados_2021 é dado real e as demais são contexto/comparação.
+2. README.md: objetivo, fontes, pipeline, como rodar, premissas sensíveis datadas.
+
+Fontes do projeto:
+- fato_dados_2021: State of Data Brazil 2021 — Data Hackers / Bain & Company (DADO REAL)
+- fato_mercado_mundial: WomenHack 2026 + Brasscom 2024/25 + McKinsey/LeanIn 2025 (comparação global)
+- fato_educacao_tech: INEP Censo Superior (simulado — funil acadêmico)
+- fato_vagas_linkedin: Vagas coletadas pela Generation (D&I signal — sem scraping ativo)
+
+Premissas sensíveis que devem estar explícitas:
+- Salário no State of Data 2021 é faixa declarada → usado midpoint para análise quantitativa
+- Cruzamento educação × mercado é AGREGADO (sem CPF individual — conforme LGPD)
+- Gênero binário (Feminino/Masculino) por limitação das fontes; registrar como limitação
+- Broken rung medido via is_gestor (auto-declarado no survey)
 """
 
     def __init__(self, config_dir: str = "config", output_dir: str = "outputs"):
@@ -39,44 +50,50 @@ devem estar explícitas e datadas.
 
         return self.ask_llm(
             f"""Gere um Dicionário de Dados completo em Markdown para o projeto People Analytics
-sobre trajetória feminina na tecnologia.
+sobre desigualdade de gênero na área de DADOS no Brasil.
 
-Tabelas do banco DuckDB (analytics.duckdb):
+TABELAS DO BANCO DuckDB (analytics.duckdb):
 
-FATOS:
-- fato_educacao: id, ano, co_regiao, id_genero, co_curso, qt_matriculas, qt_ingressantes, qt_concluintes, qt_evasao, tx_evasao
-- fato_mercado: id, ano, co_regiao, id_genero, id_cargo, faixa_salarial, qt_empregados, salario_medio, salario_mediano, fonte
+BASE PRINCIPAL (dado real):
+- fato_dados_2021: genero, cargo, cargo_raw, salario_midpoint, uf, setor, is_gestor, experiencia_raw
+  Origem: State of Data Brazil 2021 — Data Hackers / Bain & Company
+  Nota: salario_midpoint = ponto médio da faixa salarial auto-declarada no survey
 
-DIMENSÕES:
-- dim_tempo: ano, decada, periodo
-- dim_regiao: co_regiao, no_regiao, sigla_regiao
-- dim_genero: id_genero, genero
-- dim_curso_tech: co_curso, no_curso, categoria, eixo_inep
-- dim_cargo: id_cargo, cargo_bruto, cargo_std, nivel, eh_lideranca
+COMPARAÇÃO GLOBAL:
+- fato_mercado_mundial: cargo, nivel, genero, regiao, n, salario_medio_brl, salario_mediano_brl
+  Origem compilada: WomenHack 2026 + Brasscom Diversidade 2024/25 + McKinsey/LeanIn Women in the Workplace 2025
+
+FUNIL ACADÊMICO (simulado ref. INEP):
+- fato_educacao_tech: ano, regiao, co_regiao, area_geral, qt_mat_fem, qt_mat_masc, qt_ing_fem,
+  qt_ing_masc, qt_conc_fem, qt_conc_masc, qt_mat_total, qt_ing_total, qt_conc_total,
+  pct_mat_fem, pct_ing_fem, pct_conc_fem, tx_evasao_fem_pct, tx_evasao_masc_pct
+
+D&I SIGNAL:
+- fato_vagas_linkedin: id, empresa, titulo, nivel, area_tech, cidade, uf, remoto,
+  tipo_di, eh_di, mes_ano, inserted_at, descricao
+  Origem: Vagas coletadas pela Generation (sem scraping ativo — base já disponível)
 
 VIEWS:
-- v_funil_educacao, v_pay_gap, v_lideranca
+- v_pay_gap: pay gap por cargo × UF (fonte: fato_dados_2021)
+- v_lideranca_dados: % mulheres em gestão por cargo (fonte: fato_dados_2021)
+- v_pay_gap_global: pay gap global por cargo × região (fonte: fato_mercado_mundial)
+- v_funil_nacional: funil educacional agregado (fonte: fato_educacao_tech)
+- v_funil_por_regiao: funil por região (fonte: fato_educacao_tech)
+- v_vagas_di: análise D&I de vagas (fonte: fato_vagas_linkedin)
 
-ARQUIVOS PARQUET em data/treated/:
-- fato_educacao_raw.parquet (origem: INEP microdados)
-- fato_mercado_basemercadobrasil_raw.parquet (origem: base_mercado_tech_brasil.csv — dataset simulado)
+PREMISSAS SENSÍVEIS:
+- Salário midpoint: faixa declarada no survey → midpoint usado para análise quantitativa
+- Cruzamento AGREGADO: sem CPF individual (LGPD)
+- Gênero binário por limitação das fontes (registrar como limitação ética)
+- Broken rung via is_gestor auto-declarado (viés de auto-percepção possível)
+- Referências externas não foram auditadas individualmente
 
-METODOLOGIA DO DATASET DE MERCADO (base_mercado_tech_brasil.csv):
-Dataset simulado para fins pedagógicos, construído sobre três referências reais:
-1. Brasscom — salario_base: multiplicador que gera ~27% de gap salarial entre gêneros (intencional)
-2. State of Data Brazil — nomes de cargos e experiência média por nível hierárquico
-3. McKinsey Women in the Workplace — lógica de promoção com gargalo estatístico para mulheres
-   alcançarem Diretoria e CTO (padrão embutido para exploração na visualização)
-
-Premissas registradas:
+Premissas registradas no config:
 {json.dumps(premises, ensure_ascii=False, indent=2)[:2000]}
 
-Mapeamento de cursos Tech:
-{json.dumps(course_map, ensure_ascii=False, indent=2)[:1000]}
-
-Para cada tabela: nome, descrição, origem dos dados, regras de transformação aplicadas.
+Para cada tabela: nome, descrição, origem, regras de transformação.
 Para cada coluna: nome, tipo, descrição, valores possíveis, regra de negócio.
-Inclua seção de "Premissas Sensíveis DE&I" com data e status de aprovação."""
+Inclua seção "Premissas Sensíveis DE&I" com data e status de aprovação."""
         )
 
     def generate_readme(self) -> str:
@@ -85,26 +102,34 @@ Inclua seção de "Premissas Sensíveis DE&I" com data e status de aprovação."
         return self.ask_llm(
             f"""Gere um README.md completo para o projeto People Analytics & DE&I.
 
-Título: "A Trajetória Feminina do Câmpus ao Mercado Tech — People Analytics & DE&I"
+Título: "Desigualdade de Gênero na Área de Dados — People Analytics & DE&I"
+Subtítulo: "Análise da trajetória feminina no mercado de dados brasileiro"
 
 Contexto do projeto:
-- Objetivo: mapear o funil da mulher na tecnologia no Brasil (e dados globais)
-- Fontes: INEP Censo Superior (≥5 anos), base_mercado_tech_brasil.csv (dataset simulado: Brasscom + State of Data Brazil + McKinsey)
-- Entregas: banco analítico, dicionário de dados, dashboard Power BI, pitch executivo
+- Objetivo PRINCIPAL: Analisar desigualdade de gênero no mercado de dados no Brasil
+  usando dado real verificado (State of Data Brazil 2021)
+- Foco: profissionais de dados (DS, DE, DA, BI Analyst, Analytics Engineer, etc.)
+- Comparações globais: WomenHack 2026, Brasscom 2024/25, McKinsey/LeanIn 2025
+- Funil acadêmico: ref. INEP (simulado — ~18–21% mulheres em Computação)
+- D&I em vagas: Generation LinkedIn (vagas já coletadas — sem scraping ativo)
+- Entregas: banco analítico DuckDB, dicionário de dados, dashboard HTML, pitch executivo
 
-Premissas críticas registradas:
+Premissas críticas:
 {json.dumps(premises.get("premissas", {}), ensure_ascii=False, indent=2)[:1500]}
 
 O README deve conter:
-1. Descrição do projeto e problema de negócio
-2. Estrutura de pastas do repositório (tree detalhada)
-3. Fontes de dados e como obtê-las (INEP: links gov.br; base de mercado: dataset simulado incluso no repo)
+1. Descrição do projeto e problema de negócio (foco em dados, não tech genérico)
+2. Estrutura de pastas do repositório
+3. Fontes de dados:
+   - base_mercado_dados_2021_brasil.csv: State of Data Brazil 2021 (incluso no repo — dado real)
+   - base_mercado_tech_mundial.csv: compilado global (incluso no repo)
+   - base_campus_ti_brasil.csv: ref. INEP (incluso no repo — simulado)
+   - generation_linkedin_vagas_tecnologia.csv: vagas Generation (incluso no repo)
 4. Como instalar dependências (pip install -r requirements.txt)
-5. Como executar o pipeline completo (python main.py)
-6. Como rodar o Data App (streamlit run app/calculadora.py)
-7. Seção PREMISSAS (em destaque) com todas as decisões metodológicas, datas e status
-8. Limitações e avisos éticos (LGPD, cruzamento apenas agregado)
-9. Estrutura dos agentes de IA e como estender o sistema
+5. Como executar o pipeline completo (python main.py) e o ETL isolado (python etl_pipeline.py)
+6. Seção PREMISSAS (em destaque) com todas as decisões metodológicas, datas e status
+7. Limitações éticas: LGPD, cruzamento agregado, gênero binário, dado de 2021
+8. Estrutura dos agentes de IA
 
 Tom: técnico mas acessível. Data: {datetime.now().strftime('%Y-%m-%d')}."""
         )

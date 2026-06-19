@@ -1,19 +1,16 @@
 {
-  "run_at": "2026-06-18T21:45:32.194502",
+  "run_at": "2026-06-19T15:36:09.697619",
   "results": {
     "etl": {
-      "status": "done"
+      "status": null
     },
     "modeling": {
-      "status": "done"
+      "status": null
     },
     "eda": {
       "status": "done"
     },
     "stats": {
-      "status": "done"
-    },
-    "bi": {
       "status": "done"
     },
     "docs": {
@@ -23,12 +20,6 @@
       "status": "done"
     },
     "qa": {
-      "status": "done"
-    },
-    "scraping": {
-      "status": "needs_human_approval"
-    },
-    "dataapp": {
       "status": "done"
     }
   }

@@ -1,13 +1,17 @@
 """
 ETL Pipeline — People Analytics & DE&I
-Lê os dados mockados do campus TI (referência INEP) e a base de mercado tech.
-Produz CSV tratado e banco DuckDB prontos para análise.
+Foco: Desigualdade de gênero na área de DADOS (nicho tech no Brasil).
 
 Fontes dos dados raw:
-  - base_campus_ti_brasil.csv   → INEP — Censo da Educação Superior (dataset simulado)
-  - base_mercado_tech_brasil.csv → Brasscom (salários) + Tech4Humans (cargos/níveis)
-                                   + McKinsey Women in the Workplace (promoção/liderança)
-  - generation_linkedin_vagas_tecnologia.csv → scraping de vagas LinkedIn (dataset simulado)
+  - base_mercado_dados_2021_brasil.csv → State of Data Brazil 2021 (Data Hackers / Bain & Co.)
+                                          Dado REAL verificado — BASE PRINCIPAL DA ANÁLISE.
+                                          Mercado nacional de dados: salários, cargos, experiência.
+  - base_mercado_tech_mundial.csv      → Compilado: WomenHack (2026) + Brasscom (2024/25)
+                                          + McKinsey/LeanIn Women in the Workplace (2025).
+                                          Usado apenas para comparações globais (pay gap, liderança).
+  - base_campus_ti_brasil.csv         → INEP — Censo da Educação Superior (dataset simulado).
+                                          Funil acadêmico: ~18–21% mulheres em Computação.
+  - generation_linkedin_vagas_tecnologia.csv → Vagas coletadas pela Generation (D&I signal).
 
 Uso: python etl_pipeline.py
 """
@@ -27,11 +31,12 @@ OUT    = BASE / "data" / "treated"
 DB     = BASE / "data" / "analytics.duckdb"
 OUT.mkdir(parents=True, exist_ok=True)
 
-# ─── Caminhos dos arquivos raw (datasets mockados) ────────────────────────────
+# ─── Caminhos dos arquivos raw ────────────────────────────────────────────────
 
-CAMPUS_FILE   = RAW / "base_campus_ti_brasil.csv"           # INEP (mockado)
-MERCADO_FILE  = RAW / "base_mercado_tech_brasil.csv"        # Brasscom + Tech4Humans + McKinsey (mockado)
-LINKEDIN_FILE = RAW / "generation_linkedin_vagas_tecnologia.csv"  # LinkedIn (mockado)
+CAMPUS_FILE    = RAW / "base_campus_ti_brasil.csv"                 # INEP (simulado)
+MERCADO_FILE   = RAW / "base_mercado_tech_mundial.csv"             # Global: WomenHack + Brasscom + McKinsey
+DADOS_2021_FILE = RAW / "base_mercado_dados_2021_brasil.csv"       # State of Data Brazil 2021 (REAL)
+LINKEDIN_FILE  = RAW / "generation_linkedin_vagas_tecnologia.csv"  # Vagas Generation
 
 # ─── Mapeamento instituição → região ──────────────────────────────────────────
 # O dataset simulado cobre instituições do eixo Sudeste.
@@ -206,25 +211,26 @@ def aggregate_campus(rows: list[dict]) -> list[dict]:
     return sorted(result, key=lambda r: (r["ano"], r["regiao"]))
 
 
-# ─── ETL Base de Mercado Tech Brasil ──────────────────────────────────────────
-# Fonte: dataset simulado com referências:
-#   - Brasscom — Relatório de Diversidade (salario_base, gap ~27%)
-#   - Tech4Humans — Artigo Mulheres na Tecnologia (cargos e níveis hierárquicos)
-#   - McKinsey — Women in the Workplace (lógica de promoção e gargalo de liderança)
+# ─── ETL Base de Mercado Mundial (comparação global) ─────────────────────────
+# Fonte: compilado WomenHack (2026) + Brasscom (2024/25) + McKinsey/LeanIn (2025)
+# Usado APENAS para comparações globais (pay gap, liderança, retenção).
+# Colunas: genero, cargo, setor, salario_base, anos_experiencia,
+#           tempo_empresa_meses, promovido_ultimo_ano, transicao_carreira
 
-def etl_mercado_brasil() -> list[dict]:
+def etl_mercado_mundial() -> list[dict]:
     """
-    Lê base_mercado_tech_brasil.csv — dataset simulado pedagogicamente.
-    Gap salarial de ~27% entre gêneros embutido (ref. Brasscom).
-    Gargalo de liderança feminina em Diretoria/CTO embutido (ref. McKinsey).
+    Lê base_mercado_tech_mundial.csv — compilado de dados globais de mercado.
+    WomenHack 2026: 29% C-Suite mulheres, 15% CTOs, retenção 3,1 vs 4,2 anos.
+    Brasscom 2024/25: 34,2% mulheres em TIC no Brasil, gap salarial ~27%.
+    McKinsey/LeanIn 2025: broken rung — 87 mulheres promovidas p/ gerência vs 100 homens.
     """
     rows = []
 
     if not MERCADO_FILE.exists():
-        logger.warning(f"Base de mercado não encontrada: {MERCADO_FILE}")
+        logger.warning(f"Base de mercado mundial não encontrada: {MERCADO_FILE}")
         return rows
 
-    logger.info(f"Processando base de mercado ({MERCADO_FILE.stat().st_size / 1024:.1f} KB)...")
+    logger.info(f"Processando base de mercado mundial ({MERCADO_FILE.stat().st_size / 1024:.1f} KB)...")
 
     salaries = []
     with open(MERCADO_FILE, encoding="utf-8") as f:
@@ -281,20 +287,19 @@ def etl_mercado_brasil() -> list[dict]:
 
     with open(OUT / "qualidade_mercado.json", "w", encoding="utf-8") as f:
         json.dump({
-            "dataset":                 "base_mercado_tech_brasil.csv",
-            "tipo":                    "dataset_simulado",
-            "total_linhas":            len(rows),
-            "p01_brl":                 p1,
-            "p99_brl":                 p99,
-            "linhas_winsorized":       winsorized,
-            "n_feminino":              n_fem,
-            "n_masculino":             n_masc,
-            "possui_coluna_genero":    True,
-            "gap_salarial_esperado_pct": 27,
-            "fontes_metodologia": {
-                "salario_base":    "Brasscom — Relatório de Diversidade (~27% gap intencional entre gêneros)",
-                "cargos_e_niveis": "Tech4Humans — Artigo Mulheres na Tecnologia",
-                "logica_promocao": "McKinsey — Women in the Workplace (gargalo Diretoria/CTO)",
+            "dataset":           "base_mercado_tech_mundial.csv",
+            "tipo":              "dataset_compilado_global",
+            "uso":               "Comparação global — não é a base principal",
+            "total_linhas":      len(rows),
+            "p01_brl":           p1,
+            "p99_brl":           p99,
+            "linhas_winsorized": winsorized,
+            "n_feminino":        n_fem,
+            "n_masculino":       n_masc,
+            "fontes": {
+                "WomenHack_2026":      "29% C-Suite mulheres, 15% CTOs, retenção 3,1 vs 4,2 anos",
+                "Brasscom_2024_25":    "34,2% mulheres em TIC no Brasil, gap salarial ~27%",
+                "McKinsey_LeanIn_2025": "Broken rung: 87 mulheres promovidas p/ gerência vs 100 homens",
             },
         }, f, ensure_ascii=False, indent=2)
 
@@ -331,8 +336,178 @@ def aggregate_mercado(rows: list[dict]) -> list[dict]:
     return sorted(result, key=lambda r: (-r["n"], r["cargo"]))
 
 
+# ─── ETL State of Data Brazil 2021 (BASE PRINCIPAL) ──────────────────────────
+# Dado REAL verificado. Survey com profissionais da área de dados no Brasil.
+# Colunas no formato ('P1_a', 'Label') — tratadas pelo parser abaixo.
+
+_SALARY_MIDPOINTS = [
+    ("menos de r$ 1.000", 750),
+    ("de r$ 1.001", 1500),
+    ("de r$ 2.001", 2500),
+    ("de r$ 3.001", 3500),
+    ("de r$ 4.001", 5000),
+    ("de r$ 6.001", 7000),
+    ("de r$ 8.001", 10000),
+    ("de r$ 12.001", 14000),
+    ("de r$ 16.001", 18000),
+    ("de r$ 20.001", 22500),
+    ("de r$ 25.001", 27500),
+    ("de r$ 30.001", 35000),
+    ("acima de r$ 40.001", 45000),
+]
+
+_CARGO_NORM = {
+    "analista de dados":    "Data Analyst",
+    "data analyst":         "Data Analyst",
+    "cientista de dados":   "Data Scientist",
+    "data scientist":       "Data Scientist",
+    "engenheiro de dados":  "Data Engineer",
+    "data engineer":        "Data Engineer",
+    "analytics engineer":   "Analytics Engineer",
+    "analista de bi":       "BI Analyst",
+    "bi analyst":           "BI Analyst",
+    "inteligência de negócio": "BI Analyst",
+    "dba":                  "DBA",
+    "banco de dados":       "DBA",
+    "machine learning":     "ML Engineer",
+    "gestor":               "Gestor/Liderança",
+    "gerente":              "Gestor/Liderança",
+    "coordenador":          "Gestor/Liderança",
+    "líder":                "Gestor/Liderança",
+    "lider":                "Gestor/Liderança",
+    "head":                 "Gestor/Liderança",
+    "c-level":              "C-Level",
+    "cdo":                  "C-Level",
+    "cio":                  "C-Level",
+    "cto":                  "C-Level",
+    "diretor":              "C-Level",
+    "estatístico":          "Estatístico",
+    "arquiteto":            "Arquiteto de Dados",
+}
+
+
+def _parse_salary_2021(val: str) -> float | None:
+    v = str(val).lower().strip()
+    for pattern, mid in _SALARY_MIDPOINTS:
+        if pattern in v:
+            return float(mid)
+    return None
+
+
+def _normalize_cargo_2021(val: str) -> str:
+    v = str(val).lower().strip()
+    for pattern, normalized in _CARGO_NORM.items():
+        if pattern in v:
+            return normalized
+    return str(val).strip() if val else "Outro"
+
+
+def _parse_col_name(col: str) -> tuple[str, str]:
+    """Extrai (código, label) de nomes no formato ('P1_a', 'Idade')."""
+    col = col.strip()
+    if col.startswith("('") and "', '" in col:
+        inner = col.strip("()'")
+        parts = inner.split("', '")
+        code  = parts[0].strip("'")
+        label = parts[1].strip("'") if len(parts) > 1 else col
+        return code, label
+    return col, col
+
+
+def etl_dados_2021() -> list[dict]:
+    """
+    Lê base_mercado_dados_2021_brasil.csv — State of Data Brazil 2021.
+    BASE PRINCIPAL: dado real de profissionais da área de dados no Brasil.
+    Extrai: gênero, cargo, faixa salarial, UF, setor, gestão, experiência.
+    """
+    rows = []
+
+    if not DADOS_2021_FILE.exists():
+        logger.warning(f"State of Data 2021 não encontrado: {DADOS_2021_FILE}")
+        return rows
+
+    logger.info(f"Processando State of Data 2021 ({DADOS_2021_FILE.stat().st_size / 1024:.1f} KB)...")
+
+    with open(DADOS_2021_FILE, encoding="utf-8") as f:
+        raw_headers = f.readline().rstrip("\n").split(",")
+
+    # Mapeia índice → (code, label) para busca flexível
+    col_info = [_parse_col_name(h) for h in raw_headers]
+    labels_lower = [info[1].lower() for info in col_info]
+
+    def find_idx(*patterns: str) -> int | None:
+        for pat in patterns:
+            for i, lbl in enumerate(labels_lower):
+                if pat in lbl:
+                    return i
+        return None
+
+    idx_genero  = find_idx("gênero", "genero", "gender")
+    idx_cargo   = find_idx("cargo atual", "cargo")
+    idx_salario = find_idx("faixa salarial", "salari")
+    idx_uf      = find_idx("estado que mora", "uf", "estado")
+    idx_setor   = find_idx("setor")
+    idx_gestor  = find_idx("gestor", "gerencia", "manage")
+    idx_exp     = find_idx("experiência na área de dado", "tempo de experiência", "anos de experiência")
+
+    logger.info(f"  Colunas mapeadas — gênero:{idx_genero}, cargo:{idx_cargo}, salário:{idx_salario}, UF:{idx_uf}")
+
+    with open(DADOS_2021_FILE, encoding="utf-8") as f:
+        reader = csv.reader(f)
+        next(reader)  # pula header
+        for raw_row in reader:
+            def get(idx):
+                if idx is None or idx >= len(raw_row):
+                    return ""
+                return raw_row[idx].strip()
+
+            genero_raw = get(idx_genero)
+            genero = _normalizar_genero(genero_raw)
+            if genero not in ("Feminino", "Masculino"):
+                continue
+
+            cargo_raw = get(idx_cargo)
+            if not cargo_raw:
+                continue
+
+            salario = _parse_salary_2021(get(idx_salario))
+            rows.append({
+                "genero":          genero,
+                "cargo":           _normalize_cargo_2021(cargo_raw),
+                "cargo_raw":       cargo_raw,
+                "salario_midpoint": salario,
+                "uf":              get(idx_uf),
+                "setor":           get(idx_setor),
+                "is_gestor":       1 if "sim" in get(idx_gestor).lower() else 0,
+                "experiencia_raw": get(idx_exp),
+            })
+
+    n_fem  = sum(1 for r in rows if r["genero"] == "Feminino")
+    n_masc = sum(1 for r in rows if r["genero"] == "Masculino")
+    pct_fem = round(n_fem / len(rows) * 100, 2) if rows else 0
+    logger.info(f"  State of Data 2021: {len(rows):,} respondentes | Feminino: {n_fem} ({pct_fem}%) | Masculino: {n_masc}")
+
+    with open(OUT / "qualidade_dados_2021.json", "w", encoding="utf-8") as f:
+        json.dump({
+            "dataset":    "base_mercado_dados_2021_brasil.csv",
+            "tipo":       "dado_real",
+            "fonte":      "State of Data Brazil 2021 — Data Hackers / Bain & Company",
+            "uso":        "BASE PRINCIPAL — análise de desigualdade de gênero na área de dados",
+            "total":      len(rows),
+            "n_feminino": n_fem,
+            "n_masculino": n_masc,
+            "pct_feminino": pct_fem,
+            "colunas_mapeadas": {
+                "genero": idx_genero, "cargo": idx_cargo,
+                "salario": idx_salario, "uf": idx_uf,
+            },
+        }, f, ensure_ascii=False, indent=2)
+
+    return rows
+
+
 # ─── ETL Vagas LinkedIn ──────────────────────────────────────────────────────
-# Fonte: generation_linkedin_vagas_tecnologia.csv — scraping simulado do LinkedIn
+# Fonte: generation_linkedin_vagas_tecnologia.csv — vagas coletadas pela Generation
 # Classifica cada vaga por tipo D&I, nível, área e localização.
 
 def _classify_di(description: str) -> tuple[str, int]:
@@ -466,7 +641,7 @@ def etl_linkedin() -> list[dict]:
 
 # ─── Persistência em DuckDB ───────────────────────────────────────────────────
 
-def save_to_duckdb(campus_agg: list[dict], mercado_agg: list[dict], linkedin_rows: list[dict] = None) -> None:
+def save_to_duckdb(campus_agg: list[dict], mercado_agg: list[dict], dados_2021: list[dict] = None, linkedin_rows: list[dict] = None) -> None:
     import duckdb
 
     con = duckdb.connect(str(DB))
@@ -510,10 +685,10 @@ def save_to_duckdb(campus_agg: list[dict], mercado_agg: list[dict], linkedin_row
             r["tx_evasao_fem_pct"], r["tx_evasao_masc_pct"],
         ])
 
-    # ─── Tabela mercado (base_mercado_tech_brasil.csv — Brasscom + Tech4Humans + McKinsey)
-    con.execute("DROP TABLE IF EXISTS fato_mercado_tech_brasil")
+    # ─── Tabela mercado mundial (WomenHack + Brasscom + McKinsey — comparação global)
+    con.execute("DROP TABLE IF EXISTS fato_mercado_mundial")
     con.execute("""
-        CREATE TABLE fato_mercado_tech_brasil (
+        CREATE TABLE fato_mercado_mundial (
             cargo               VARCHAR,
             nivel               VARCHAR,
             genero              VARCHAR,
@@ -525,10 +700,33 @@ def save_to_duckdb(campus_agg: list[dict], mercado_agg: list[dict], linkedin_row
     """)
     for r in mercado_agg:
         con.execute(
-            "INSERT INTO fato_mercado_tech_brasil VALUES (?,?,?,?,?,?,?)",
+            "INSERT INTO fato_mercado_mundial VALUES (?,?,?,?,?,?,?)",
             [r["cargo"], r["nivel"], r["genero"], r["regiao"],
              r["n"], r["salario_medio_brl"], r["salario_mediano_brl"]]
         )
+
+    # ─── Tabela State of Data Brazil 2021 (BASE PRINCIPAL)
+    if dados_2021:
+        con.execute("DROP TABLE IF EXISTS fato_dados_2021")
+        con.execute("""
+            CREATE TABLE fato_dados_2021 (
+                genero          VARCHAR,
+                cargo           VARCHAR,
+                cargo_raw       VARCHAR,
+                salario_midpoint DOUBLE,
+                uf              VARCHAR,
+                setor           VARCHAR,
+                is_gestor       INTEGER,
+                experiencia_raw VARCHAR
+            )
+        """)
+        for r in dados_2021:
+            con.execute(
+                "INSERT INTO fato_dados_2021 VALUES (?,?,?,?,?,?,?,?)",
+                [r["genero"], r["cargo"], r["cargo_raw"],
+                 r["salario_midpoint"], r["uf"], r["setor"],
+                 r["is_gestor"], r["experiencia_raw"]]
+            )
 
     # ─── Views analíticas
     con.execute("""
@@ -564,10 +762,48 @@ def save_to_duckdb(campus_agg: list[dict], mercado_agg: list[dict], linkedin_row
         ORDER BY ano, regiao
     """)
 
+    # Pay gap principal — baseado no State of Data 2021 (dado real)
+    if dados_2021:
+        con.execute("""
+            CREATE OR REPLACE VIEW v_pay_gap AS
+            SELECT
+                cargo, uf,
+                AVG(CASE WHEN genero = 'Masculino' THEN salario_midpoint END) AS salario_medio_masc,
+                AVG(CASE WHEN genero = 'Feminino'  THEN salario_midpoint END) AS salario_medio_fem,
+                COUNT(CASE WHEN genero = 'Masculino' THEN 1 END) AS n_masc,
+                COUNT(CASE WHEN genero = 'Feminino'  THEN 1 END) AS n_fem,
+                ROUND(
+                    (AVG(CASE WHEN genero = 'Masculino' THEN salario_midpoint END) -
+                     AVG(CASE WHEN genero = 'Feminino'  THEN salario_midpoint END)) * 100.0 /
+                    NULLIF(AVG(CASE WHEN genero = 'Masculino' THEN salario_midpoint END), 0),
+                2) AS pay_gap_pct
+            FROM fato_dados_2021
+            WHERE salario_midpoint IS NOT NULL
+            GROUP BY cargo, uf
+            HAVING COUNT(*) >= 5
+            ORDER BY pay_gap_pct DESC NULLS LAST
+        """)
+
+        con.execute("""
+            CREATE OR REPLACE VIEW v_lideranca_dados AS
+            SELECT
+                cargo,
+                COUNT(*) AS total,
+                SUM(CASE WHEN genero = 'Feminino' THEN 1 ELSE 0 END) AS n_fem,
+                ROUND(SUM(CASE WHEN genero = 'Feminino' THEN 1 ELSE 0 END) * 100.0 / COUNT(*), 2) AS pct_fem,
+                SUM(is_gestor) AS n_gestores,
+                ROUND(SUM(CASE WHEN genero = 'Feminino' AND is_gestor = 1 THEN 1 ELSE 0 END) * 100.0 /
+                      NULLIF(SUM(is_gestor), 0), 2) AS pct_gestoras
+            FROM fato_dados_2021
+            GROUP BY cargo
+            ORDER BY pct_fem
+        """)
+
+    # Pay gap global — comparação com dado compilado (WomenHack + Brasscom + McKinsey)
     con.execute("""
-        CREATE OR REPLACE VIEW v_pay_gap AS
+        CREATE OR REPLACE VIEW v_pay_gap_global AS
         SELECT
-            cargo, nivel, regiao,
+            cargo, regiao,
             MAX(CASE WHEN genero = 'Masculino' THEN salario_medio_brl END) AS salario_medio_masc,
             MAX(CASE WHEN genero = 'Feminino'  THEN salario_medio_brl END) AS salario_medio_fem,
             ROUND(
@@ -575,12 +811,12 @@ def save_to_duckdb(campus_agg: list[dict], mercado_agg: list[dict], linkedin_row
                  MAX(CASE WHEN genero = 'Feminino'  THEN salario_medio_brl END)) * 100.0 /
                 NULLIF(MAX(CASE WHEN genero = 'Masculino' THEN salario_medio_brl END), 0),
             2) AS pay_gap_pct
-        FROM fato_mercado_tech_brasil
-        GROUP BY cargo, nivel, regiao
+        FROM fato_mercado_mundial
+        GROUP BY cargo, regiao
         ORDER BY pay_gap_pct DESC
     """)
 
-    # ─── Tabela vagas LinkedIn (simulação scraping — D&I signal analysis)
+    # ─── Tabela vagas LinkedIn (vagas coletadas pela Generation — D&I signal)
     if linkedin_rows:
         con.execute("DROP TABLE IF EXISTS fato_vagas_linkedin")
         con.execute("""
@@ -628,15 +864,17 @@ def save_to_duckdb(campus_agg: list[dict], mercado_agg: list[dict], linkedin_row
             ORDER BY mes_ano, area_tech
         """)
 
-    n_edu   = con.execute("SELECT COUNT(*) FROM fato_educacao_tech").fetchone()[0]
-    n_merc  = con.execute("SELECT COUNT(*) FROM fato_mercado_tech_brasil").fetchone()[0]
-    n_li    = con.execute("SELECT COUNT(*) FROM fato_vagas_linkedin").fetchone()[0] if linkedin_rows else 0
+    n_edu    = con.execute("SELECT COUNT(*) FROM fato_educacao_tech").fetchone()[0]
+    n_merc   = con.execute("SELECT COUNT(*) FROM fato_mercado_mundial").fetchone()[0]
+    n_dados  = con.execute("SELECT COUNT(*) FROM fato_dados_2021").fetchone()[0] if dados_2021 else 0
+    n_li     = con.execute("SELECT COUNT(*) FROM fato_vagas_linkedin").fetchone()[0] if linkedin_rows else 0
     con.close()
 
     logger.info(f"DuckDB salvo em {DB}")
-    logger.info(f"  fato_educacao_tech:       {n_edu:,} linhas")
-    logger.info(f"  fato_mercado_tech_brasil: {n_merc:,} linhas")
-    logger.info(f"  fato_vagas_linkedin:      {n_li:,} linhas")
+    logger.info(f"  fato_educacao_tech:  {n_edu:,} linhas  (INEP — referência funil acadêmico)")
+    logger.info(f"  fato_mercado_mundial:{n_merc:,} linhas  (WomenHack+Brasscom+McKinsey — comparação global)")
+    logger.info(f"  fato_dados_2021:     {n_dados:,} linhas  (State of Data 2021 — BASE PRINCIPAL)")
+    logger.info(f"  fato_vagas_linkedin: {n_li:,} linhas  (Generation — D&I signal)")
 
 
 # ─── Salva CSV consolidado ────────────────────────────────────────────────────
@@ -655,9 +893,9 @@ def save_csv(rows: list[dict], name: str) -> Path:
 
 # ─── Métricas-chave no terminal ───────────────────────────────────────────────
 
-def print_key_metrics(campus_agg: list[dict], mercado_agg: list[dict]) -> None:
+def print_key_metrics(campus_agg: list[dict], mercado_agg: list[dict], dados_2021: list[dict] = None) -> None:
     print("\n" + "="*60)
-    print("  MÉTRICAS-CHAVE — FUNIL DA MULHER NA TECH")
+    print("  MÉTRICAS-CHAVE — DESIGUALDADE DE GÊNERO NA ÁREA DE DADOS")
     print("="*60)
 
     tic  = [r for r in campus_agg if "Computa" in r["area_geral"]]
@@ -683,6 +921,32 @@ def print_key_metrics(campus_agg: list[dict], mercado_agg: list[dict]) -> None:
 
     print("\n  * Matriculas ~= ingressantes (simplificacao do mock)")
 
+    # ── State of Data 2021 (base principal — dado real)
+    if dados_2021:
+        n_fem  = sum(1 for r in dados_2021 if r["genero"] == "Feminino")
+        n_masc = sum(1 for r in dados_2021 if r["genero"] == "Masculino")
+        n_tot  = len(dados_2021)
+        pct_fem = n_fem / n_tot * 100 if n_tot > 0 else 0
+        print(f"\n  STATE OF DATA BRAZIL 2021 (dado real — base principal):")
+        print(f"    Respondentes: {n_tot:,} | Feminino: {n_fem} ({pct_fem:.1f}%) | Masculino: {n_masc}")
+
+        fem_sals  = [r["salario_midpoint"] for r in dados_2021 if r["genero"] == "Feminino"  and r["salario_midpoint"]]
+        masc_sals = [r["salario_midpoint"] for r in dados_2021 if r["genero"] == "Masculino" and r["salario_midpoint"]]
+        if fem_sals and masc_sals:
+            media_fem  = sum(fem_sals)  / len(fem_sals)
+            media_masc = sum(masc_sals) / len(masc_sals)
+            gap_pct    = (media_masc - media_fem) / media_masc * 100 if media_masc > 0 else 0
+            print(f"    Salário médio Masculino: R${media_masc:,.0f}")
+            print(f"    Salário médio Feminino:  R${media_fem:,.0f}")
+            print(f"    Gap salarial (setor dados): {gap_pct:.1f}%")
+
+        n_gestoras = sum(1 for r in dados_2021 if r["genero"] == "Feminino" and r["is_gestor"] == 1)
+        n_gestores = sum(1 for r in dados_2021 if r["is_gestor"] == 1)
+        if n_gestores > 0:
+            pct_gestoras = n_gestoras / n_gestores * 100
+            print(f"    Gestoras: {n_gestoras}/{n_gestores} posições de gestão ({pct_gestoras:.1f}%)")
+
+    # ── Comparação global (WomenHack + Brasscom + McKinsey)
     if mercado_agg:
         fem_sals  = [r["salario_medio_brl"] for r in mercado_agg if r["genero"] == "Feminino"]
         masc_sals = [r["salario_medio_brl"] for r in mercado_agg if r["genero"] == "Masculino"]
@@ -690,10 +954,10 @@ def print_key_metrics(campus_agg: list[dict], mercado_agg: list[dict]) -> None:
             media_fem  = sum(fem_sals)  / len(fem_sals)
             media_masc = sum(masc_sals) / len(masc_sals)
             gap_pct    = (media_masc - media_fem) / media_masc * 100 if media_masc > 0 else 0
-            print(f"\n  PAY GAP (base mercado — Brasscom + Tech4Humans + McKinsey):")
+            print(f"\n  PAY GAP GLOBAL (WomenHack + Brasscom + McKinsey — comparação):")
             print(f"    Salário médio Masculino: R${media_masc:,.0f}")
             print(f"    Salário médio Feminino:  R${media_fem:,.0f}")
-            print(f"    Gap salarial: {gap_pct:.1f}%  (esperado ~27% — ref. Brasscom)")
+            print(f"    Gap salarial: {gap_pct:.1f}%")
 
     print("="*60 + "\n")
 
@@ -701,14 +965,15 @@ def print_key_metrics(campus_agg: list[dict], mercado_agg: list[dict]) -> None:
 # ─── Main ─────────────────────────────────────────────────────────────────────
 
 if __name__ == "__main__":
-    logger.info("Iniciando ETL Pipeline — People Analytics & DE&I")
+    logger.info("Iniciando ETL Pipeline — People Analytics & DE&I (foco: setor de dados)")
 
     # 1. Lê dados brutos
-    campus_rows   = etl_campus()
-    mercado_rows  = etl_mercado_brasil()
-    linkedin_rows = etl_linkedin()
+    campus_rows    = etl_campus()
+    mercado_rows   = etl_mercado_mundial()
+    dados_2021     = etl_dados_2021()
+    linkedin_rows  = etl_linkedin()
 
-    # 2. Agrega campus e mercado (LinkedIn permanece no nível individual para análise de texto)
+    # 2. Agrega campus e mercado mundial (LinkedIn e dados_2021 ficam no nível individual)
     logger.info("Agregando dados do campus TI...")
     campus_agg  = aggregate_campus(campus_rows)
     mercado_agg = aggregate_mercado(mercado_rows)
@@ -716,13 +981,14 @@ if __name__ == "__main__":
     # 3. Persiste
     logger.info("Salvando CSVs...")
     save_csv(campus_agg,   "fato_educacao_tech_agregado")
-    save_csv(mercado_agg,  "fato_mercado_tech_brasil")
+    save_csv(mercado_agg,  "fato_mercado_mundial")
+    save_csv(dados_2021,   "fato_dados_2021_brasil")
     save_csv(linkedin_rows, "fato_vagas_linkedin")
 
     logger.info("Salvando no DuckDB...")
-    save_to_duckdb(campus_agg, mercado_agg, linkedin_rows)
+    save_to_duckdb(campus_agg, mercado_agg, dados_2021, linkedin_rows)
 
     # 4. Mostra métricas
-    print_key_metrics(campus_agg, mercado_agg)
+    print_key_metrics(campus_agg, mercado_agg, dados_2021)
 
-    logger.info("ETL concluído. Próximo passo: python analise.py")
+    logger.info("ETL concluído. Base principal: fato_dados_2021 (State of Data Brazil 2021)")

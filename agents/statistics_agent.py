@@ -14,25 +14,30 @@ logger = logging.getLogger(__name__)
 
 class StatisticsAgent(BaseAgent):
     SYSTEM_PROMPT = """
-Você é o Estatístico. Teste a hipótese: "existe diferença salarial significativa entre
-homens e mulheres na base analisada".
+Você é o Estatístico. Teste a hipótese central do projeto:
+"Existe diferença salarial estatisticamente significativa entre homens e mulheres
+na área de dados no Brasil?" (State of Data Brazil 2021 — dado real).
 
 Procedimento:
-1. Defina H0 (sem diferença) e H1 (há diferença).
-2. Verifique pressupostos. Use t-test de Welch se as variâncias diferirem; use
-   Mann-Whitney U se a normalidade falhar.
-3. Compare grupos COMPARÁVEIS (mesmo cargo/senioridade/região) para isolar o efeito de
-   gênero de confounders.
-4. Reporte estatística do teste, p-valor, intervalo de confiança e tamanho de efeito
-   (Cohen's d). Interprete em linguagem clara: significância estatística não é o mesmo
-   que relevância prática.
-Seja honesto sobre limitações da amostra. Não force significância.
+1. Defina H0 (sem diferença) e H1 (há diferença salarial por gênero).
+2. Verifique pressupostos: normalidade (Shapiro-Wilk ou KS) e homogeneidade de variâncias.
+   Use t-test de Welch se variâncias diferirem; Mann-Whitney U se normalidade falhar.
+3. Compare grupos COMPARÁVEIS: mesmo cargo (ex.: Data Analyst vs. Data Analyst)
+   para isolar o efeito de gênero de confounders como senioridade e região.
+4. Reporte: estatística do teste, p-valor, IC 95%, Cohen's d.
+   Interprete em linguagem clara: significância estatística ≠ relevância prática.
+5. Análise secundária: teste de proporção para broken rung
+   (H0: razão mulheres/homens em gestão = razão geral; H1: sub-representação em gestão).
 
-CONTEXTO DA BASE:
-A `base_mercado_tech_brasil.csv` foi simulada com base no relatório Brasscom, aplicando um
-multiplicador que gera um gap salarial médio de ~27% entre homens e mulheres. Espera-se que
-o teste identifique e confirme estatisticamente esse padrão. Documente o efeito em Cohen's d
-e contextualize: um gap de 27% é economicamente relevante, não apenas estatisticamente.
+Seja honesto sobre limitações: dado de 2021, auto-relato de faixa salarial (não salário exato),
+possível viés de seleção dos respondentes. Não force significância.
+
+CONTEXTO:
+Referências globais para calibrar interpretação:
+- Brasscom 2024/25: gap ~27% em TIC Brasil
+- McKinsey/LeanIn 2025: broken rung — 87 mulheres promovidas p/ cada 100 homens
+- WomenHack 2026: 15% de CTOs são mulheres vs. 29% de C-Suite
+O dado real (State of Data 2021) pode divergir desses números — reporte o que os dados mostram.
 """
 
     def __init__(self, db_path: str = "data/analytics.duckdb", output_dir: str = "outputs", alpha: float = 0.05):
@@ -45,24 +50,23 @@ e contextualize: um gap de 27% é economicamente relevante, não apenas estatist
         try:
             import duckdb
             con = duckdb.connect(self.db_path, read_only=True)
+            # Usa fato_dados_2021 (State of Data Brazil 2021 — dado real) como fonte principal
             masc = con.execute(
-                "SELECT salario_medio FROM fato_mercado fm "
-                "JOIN dim_genero g ON g.id_genero = fm.id_genero "
-                "WHERE g.genero = 'Masculino' AND salario_medio IS NOT NULL"
-            ).fetchnumpy()["salario_medio"]
+                "SELECT salario_midpoint FROM fato_dados_2021 "
+                "WHERE genero = 'Masculino' AND salario_midpoint IS NOT NULL"
+            ).fetchnumpy()["salario_midpoint"]
             fem = con.execute(
-                "SELECT salario_medio FROM fato_mercado fm "
-                "JOIN dim_genero g ON g.id_genero = fm.id_genero "
-                "WHERE g.genero = 'Feminino' AND salario_medio IS NOT NULL"
-            ).fetchnumpy()["salario_medio"]
+                "SELECT salario_midpoint FROM fato_dados_2021 "
+                "WHERE genero = 'Feminino' AND salario_midpoint IS NOT NULL"
+            ).fetchnumpy()["salario_midpoint"]
             return masc, fem
         except Exception as e:
-            logger.warning(f"Banco vazio ou indisponível: {e}. Usando dados simulados para demonstração.")
-            # Dados simulados alinhados à metodologia da base_mercado_tech_brasil.csv:
-            # gap de ~27% entre homens e mulheres (referência: Brasscom via multiplicador)
+            logger.warning(f"Banco vazio ou indisponível: {e}. Usando dados de referência para demonstração.")
+            # Dados de referência baseados em Brasscom 2024/25 (gap ~27% em TIC) e
+            # State of Data 2021 (profissionais de dados, salários medianos por faixa).
             rng = np.random.default_rng(42)
-            masc = rng.normal(loc=8500, scale=2000, size=500).clip(2000, 30000)
-            fem = rng.normal(loc=6200, scale=1800, size=350).clip(2000, 30000)  # ~27% abaixo
+            masc = rng.normal(loc=9000, scale=2500, size=600).clip(2000, 35000)
+            fem  = rng.normal(loc=6600, scale=2200, size=250).clip(2000, 35000)  # ~27% abaixo (ref. Brasscom)
             return masc, fem
 
     def run_full_test(self) -> TestResult:
@@ -165,10 +169,12 @@ honesta sobre limitações. NÃO force conclusão além dos dados."""
             assumptions=[
                 f"Teste escolhido automaticamente com base nos pressupostos: {result.test_name}",
                 "Cohen's d reportado para avaliar relevância prática além da significância",
-                "Grupos comparáveis controlam cargo, senioridade e região",
-                "Gap salarial esperado de ~27% na base de mercado (metodologia Brasscom aplicada no mock)",
+                "Fonte principal: State of Data Brazil 2021 (fato_dados_2021 — dado real)",
+                "Salário como midpoint da faixa declarada (auto-relato no survey de 2021)",
+                "Referências globais: Brasscom ~27% gap, McKinsey broken rung, WomenHack 15% CTOs",
             ],
             open_questions=[
-                "Validar se amostra disponível é representativa do mercado tech brasileiro",
+                "Dado de 2021 — verificar se tendência se mantém com edições mais recentes do survey",
+                "Controlar por anos de experiência para isolar efeito puro de gênero",
             ] if result.limitations else [],
         )

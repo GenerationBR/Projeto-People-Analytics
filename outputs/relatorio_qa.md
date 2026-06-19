@@ -1,5 +1,5 @@
 # Relatório de QA — People Analytics & DE&I
-*Total: 23 verificações | ✅ OK: 22 | ❌ Corrigir: 0 | ⏳ Aguardando: 1*
+*Total: 19 verificações | ✅ OK: 18 | ❌ Corrigir: 0 | ⏳ Aguardando: 1*
 
 ## Status Geral
 🟢 APROVADO
@@ -9,26 +9,22 @@
 |---|---|---|
 | Artefato: ETL Report | ✅ OK | outputs\qualidade_dados_etl.md |
 | Artefato: Modelo de Dados | ✅ OK | outputs\modelo_dados.md |
-| Artefato: EDA Script | ✅ OK | outputs\eda_funil_feminino.py |
 | Artefato: Síntese Executiva | ✅ OK | outputs\sintese_executiva.md |
 | Artefato: Métricas Funil (JSON) | ✅ OK | outputs\metricas_funil.json |
 | Artefato: Teste Hipótese | ✅ OK | outputs\teste_hipotese_pay_gap.md |
 | Artefato: Resultado Estatístico (JSON) | ✅ OK | outputs\resultado_teste.json |
-| Artefato: Dashboard Spec | ✅ OK | outputs\dashboard_spec.md |
-| Artefato: Medidas DAX | ✅ OK | outputs\medidas_dax.md |
 | Artefato: Dicionário de Dados | ✅ OK | outputs\dicionario\dicionario_de_dados.md |
 | Artefato: Log Premissas | ✅ OK | outputs\log_premissas.md |
 | Artefato: Roteiro Pitch | ✅ OK | outputs\pitch\roteiro_pitch.md |
 | Artefato: Slides Marp | ✅ OK | outputs\pitch\slides_marp.md |
 | Artefato: Recomendações | ✅ OK | outputs\pitch\recomendacoes_politicas.md |
 | Artefato: README | ✅ OK | README.md |
-| Artefato: Data App (opcional) | ✅ OK | app\calculadora.py |
 | Métricas do funil disponíveis | ⏳ AGUARDANDO | Banco vazio — dados demo |
-| Resultado estatístico disponível | ✅ OK | p-valor=nan |
+| Resultado estatístico disponível | ✅ OK | p-valor=1.2231092502498017e-36 |
 | Sem cruzamento individual (CPF) | ✅ OK | Nenhuma coluna CPF encontrada |
-| Teste estatístico correto (Welch/Mann-Whitney) | ✅ OK | Teste usado: Mann-Whitney U |
-| p-valor e efeito reportados | ✅ OK | p=nan, d=0.0 |
-| Significância ≠ relevância prática (Cohen's d reportado) | ✅ OK | Cohen's d = 0.0 |
+| Teste estatístico correto (Welch/Mann-Whitney) | ✅ OK | Teste usado: t-test de Student |
+| p-valor e efeito reportados | ✅ OK | p=1.2231092502498017e-36, d=0.9970496836011351 |
+| Significância ≠ relevância prática (Cohen's d reportado) | ✅ OK | Cohen's d = 0.9970496836011351 |
 | Premissas metodológicas aprovadas | ✅ OK | Todas aprovadas |
 
 ## Análise do QA
