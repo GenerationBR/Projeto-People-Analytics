@@ -3,6 +3,8 @@ data/raw/
 data/*.duckdb
 *.parquet
 *.csv
+# EXCEÇÃO: versionar dados tratados para portfólio
+!data/treated/*.csv
 
 # Ambiente Python
 .env

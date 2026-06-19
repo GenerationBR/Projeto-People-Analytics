@@ -1,0 +1,5 @@
+ano,regiao,co_regiao,area_geral,qt_mat_fem,qt_mat_masc,qt_ing_fem,qt_ing_masc,qt_conc_fem,qt_conc_masc,qt_mat_total,qt_ing_total,qt_conc_total,pct_mat_fem,pct_ing_fem,pct_conc_fem,tx_evasao_fem_pct,tx_evasao_masc_pct
+2019,Sudeste,3,Computação e Tecnologias da Informação e Comunicação (TIC),60,201,60,201,17,50,261,261,67,22.99,22.99,25.37,71.67,75.12
+2020,Sudeste,3,Computação e Tecnologias da Informação e Comunicação (TIC),44,193,44,193,16,54,237,237,70,18.57,18.57,22.86,63.64,72.02
+2021,Sudeste,3,Computação e Tecnologias da Informação e Comunicação (TIC),45,204,45,204,10,61,249,249,71,18.07,18.07,14.08,77.78,70.1
+2022,Sudeste,3,Computação e Tecnologias da Informação e Comunicação (TIC),55,198,55,198,9,60,253,253,69,21.74,21.74,13.04,83.64,69.7
