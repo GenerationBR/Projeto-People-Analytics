@@ -40,13 +40,10 @@ inconsistência de números entre artefatos.
         required = {
             "ETL Report": out / "qualidade_dados_etl.md",
             "Modelo de Dados": out / "modelo_dados.md",
-            "EDA Script": out / "eda_funil_feminino.py",
             "Síntese Executiva": out / "sintese_executiva.md",
             "Métricas Funil (JSON)": out / "metricas_funil.json",
             "Teste Hipótese": out / "teste_hipotese_pay_gap.md",
             "Resultado Estatístico (JSON)": out / "resultado_teste.json",
-            "Dashboard Spec": out / "dashboard_spec.md",
-            "Medidas DAX": out / "medidas_dax.md",
             "Dicionário de Dados": out / "dicionario/dicionario_de_dados.md",
             "Log Premissas": out / "log_premissas.md",
             "Roteiro Pitch": out / "pitch/roteiro_pitch.md",
@@ -61,14 +58,6 @@ inconsistência de números entre artefatos.
                 "OK" if exists else "CORRIGIR",
                 str(path) if exists else f"AUSENTE: {path}",
             )
-
-        # Opcional (T-010) — não bloqueia entrega se ausente
-        dataapp_path = Path("app/calculadora.py")
-        self._check(
-            "Artefato: Data App (opcional)",
-            "OK" if dataapp_path.exists() else "AGUARDANDO",
-            str(dataapp_path) if dataapp_path.exists() else "Executar: python main.py dataapp",
-        )
 
     def check_number_consistency(self) -> None:
         """Cross-check: métricas do JSON batem com o que o pitch referencia."""

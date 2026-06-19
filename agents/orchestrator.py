@@ -34,15 +34,13 @@ como risco e proponha alternativas. Mantenha um log de premissas versionado.
         ("T-002", "modeling",   "Modelar banco analítico (esquema estrela)"),
         ("T-003", "eda",        "Análise exploratória e funil feminino"),
         ("T-004", "statistics", "Teste de hipótese — Gender Pay Gap"),
-        ("T-005", "bi",         "Especificar dashboard Power BI (2 visões)"),
-        ("T-006", "docs",       "Dicionário de dados e README"),
-        ("T-007", "pitch",      "Montar pitch executivo"),
-        ("T-008", "qa",         "Validar consistência de todos os entregáveis"),
+        ("T-005", "docs",       "Dicionário de dados e README"),
+        ("T-006", "pitch",      "Montar pitch executivo"),
+        ("T-007", "qa",         "Validar consistência de todos os entregáveis"),
     ]
 
     OPTIONAL = [
-        ("T-009", "scraping", "Web scraping LinkedIn — vagas com menção a D&I"),
-        ("T-010", "dataapp",  "Data App Streamlit — calculadora para RH"),
+        ("T-008", "scraping", "Web scraping LinkedIn — vagas com menção a D&I"),
     ]
 
     def __init__(self, output_dir: str = "outputs"):

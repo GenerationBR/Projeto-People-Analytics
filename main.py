@@ -8,12 +8,10 @@ Uso:
   python main.py modeling     # apenas Modelagem
   python main.py eda          # apenas EDA
   python main.py stats        # apenas Estatística
-  python main.py bi           # apenas BI
   python main.py docs         # apenas Documentação
   python main.py pitch        # apenas Pitch
   python main.py qa           # apenas QA
   python main.py scraping     # Opcional: Web Scraping
-  python main.py dataapp      # Opcional: Data App
   python main.py status       # Status do projeto
 """
 
@@ -46,11 +44,9 @@ from agents import (
     ModelingAgent,
     EDAAgent,
     StatisticsAgent,
-    BIAgent,
     DocsAgent,
     StorytellerAgent,
     ScrapingAgent,
-    DataAppAgent,
     QAAgent,
 )
 
@@ -104,14 +100,6 @@ def run_statistics(orchestrator: OrchestratorAgent) -> dict:
     return result.__dict__
 
 
-def run_bi(orchestrator: OrchestratorAgent) -> dict:
-    logger.info("▶ Iniciando BI Agent")
-    agent = BIAgent(output_dir=CONFIG["output_dir"])
-    result = agent.run()
-    orchestrator.receive_result(result)
-    return result.__dict__
-
-
 def run_docs(orchestrator: OrchestratorAgent) -> dict:
     logger.info("▶ Iniciando Docs Agent")
     agent = DocsAgent(config_dir=CONFIG["config_dir"], output_dir=CONFIG["output_dir"])
@@ -149,14 +137,6 @@ def run_scraping(orchestrator: OrchestratorAgent) -> dict:
     return result.__dict__
 
 
-def run_dataapp(orchestrator: OrchestratorAgent) -> dict:
-    logger.info("▶ Iniciando DataApp Agent (opcional)")
-    agent = DataAppAgent(output_dir=CONFIG["output_dir"])
-    result = agent.run()
-    orchestrator.receive_result(result)
-    return result.__dict__
-
-
 # ─── Pipeline completo ────────────────────────────────────────────────────────
 
 PIPELINE_STEPS = [
@@ -164,15 +144,13 @@ PIPELINE_STEPS = [
     ("modeling",  run_modeling,   "T-002"),
     ("eda",       run_eda,        "T-003"),
     ("stats",     run_statistics, "T-004"),
-    ("bi",        run_bi,         "T-005"),
-    ("docs",      run_docs,       "T-006"),
-    ("pitch",     run_pitch,      "T-007"),
-    ("qa",        run_qa,         "T-008"),
+    ("docs",      run_docs,       "T-005"),
+    ("pitch",     run_pitch,      "T-006"),
+    ("qa",        run_qa,         "T-007"),
 ]
 
 OPTIONAL_STEPS = [
-    ("scraping",  run_scraping,   "T-009"),
-    ("dataapp",   run_dataapp,    "T-010"),
+    ("scraping",  run_scraping,   "T-008"),
 ]
 
 
@@ -226,7 +204,6 @@ def run_full_pipeline():
     print("  PIPELINE CONCLUÍDO")
     print(f"  Log: {log_path}")
     print(f"  QA:  outputs/relatorio_qa.md")
-    print(f"  App: streamlit run app/calculadora.py")
     print("=" * 65 + "\n")
 
     return orchestrator.status_report()
@@ -244,12 +221,10 @@ if __name__ == "__main__":
         "modeling": run_modeling,
         "eda":      run_eda,
         "stats":    run_statistics,
-        "bi":       run_bi,
         "docs":     run_docs,
         "pitch":    run_pitch,
         "qa":       run_qa,
         "scraping": run_scraping,
-        "dataapp":  run_dataapp,
         "status":   lambda o: print(o.status_report()),
     }
 
