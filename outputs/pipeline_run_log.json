@@ -1,5 +1,5 @@
 {
-  "run_at": "2026-06-18T20:55:03.792568",
+  "run_at": "2026-06-18T21:45:32.194502",
   "results": {
     "etl": {
       "status": "done"
@@ -23,7 +23,7 @@
       "status": "done"
     },
     "qa": {
-      "status": "error"
+      "status": "done"
     },
     "scraping": {
       "status": "needs_human_approval"

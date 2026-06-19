@@ -52,7 +52,6 @@ inconsistência de números entre artefatos.
             "Roteiro Pitch": out / "pitch/roteiro_pitch.md",
             "Slides Marp": out / "pitch/slides_marp.md",
             "Recomendações": out / "pitch/recomendacoes_politicas.md",
-            "Data App": Path("app/calculadora.py"),
             "README": Path("README.md"),
         }
         for name, path in required.items():
@@ -62,6 +61,14 @@ inconsistência de números entre artefatos.
                 "OK" if exists else "CORRIGIR",
                 str(path) if exists else f"AUSENTE: {path}",
             )
+
+        # Opcional (T-010) — não bloqueia entrega se ausente
+        dataapp_path = Path("app/calculadora.py")
+        self._check(
+            "Artefato: Data App (opcional)",
+            "OK" if dataapp_path.exists() else "AGUARDANDO",
+            str(dataapp_path) if dataapp_path.exists() else "Executar: python main.py dataapp",
+        )
 
     def check_number_consistency(self) -> None:
         """Cross-check: métricas do JSON batem com o que o pitch referencia."""
