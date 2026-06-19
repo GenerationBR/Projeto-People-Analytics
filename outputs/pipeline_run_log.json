@@ -1,11 +1,11 @@
 {
-  "run_at": "2026-06-18T20:38:01.279611",
+  "run_at": "2026-06-18T20:55:03.792568",
   "results": {
     "etl": {
       "status": "done"
     },
     "modeling": {
-      "status": null
+      "status": "done"
     },
     "eda": {
       "status": "done"
@@ -27,6 +27,9 @@
     },
     "scraping": {
       "status": "needs_human_approval"
+    },
+    "dataapp": {
+      "status": "done"
     }
   }
 }

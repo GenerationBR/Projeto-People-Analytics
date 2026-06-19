@@ -1,5 +1,5 @@
 # Relatório de QA — People Analytics & DE&I
-*Total: 23 verificações | ✅ OK: 20 | ❌ Corrigir: 2 | ⏳ Aguardando: 1*
+*Total: 23 verificações | ✅ OK: 21 | ❌ Corrigir: 1 | ⏳ Aguardando: 1*
 
 ## Status Geral
 🔴 BLOQUEADO — corrigir itens antes da entrega
@@ -8,7 +8,7 @@
 | Item | Status | Detalhe |
 |---|---|---|
 | Artefato: ETL Report | ✅ OK | outputs\qualidade_dados_etl.md |
-| Artefato: Modelo de Dados | ❌ CORRIGIR | AUSENTE: outputs\modelo_dados.md |
+| Artefato: Modelo de Dados | ✅ OK | outputs\modelo_dados.md |
 | Artefato: EDA Script | ✅ OK | outputs\eda_funil_feminino.py |
 | Artefato: Síntese Executiva | ✅ OK | outputs\sintese_executiva.md |
 | Artefato: Métricas Funil (JSON) | ✅ OK | outputs\metricas_funil.json |
@@ -24,15 +24,14 @@
 | Artefato: Data App | ❌ CORRIGIR | AUSENTE: app\calculadora.py |
 | Artefato: README | ✅ OK | README.md |
 | Métricas do funil disponíveis | ⏳ AGUARDANDO | Banco vazio — dados demo |
-| Resultado estatístico disponível | ✅ OK | p-valor=2.8125289279993245e-60 |
+| Resultado estatístico disponível | ✅ OK | p-valor=nan |
 | Sem cruzamento individual (CPF) | ✅ OK | Nenhuma coluna CPF encontrada |
-| Teste estatístico correto (Welch/Mann-Whitney) | ✅ OK | Teste usado: t-test de Student |
-| p-valor e efeito reportados | ✅ OK | p=2.8125289279993245e-60, d=1.2402806347911657 |
-| Significância ≠ relevância prática (Cohen's d reportado) | ✅ OK | Cohen's d = 1.2402806347911657 |
+| Teste estatístico correto (Welch/Mann-Whitney) | ✅ OK | Teste usado: Mann-Whitney U |
+| p-valor e efeito reportados | ✅ OK | p=nan, d=0.0 |
+| Significância ≠ relevância prática (Cohen's d reportado) | ✅ OK | Cohen's d = 0.0 |
 | Premissas metodológicas aprovadas | ✅ OK | Todas aprovadas |
 
 ## Itens Bloqueando Entrega
-- ❌ **Artefato: Modelo de Dados**: AUSENTE: outputs\modelo_dados.md
 - ❌ **Artefato: Data App**: AUSENTE: app\calculadora.py
 
 ## Análise do QA
