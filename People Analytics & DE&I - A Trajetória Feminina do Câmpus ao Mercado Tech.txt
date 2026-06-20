@@ -1,22 +1,4 @@
-﻿People Analytics & DE&I - A Trajetória Feminina do Câmpus ao Mercado Tech
-O Problema de Negócio
-Empresas de tecnologia globais têm metas agressivas de equidade de gênero, mas frequentemente esbarram na escassez de talentos femininos. Seu desafio como equipe de dados é mapear o "funil" da mulher na tecnologia no Brasil e no mundo. A equipe deve analisar desde a entrada feminina em cursos de Exatas e Computação até a realidade do mercado de trabalho (empregabilidade, posições de liderança e disparidade salarial). O produto final será um painel estratégico de People Analytics projetado para equipes de Recursos Humanos e diretorias, auxiliando-os a entender o cenário real do mercado para fundamentar políticas de contratação mais assertivas.
-🔗 Fontes de Dados Sugeridas
-(Nota para a equipe: O desafio aqui é cruzar bases de naturezas diferentes: Educação e Mercado de Trabalho).
-Dados Educacionais (Brasil): Microdados do Censo da Educação Superior (INEP) - Melhor que o ENEM para este fim, pois foca nas matrículas e conclusões efetivas em cursos específicos de TI/Engenharia.
-Dados de Mercado/Salários:
-Kaggle - Data Science and STEM Salaries https://www.kaggle.com/datasets/sazidthe1/data-science-salaries/data 
-ou StackOverflow Annual Developer Survey (Visão global e cargos).
-RAIS/CAGED (Gov.br) (Visão nacional de empregabilidade formal).
-⚙️ Requisitos Técnicos e Pipeline (ETL)
-Extração: Baixar os microdados educacionais de pelo menos os últimos 5 anos e bases de pesquisas salariais/empregabilidade do setor tech.
-Transformação:
-Filtrar os dados educacionais exclusivamente para os eixos de Computação, TI e Engenharias.
-Tratar anomalias salariais (outliers) nas bases de mercado.
-Harmonizar os dados: Como não é possível cruzar o CPF de quem estudou com quem está no mercado, a equipe deve agregar os dados em categorias comuns (ex: Ano, Região, Gênero, Faixa Salarial, Cargo).
-Carga: Modelar um banco de dados estruturado que alimente o painel de forma performática, separando claramente o escopo acadêmico do escopo profissional.
-
-Entregas Obrigatórias 
+﻿Entregas Obrigatórias 
 Para que o projeto seja aprovado e finalizado, a equipe precisa entregar:
 A Base de Dados Analítica e Dicionário de Dados:
 As tabelas tratadas e prontas para consumo.
