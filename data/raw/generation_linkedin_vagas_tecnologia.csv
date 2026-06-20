@@ -1,0 +1,201 @@
+﻿id,company_name,job_title,location,description,inserted_at
+1,Pixel Systems,Desenvolvedor(a) Back-end Júnior,"Florianópolis, SC",Programa afirmativo para mulheres. Buscamos ampliar a participação feminina em equipes de tecnologia.,2025-08-02 10:54:00
+2,CodeWave,Pessoa Aprendiz em TI,"Rio de Janeiro, RJ",Programa afirmativo para mulheres. Buscamos ampliar a participação feminina em equipes de tecnologia.,2025-09-08 10:52:00
+3,Sigma Digital,Desenvolvedor(a) Front-end Júnior,"Salvador, BA",Programa afirmativo para mulheres. Buscamos ampliar a participação feminina em equipes de tecnologia.,2025-10-19 10:50:00
+4,Sigma Digital,Pessoa Aprendiz em TI,"Recife, PE",Esta oportunidade é exclusiva para mulheres. Programa voltado ao fortalecimento da diversidade de gênero em tecnologia.,2025-11-16 10:09:00
+5,Alpha Cloud,Estágio em QA,"São Paulo, SP",Esta oportunidade é exclusiva para mulheres. Programa voltado ao fortalecimento da diversidade de gênero em tecnologia.,2025-12-20 10:11:00
+6,SmartLabs,Estágio em Dados,Remoto - Brasil,Programa afirmativo para mulheres. Buscamos ampliar a participação feminina em equipes de tecnologia.,2026-01-14 10:51:00
+7,Alpha Cloud,Estágio em Dados,"Florianópolis, SC",Esta oportunidade é exclusiva para mulheres. Programa voltado ao fortalecimento da diversidade de gênero em tecnologia.,2026-02-26 10:15:00
+8,SmartLabs,Desenvolvedor(a) Back-end Júnior,"Recife, PE",Programa afirmativo para mulheres. Buscamos ampliar a participação feminina em equipes de tecnologia.,2026-03-26 10:21:00
+9,DevPoint,Analista de Suporte Júnior,"Salvador, BA",Esta oportunidade é exclusiva para mulheres. Programa voltado ao fortalecimento da diversidade de gênero em tecnologia.,2026-04-08 10:13:00
+10,DigitalCore,Pessoa Aprendiz em TI,"Campinas, SP",Vaga afirmativa para mulheres. Incentivamos candidaturas de mulheres cis e trans. Oportunidade para início de carreira em tecnologia.,2026-05-11 10:57:00
+11,Pixel Systems,QA Júnior,"Recife, PE",Esta oportunidade é exclusiva para mulheres. Programa voltado ao fortalecimento da diversidade de gênero em tecnologia.,2025-08-13 10:13:00
+12,TechNova,Estágio em Dados,"São Paulo, SP",Vaga afirmativa para mulheres. Incentivamos candidaturas de mulheres cis e trans. Oportunidade para início de carreira em tecnologia.,2025-09-09 10:13:00
+13,DigitalCore,QA Júnior,"Florianópolis, SC",Programa afirmativo para mulheres. Buscamos ampliar a participação feminina em equipes de tecnologia.,2025-10-05 10:11:00
+14,NextGen Tech,Estágio em Ciência de Dados,"São Paulo, SP",Vaga afirmativa para mulheres. Incentivamos candidaturas de mulheres cis e trans. Oportunidade para início de carreira em tecnologia.,2025-11-05 10:47:00
+15,CodeWave,Estágio em Desenvolvimento,"Curitiba, PR",Programa afirmativo para mulheres. Buscamos ampliar a participação feminina em equipes de tecnologia.,2025-12-18 10:48:00
+16,InovaTI,Desenvolvedor(a) Front-end Júnior,"Curitiba, PR",Vaga afirmativa para mulheres. Incentivamos candidaturas de mulheres cis e trans. Oportunidade para início de carreira em tecnologia.,2026-01-12 10:51:00
+17,VisionData,Estágio em Ciência de Dados,"Curitiba, PR",Vaga afirmativa para mulheres. Incentivamos candidaturas de mulheres cis e trans. Oportunidade para início de carreira em tecnologia.,2026-02-18 10:43:00
+18,DevPoint,QA Júnior,"Campinas, SP",Esta oportunidade é exclusiva para mulheres. Programa voltado ao fortalecimento da diversidade de gênero em tecnologia.,2026-03-25 10:36:00
+19,DigitalCore,QA Júnior,"Curitiba, PR",Esta oportunidade é exclusiva para mulheres. Programa voltado ao fortalecimento da diversidade de gênero em tecnologia.,2026-04-03 10:05:00
+20,SmartLabs,Pessoa Aprendiz em TI,"Curitiba, PR",Programa afirmativo para mulheres. Buscamos ampliar a participação feminina em equipes de tecnologia.,2026-05-20 10:10:00
+21,NextGen Tech,Estágio em Dados,"Rio de Janeiro, RJ",Vaga afirmativa para mulheres. Incentivamos candidaturas de mulheres cis e trans. Oportunidade para início de carreira em tecnologia.,2025-08-09 10:16:00
+22,CloudSync,Analista de Suporte Júnior,"Florianópolis, SC","Vaga aberta para todas as pessoas. Perfil proativo, colaborativo e interesse em desenvolvimento de soluções.",2025-09-04 10:32:00
+23,BlueSoft,Analista de Suporte Júnior,"Rio de Janeiro, RJ","Oportunidade para início de carreira. Conhecimentos em lógica de programação, SQL ou Git serão diferenciais.",2025-10-10 10:37:00
+24,BlueSoft,Estágio em Ciência de Dados,"São Paulo, SP","Oportunidade para início de carreira. Conhecimentos em lógica de programação, SQL ou Git serão diferenciais.",2025-11-08 10:07:00
+25,ByteWorks,Pessoa Aprendiz em TI,Remoto - Brasil,"Oportunidade para início de carreira. Conhecimentos em lógica de programação, SQL ou Git serão diferenciais.",2025-12-25 10:41:00
+26,CloudSync,Analista de Suporte Júnior,"Campinas, SP","Vaga aberta para todas as pessoas. Perfil proativo, colaborativo e interesse em desenvolvimento de soluções.",2026-01-09 10:25:00
+27,Sigma Digital,Desenvolvedor(a) Júnior,"Belo Horizonte, MG","Vaga aberta para todas as pessoas. Perfil proativo, colaborativo e interesse em desenvolvimento de soluções.",2026-02-07 10:55:00
+28,Alpha Cloud,Desenvolvedor(a) Front-end Júnior,"Porto Alegre, RS","Vaga aberta para todas as pessoas. Perfil proativo, colaborativo e interesse em desenvolvimento de soluções.",2026-03-19 10:05:00
+29,VisionData,Estágio em Desenvolvimento,"Salvador, BA","Vaga aberta para todas as pessoas. Perfil proativo, colaborativo e interesse em desenvolvimento de soluções.",2026-04-26 10:36:00
+30,BlueSoft,Desenvolvedor(a) Júnior,Remoto - Brasil,"Atuação em equipe ágil, desenvolvimento de software e aprendizado contínuo. Modelo híbrido ou remoto conforme a equipe.",2026-05-08 10:29:00
+31,SmartLabs,Estágio em Dados,"Campinas, SP","Oportunidade para início de carreira. Conhecimentos em lógica de programação, SQL ou Git serão diferenciais.",2025-08-13 10:54:00
+32,NextGen Tech,Estágio em Dados,"Recife, PE","Vaga aberta para todas as pessoas. Perfil proativo, colaborativo e interesse em desenvolvimento de soluções.",2025-09-28 10:02:00
+33,Pixel Systems,QA Júnior,"Belo Horizonte, MG","Oportunidade para início de carreira. Conhecimentos em lógica de programação, SQL ou Git serão diferenciais.",2025-10-20 10:23:00
+34,InovaTI,QA Júnior,"Belo Horizonte, MG","Oportunidade para início de carreira. Conhecimentos em lógica de programação, SQL ou Git serão diferenciais.",2025-11-19 10:07:00
+35,Alpha Cloud,Desenvolvedor(a) Back-end Júnior,"São Paulo, SP","Buscamos pessoas com interesse em tecnologia, vontade de aprender, boa comunicação e conhecimentos básicos na área.",2025-12-26 10:44:00
+36,ByteWorks,Desenvolvedor(a) Front-end Júnior,"Recife, PE","Vaga aberta para todas as pessoas. Perfil proativo, colaborativo e interesse em desenvolvimento de soluções.",2026-01-03 10:02:00
+37,Alpha Cloud,Estágio em Ciência de Dados,"Curitiba, PR","Atuação em equipe ágil, desenvolvimento de software e aprendizado contínuo. Modelo híbrido ou remoto conforme a equipe.",2026-02-09 10:52:00
+38,VisionData,Analista de Suporte Júnior,"Recife, PE","Oportunidade para início de carreira. Conhecimentos em lógica de programação, SQL ou Git serão diferenciais.",2026-03-12 10:44:00
+39,Sigma Digital,QA Júnior,"Belo Horizonte, MG","Vaga aberta para todas as pessoas. Perfil proativo, colaborativo e interesse em desenvolvimento de soluções.",2026-04-04 10:41:00
+40,VisionData,Analista de Suporte Júnior,"Belo Horizonte, MG","Buscamos pessoas com interesse em tecnologia, vontade de aprender, boa comunicação e conhecimentos básicos na área.",2026-05-18 10:47:00
+41,DataBridge,Pessoa Aprendiz em TI,"Rio de Janeiro, RJ","Oportunidade para início de carreira. Conhecimentos em lógica de programação, SQL ou Git serão diferenciais.",2025-08-23 10:45:00
+42,InovaTI,Analista de Suporte Júnior,"Salvador, BA","Oportunidade para início de carreira. Conhecimentos em lógica de programação, SQL ou Git serão diferenciais.",2025-09-06 10:34:00
+43,Alpha Cloud,Estágio em Dados,Remoto - Brasil,"Vaga aberta para todas as pessoas. Perfil proativo, colaborativo e interesse em desenvolvimento de soluções.",2025-10-24 10:32:00
+44,Alpha Cloud,Pessoa Aprendiz em TI,"Florianópolis, SC","Oportunidade para início de carreira. Conhecimentos em lógica de programação, SQL ou Git serão diferenciais.",2025-11-24 10:40:00
+45,NextGen Tech,Analista de Suporte Júnior,"Salvador, BA","Atuação em equipe ágil, desenvolvimento de software e aprendizado contínuo. Modelo híbrido ou remoto conforme a equipe.",2025-12-11 10:07:00
+46,SmartLabs,Estágio em Ciência de Dados,"Porto Alegre, RS","Vaga aberta para todas as pessoas. Perfil proativo, colaborativo e interesse em desenvolvimento de soluções.",2026-01-18 10:39:00
+47,DigitalCore,Desenvolvedor(a) Back-end Júnior,"Curitiba, PR","Oportunidade para início de carreira. Conhecimentos em lógica de programação, SQL ou Git serão diferenciais.",2026-02-13 10:03:00
+48,DataBridge,Estágio em Desenvolvimento,"Porto Alegre, RS","Buscamos pessoas com interesse em tecnologia, vontade de aprender, boa comunicação e conhecimentos básicos na área.",2026-03-26 10:34:00
+49,VisionData,Pessoa Aprendiz em TI,"Florianópolis, SC","Oportunidade para início de carreira. Conhecimentos em lógica de programação, SQL ou Git serão diferenciais.",2026-04-17 10:15:00
+50,NextGen Tech,Desenvolvedor(a) Front-end Júnior,"Rio de Janeiro, RJ","Vaga aberta para todas as pessoas. Perfil proativo, colaborativo e interesse em desenvolvimento de soluções.",2026-05-10 10:11:00
+51,Pixel Systems,Pessoa Aprendiz em TI,"Belo Horizonte, MG","Buscamos pessoas com interesse em tecnologia, vontade de aprender, boa comunicação e conhecimentos básicos na área.",2025-08-26 10:36:00
+52,SmartLabs,Analista de Suporte Júnior,"Campinas, SP","Oportunidade para início de carreira. Conhecimentos em lógica de programação, SQL ou Git serão diferenciais.",2025-09-09 10:55:00
+53,CodeWave,Desenvolvedor(a) Back-end Júnior,"Belo Horizonte, MG","Vaga aberta para todas as pessoas. Perfil proativo, colaborativo e interesse em desenvolvimento de soluções.",2025-10-07 10:49:00
+54,Alpha Cloud,Estágio em Dados,"Curitiba, PR","Vaga aberta para todas as pessoas. Perfil proativo, colaborativo e interesse em desenvolvimento de soluções.",2025-11-01 10:25:00
+55,ByteWorks,Analista de Suporte Júnior,"Rio de Janeiro, RJ","Oportunidade para início de carreira. Conhecimentos em lógica de programação, SQL ou Git serão diferenciais.",2025-12-18 10:25:00
+56,DataBridge,Desenvolvedor(a) Júnior,"Recife, PE","Atuação em equipe ágil, desenvolvimento de software e aprendizado contínuo. Modelo híbrido ou remoto conforme a equipe.",2026-01-09 10:44:00
+57,InovaTI,QA Júnior,"Recife, PE","Atuação em equipe ágil, desenvolvimento de software e aprendizado contínuo. Modelo híbrido ou remoto conforme a equipe.",2026-02-20 10:01:00
+58,BlueSoft,Desenvolvedor(a) Front-end Júnior,"São Paulo, SP","Oportunidade para início de carreira. Conhecimentos em lógica de programação, SQL ou Git serão diferenciais.",2026-03-03 10:01:00
+59,Pixel Systems,Estágio em Dados,"Salvador, BA","Buscamos pessoas com interesse em tecnologia, vontade de aprender, boa comunicação e conhecimentos básicos na área.",2026-04-10 10:50:00
+60,ByteWorks,Pessoa Aprendiz em TI,"Recife, PE","Oportunidade para início de carreira. Conhecimentos em lógica de programação, SQL ou Git serão diferenciais.",2026-05-21 10:42:00
+61,CloudSync,Estágio em Ciência de Dados,"São Paulo, SP","Vaga aberta para todas as pessoas. Perfil proativo, colaborativo e interesse em desenvolvimento de soluções.",2025-08-22 10:01:00
+62,SmartLabs,Desenvolvedor(a) Júnior,"Florianópolis, SC","Buscamos pessoas com interesse em tecnologia, vontade de aprender, boa comunicação e conhecimentos básicos na área.",2025-09-11 10:32:00
+63,SmartLabs,Analista de Suporte Júnior,"Porto Alegre, RS","Atuação em equipe ágil, desenvolvimento de software e aprendizado contínuo. Modelo híbrido ou remoto conforme a equipe.",2025-10-07 10:36:00
+64,TechNova,Estágio em Dados,"Belo Horizonte, MG","Vaga aberta para todas as pessoas. Perfil proativo, colaborativo e interesse em desenvolvimento de soluções.",2025-11-20 10:36:00
+65,Sigma Digital,Desenvolvedor(a) Back-end Júnior,"Recife, PE","Buscamos pessoas com interesse em tecnologia, vontade de aprender, boa comunicação e conhecimentos básicos na área.",2025-12-22 10:45:00
+66,CloudSync,Estágio em Desenvolvimento,"São Paulo, SP","Oportunidade para início de carreira. Conhecimentos em lógica de programação, SQL ou Git serão diferenciais.",2026-01-05 10:20:00
+67,DataBridge,Desenvolvedor(a) Back-end Júnior,"Rio de Janeiro, RJ","Atuação em equipe ágil, desenvolvimento de software e aprendizado contínuo. Modelo híbrido ou remoto conforme a equipe.",2026-02-12 10:45:00
+68,CloudSync,Pessoa Aprendiz em TI,"Curitiba, PR","Atuação em equipe ágil, desenvolvimento de software e aprendizado contínuo. Modelo híbrido ou remoto conforme a equipe.",2026-03-13 10:18:00
+69,ByteWorks,Estágio em Desenvolvimento,"Recife, PE","Buscamos pessoas com interesse em tecnologia, vontade de aprender, boa comunicação e conhecimentos básicos na área.",2026-04-11 10:04:00
+70,Sigma Digital,Estágio em Desenvolvimento,"Porto Alegre, RS","Buscamos pessoas com interesse em tecnologia, vontade de aprender, boa comunicação e conhecimentos básicos na área.",2026-05-18 10:23:00
+71,SmartLabs,Analista de Suporte Júnior,"Curitiba, PR","Oportunidade para início de carreira. Conhecimentos em lógica de programação, SQL ou Git serão diferenciais.",2025-08-04 10:46:00
+72,NextGen Tech,Desenvolvedor(a) Back-end Júnior,"Florianópolis, SC","Oportunidade para início de carreira. Conhecimentos em lógica de programação, SQL ou Git serão diferenciais.",2025-09-24 10:41:00
+73,BlueSoft,Estágio em Ciência de Dados,"São Paulo, SP","Vaga aberta para todas as pessoas. Perfil proativo, colaborativo e interesse em desenvolvimento de soluções.",2025-10-11 10:35:00
+74,TechNova,Desenvolvedor(a) Front-end Júnior,"São Paulo, SP","Vaga aberta para todas as pessoas. Perfil proativo, colaborativo e interesse em desenvolvimento de soluções.",2025-11-05 10:50:00
+75,NextGen Tech,Estágio em QA,"Recife, PE","Atuação em equipe ágil, desenvolvimento de software e aprendizado contínuo. Modelo híbrido ou remoto conforme a equipe.",2025-12-14 10:12:00
+76,Alpha Cloud,Estágio em Ciência de Dados,"São Paulo, SP","Vaga aberta para todas as pessoas. Perfil proativo, colaborativo e interesse em desenvolvimento de soluções.",2026-01-08 10:41:00
+77,DevPoint,Desenvolvedor(a) Júnior,"Campinas, SP","Vaga aberta para todas as pessoas. Perfil proativo, colaborativo e interesse em desenvolvimento de soluções.",2026-02-27 10:00:00
+78,BlueSoft,Analista de Suporte Júnior,"Campinas, SP","Atuação em equipe ágil, desenvolvimento de software e aprendizado contínuo. Modelo híbrido ou remoto conforme a equipe.",2026-03-16 10:23:00
+79,Sigma Digital,Desenvolvedor(a) Back-end Júnior,"Belo Horizonte, MG","Vaga aberta para todas as pessoas. Perfil proativo, colaborativo e interesse em desenvolvimento de soluções.",2026-04-23 10:52:00
+80,VisionData,Desenvolvedor(a) Back-end Júnior,"Salvador, BA","Oportunidade para início de carreira. Conhecimentos em lógica de programação, SQL ou Git serão diferenciais.",2026-05-23 10:07:00
+81,DataBridge,Analista de Suporte Júnior,"Salvador, BA","Oportunidade para início de carreira. Conhecimentos em lógica de programação, SQL ou Git serão diferenciais.",2025-08-02 10:22:00
+82,TechNova,Estágio em QA,"Salvador, BA","Atuação em equipe ágil, desenvolvimento de software e aprendizado contínuo. Modelo híbrido ou remoto conforme a equipe.",2025-09-26 10:46:00
+83,Alpha Cloud,Desenvolvedor(a) Front-end Júnior,"Porto Alegre, RS","Oportunidade para início de carreira. Conhecimentos em lógica de programação, SQL ou Git serão diferenciais.",2025-10-07 10:07:00
+84,ByteWorks,Desenvolvedor(a) Front-end Júnior,"Campinas, SP","Oportunidade para início de carreira. Conhecimentos em lógica de programação, SQL ou Git serão diferenciais.",2025-11-23 10:58:00
+85,DataBridge,Desenvolvedor(a) Back-end Júnior,"Campinas, SP","Buscamos pessoas com interesse em tecnologia, vontade de aprender, boa comunicação e conhecimentos básicos na área.",2025-12-28 10:40:00
+86,DevPoint,Estágio em Desenvolvimento,"Salvador, BA","Oportunidade para início de carreira. Conhecimentos em lógica de programação, SQL ou Git serão diferenciais.",2026-01-13 10:41:00
+87,CloudSync,QA Júnior,"São Paulo, SP","Atuação em equipe ágil, desenvolvimento de software e aprendizado contínuo. Modelo híbrido ou remoto conforme a equipe.",2026-02-22 10:16:00
+88,Sigma Digital,Desenvolvedor(a) Júnior,"Curitiba, PR","Buscamos pessoas com interesse em tecnologia, vontade de aprender, boa comunicação e conhecimentos básicos na área.",2026-03-14 10:00:00
+89,VisionData,Estágio em QA,"Belo Horizonte, MG","Atuação em equipe ágil, desenvolvimento de software e aprendizado contínuo. Modelo híbrido ou remoto conforme a equipe.",2026-04-16 10:11:00
+90,VisionData,Estágio em Ciência de Dados,"São Paulo, SP","Oportunidade para início de carreira. Conhecimentos em lógica de programação, SQL ou Git serão diferenciais.",2026-05-21 10:02:00
+91,CloudSync,Pessoa Aprendiz em TI,"Campinas, SP","Buscamos pessoas com interesse em tecnologia, vontade de aprender, boa comunicação e conhecimentos básicos na área.",2025-08-27 10:40:00
+92,BlueSoft,Estágio em Dados,"Rio de Janeiro, RJ","Vaga aberta para todas as pessoas. Perfil proativo, colaborativo e interesse em desenvolvimento de soluções.",2025-09-01 10:40:00
+93,Sigma Digital,Desenvolvedor(a) Júnior,Remoto - Brasil,"Buscamos pessoas com interesse em tecnologia, vontade de aprender, boa comunicação e conhecimentos básicos na área.",2025-10-05 10:11:00
+94,CloudSync,Estágio em Ciência de Dados,"São Paulo, SP","Oportunidade para início de carreira. Conhecimentos em lógica de programação, SQL ou Git serão diferenciais.",2025-11-21 10:21:00
+95,Sigma Digital,Estágio em Desenvolvimento,"Belo Horizonte, MG","Atuação em equipe ágil, desenvolvimento de software e aprendizado contínuo. Modelo híbrido ou remoto conforme a equipe.",2025-12-17 10:56:00
+96,CodeWave,Analista de Suporte Júnior,"Curitiba, PR","Vaga aberta para todas as pessoas. Perfil proativo, colaborativo e interesse em desenvolvimento de soluções.",2026-01-27 10:53:00
+97,DigitalCore,Estágio em Dados,"Rio de Janeiro, RJ","Atuação em equipe ágil, desenvolvimento de software e aprendizado contínuo. Modelo híbrido ou remoto conforme a equipe.",2026-02-11 10:04:00
+98,CodeWave,Desenvolvedor(a) Front-end Júnior,"Campinas, SP","Buscamos pessoas com interesse em tecnologia, vontade de aprender, boa comunicação e conhecimentos básicos na área.",2026-03-09 10:13:00
+99,DevPoint,Estágio em Dados,"Salvador, BA","Atuação em equipe ágil, desenvolvimento de software e aprendizado contínuo. Modelo híbrido ou remoto conforme a equipe.",2026-04-28 10:34:00
+100,TechNova,Desenvolvedor(a) Júnior,"Rio de Janeiro, RJ","Vaga aberta para todas as pessoas. Perfil proativo, colaborativo e interesse em desenvolvimento de soluções.",2026-05-24 10:05:00
+101,NextGen Tech,Estágio em Ciência de Dados,"Belo Horizonte, MG","Buscamos pessoas com interesse em tecnologia, vontade de aprender, boa comunicação e conhecimentos básicos na área.",2025-08-23 10:10:00
+102,DigitalCore,QA Júnior,"Florianópolis, SC","Buscamos pessoas com interesse em tecnologia, vontade de aprender, boa comunicação e conhecimentos básicos na área.",2025-09-28 10:08:00
+103,CloudSync,Desenvolvedor(a) Back-end Júnior,"Curitiba, PR","Atuação em equipe ágil, desenvolvimento de software e aprendizado contínuo. Modelo híbrido ou remoto conforme a equipe.",2025-10-03 10:54:00
+104,Sigma Digital,Pessoa Aprendiz em TI,"Salvador, BA","Vaga aberta para todas as pessoas. Perfil proativo, colaborativo e interesse em desenvolvimento de soluções.",2025-11-10 10:10:00
+105,CodeWave,Desenvolvedor(a) Júnior,"Florianópolis, SC","Atuação em equipe ágil, desenvolvimento de software e aprendizado contínuo. Modelo híbrido ou remoto conforme a equipe.",2025-12-08 10:15:00
+106,ByteWorks,Desenvolvedor(a) Back-end Júnior,Remoto - Brasil,"Atuação em equipe ágil, desenvolvimento de software e aprendizado contínuo. Modelo híbrido ou remoto conforme a equipe.",2026-01-22 10:24:00
+107,CloudSync,Desenvolvedor(a) Front-end Júnior,"Curitiba, PR","Vaga aberta para todas as pessoas. Perfil proativo, colaborativo e interesse em desenvolvimento de soluções.",2026-02-13 10:50:00
+108,ByteWorks,Estágio em Ciência de Dados,"Belo Horizonte, MG","Atuação em equipe ágil, desenvolvimento de software e aprendizado contínuo. Modelo híbrido ou remoto conforme a equipe.",2026-03-15 10:34:00
+109,SmartLabs,Desenvolvedor(a) Júnior,"Salvador, BA","Buscamos pessoas com interesse em tecnologia, vontade de aprender, boa comunicação e conhecimentos básicos na área.",2026-04-15 10:42:00
+110,CodeWave,Desenvolvedor(a) Back-end Júnior,Remoto - Brasil,"Atuação em equipe ágil, desenvolvimento de software e aprendizado contínuo. Modelo híbrido ou remoto conforme a equipe.",2026-05-28 10:44:00
+111,Alpha Cloud,Estágio em Desenvolvimento,"Recife, PE","Oportunidade para início de carreira. Conhecimentos em lógica de programação, SQL ou Git serão diferenciais.",2025-08-28 10:57:00
+112,CodeWave,QA Júnior,"Porto Alegre, RS","Atuação em equipe ágil, desenvolvimento de software e aprendizado contínuo. Modelo híbrido ou remoto conforme a equipe.",2025-09-06 10:39:00
+113,DigitalCore,Estágio em Ciência de Dados,"Salvador, BA","Oportunidade para início de carreira. Conhecimentos em lógica de programação, SQL ou Git serão diferenciais.",2025-10-15 10:50:00
+114,DataBridge,Analista de Suporte Júnior,"São Paulo, SP","Oportunidade para início de carreira. Conhecimentos em lógica de programação, SQL ou Git serão diferenciais.",2025-11-24 10:33:00
+115,Sigma Digital,Analista de Suporte Júnior,"Recife, PE","Atuação em equipe ágil, desenvolvimento de software e aprendizado contínuo. Modelo híbrido ou remoto conforme a equipe.",2025-12-14 10:17:00
+116,NextGen Tech,Desenvolvedor(a) Júnior,"Porto Alegre, RS","Oportunidade para início de carreira. Conhecimentos em lógica de programação, SQL ou Git serão diferenciais.",2026-01-20 10:04:00
+117,VisionData,Estágio em Desenvolvimento,"São Paulo, SP","Vaga aberta para todas as pessoas. Perfil proativo, colaborativo e interesse em desenvolvimento de soluções.",2026-02-27 10:51:00
+118,Sigma Digital,Pessoa Aprendiz em TI,"Belo Horizonte, MG","Atuação em equipe ágil, desenvolvimento de software e aprendizado contínuo. Modelo híbrido ou remoto conforme a equipe.",2026-03-01 10:33:00
+119,CloudSync,Desenvolvedor(a) Back-end Júnior,Remoto - Brasil,"Oportunidade para início de carreira. Conhecimentos em lógica de programação, SQL ou Git serão diferenciais.",2026-04-06 10:38:00
+120,Sigma Digital,Estágio em Dados,"Porto Alegre, RS","Oportunidade para início de carreira. Conhecimentos em lógica de programação, SQL ou Git serão diferenciais.",2026-05-20 10:42:00
+121,DevPoint,Desenvolvedor(a) Júnior,"Curitiba, PR","Atuação em equipe ágil, desenvolvimento de software e aprendizado contínuo. Modelo híbrido ou remoto conforme a equipe.",2025-08-27 10:49:00
+122,Pixel Systems,Desenvolvedor(a) Júnior,"Rio de Janeiro, RJ","Vaga aberta para todas as pessoas. Perfil proativo, colaborativo e interesse em desenvolvimento de soluções.",2025-09-03 10:54:00
+123,InovaTI,Analista de Suporte Júnior,"Campinas, SP","Atuação em equipe ágil, desenvolvimento de software e aprendizado contínuo. Modelo híbrido ou remoto conforme a equipe.",2025-10-14 10:30:00
+124,SmartLabs,Analista de Suporte Júnior,"Porto Alegre, RS","Oportunidade para início de carreira. Conhecimentos em lógica de programação, SQL ou Git serão diferenciais.",2025-11-02 10:59:00
+125,ByteWorks,Estágio em QA,"Salvador, BA","Atuação em equipe ágil, desenvolvimento de software e aprendizado contínuo. Modelo híbrido ou remoto conforme a equipe.",2025-12-01 10:56:00
+126,CodeWave,Estágio em Dados,"Salvador, BA","Buscamos pessoas com interesse em tecnologia, vontade de aprender, boa comunicação e conhecimentos básicos na área.",2026-01-10 10:21:00
+127,CodeWave,QA Júnior,"São Paulo, SP","Vaga aberta para todas as pessoas. Perfil proativo, colaborativo e interesse em desenvolvimento de soluções.",2026-02-28 10:18:00
+128,CodeWave,Estágio em QA,"Belo Horizonte, MG","Atuação em equipe ágil, desenvolvimento de software e aprendizado contínuo. Modelo híbrido ou remoto conforme a equipe.",2026-03-13 10:50:00
+129,TechNova,Desenvolvedor(a) Front-end Júnior,"Recife, PE","Atuação em equipe ágil, desenvolvimento de software e aprendizado contínuo. Modelo híbrido ou remoto conforme a equipe.",2026-04-04 10:13:00
+130,Alpha Cloud,QA Júnior,"Porto Alegre, RS","Oportunidade para início de carreira. Conhecimentos em lógica de programação, SQL ou Git serão diferenciais.",2026-05-04 10:16:00
+131,CloudSync,Estágio em Ciência de Dados,"Belo Horizonte, MG","Vaga aberta para todas as pessoas. Perfil proativo, colaborativo e interesse em desenvolvimento de soluções.",2025-08-20 10:59:00
+132,CloudSync,Estágio em QA,"Curitiba, PR","Vaga aberta para todas as pessoas. Perfil proativo, colaborativo e interesse em desenvolvimento de soluções.",2025-09-09 10:18:00
+133,DigitalCore,Estágio em Dados,"Belo Horizonte, MG","Buscamos pessoas com interesse em tecnologia, vontade de aprender, boa comunicação e conhecimentos básicos na área.",2025-10-19 10:35:00
+134,Alpha Cloud,Estágio em QA,"Florianópolis, SC","Vaga aberta para todas as pessoas. Perfil proativo, colaborativo e interesse em desenvolvimento de soluções.",2025-11-06 10:43:00
+135,CodeWave,Desenvolvedor(a) Front-end Júnior,"Campinas, SP","Vaga aberta para todas as pessoas. Perfil proativo, colaborativo e interesse em desenvolvimento de soluções.",2025-12-14 10:06:00
+136,DevPoint,Estágio em QA,"Curitiba, PR","Atuação em equipe ágil, desenvolvimento de software e aprendizado contínuo. Modelo híbrido ou remoto conforme a equipe.",2026-01-13 10:54:00
+137,BlueSoft,Pessoa Aprendiz em TI,"Curitiba, PR","Buscamos pessoas com interesse em tecnologia, vontade de aprender, boa comunicação e conhecimentos básicos na área.",2026-02-04 10:01:00
+138,DataBridge,Estágio em Dados,"Porto Alegre, RS","Vaga aberta para todas as pessoas. Perfil proativo, colaborativo e interesse em desenvolvimento de soluções.",2026-03-21 10:50:00
+139,NextGen Tech,Estágio em QA,Remoto - Brasil,"Buscamos pessoas com interesse em tecnologia, vontade de aprender, boa comunicação e conhecimentos básicos na área.",2026-04-22 10:29:00
+140,DataBridge,QA Júnior,"Recife, PE","Atuação em equipe ágil, desenvolvimento de software e aprendizado contínuo. Modelo híbrido ou remoto conforme a equipe.",2026-05-11 10:34:00
+141,CodeWave,Estágio em Desenvolvimento,"Recife, PE","Buscamos pessoas com interesse em tecnologia, vontade de aprender, boa comunicação e conhecimentos básicos na área.",2025-08-05 10:52:00
+142,Sigma Digital,Desenvolvedor(a) Back-end Júnior,"Campinas, SP","Vaga aberta para todas as pessoas. Perfil proativo, colaborativo e interesse em desenvolvimento de soluções.",2025-09-19 10:36:00
+143,BlueSoft,Desenvolvedor(a) Júnior,"Belo Horizonte, MG","Oportunidade para início de carreira. Conhecimentos em lógica de programação, SQL ou Git serão diferenciais.",2025-10-04 10:06:00
+144,CodeWave,Estágio em Ciência de Dados,"Porto Alegre, RS","Buscamos pessoas com interesse em tecnologia, vontade de aprender, boa comunicação e conhecimentos básicos na área.",2025-11-12 10:59:00
+145,SmartLabs,QA Júnior,"Rio de Janeiro, RJ","Buscamos pessoas com interesse em tecnologia, vontade de aprender, boa comunicação e conhecimentos básicos na área.",2025-12-15 10:46:00
+146,CodeWave,Estágio em Dados,"Recife, PE","Oportunidade para início de carreira. Conhecimentos em lógica de programação, SQL ou Git serão diferenciais.",2026-01-05 10:36:00
+147,NextGen Tech,Estágio em Dados,"Florianópolis, SC","Atuação em equipe ágil, desenvolvimento de software e aprendizado contínuo. Modelo híbrido ou remoto conforme a equipe.",2026-02-26 10:39:00
+148,CodeWave,Estágio em Ciência de Dados,"Recife, PE","Oportunidade para início de carreira. Conhecimentos em lógica de programação, SQL ou Git serão diferenciais.",2026-03-08 10:55:00
+149,SmartLabs,Desenvolvedor(a) Back-end Júnior,"Florianópolis, SC","Buscamos pessoas com interesse em tecnologia, vontade de aprender, boa comunicação e conhecimentos básicos na área.",2026-04-19 10:21:00
+150,DigitalCore,Analista de Suporte Júnior,"Florianópolis, SC","Atuação em equipe ágil, desenvolvimento de software e aprendizado contínuo. Modelo híbrido ou remoto conforme a equipe.",2026-05-11 10:45:00
+151,InovaTI,Estágio em QA,"Florianópolis, SC","Vaga aberta para todas as pessoas. Perfil proativo, colaborativo e interesse em desenvolvimento de soluções.",2025-08-24 10:54:00
+152,Alpha Cloud,Estágio em Ciência de Dados,"Belo Horizonte, MG","Buscamos pessoas com interesse em tecnologia, vontade de aprender, boa comunicação e conhecimentos básicos na área.",2025-09-06 10:51:00
+153,DataBridge,Desenvolvedor(a) Júnior,"Campinas, SP","Atuação em equipe ágil, desenvolvimento de software e aprendizado contínuo. Modelo híbrido ou remoto conforme a equipe.",2025-10-24 10:30:00
+154,InovaTI,Estágio em Desenvolvimento,"São Paulo, SP","Atuação em equipe ágil, desenvolvimento de software e aprendizado contínuo. Modelo híbrido ou remoto conforme a equipe.",2025-11-04 10:38:00
+155,CloudSync,Estágio em QA,"Salvador, BA","Atuação em equipe ágil, desenvolvimento de software e aprendizado contínuo. Modelo híbrido ou remoto conforme a equipe.",2025-12-08 10:44:00
+156,Pixel Systems,Desenvolvedor(a) Back-end Júnior,"Belo Horizonte, MG","Buscamos pessoas com interesse em tecnologia, vontade de aprender, boa comunicação e conhecimentos básicos na área.",2026-01-24 10:24:00
+157,DigitalCore,Desenvolvedor(a) Back-end Júnior,"Curitiba, PR","Atuação em equipe ágil, desenvolvimento de software e aprendizado contínuo. Modelo híbrido ou remoto conforme a equipe.",2026-02-24 10:57:00
+158,Sigma Digital,Estágio em Desenvolvimento,"Rio de Janeiro, RJ","Atuação em equipe ágil, desenvolvimento de software e aprendizado contínuo. Modelo híbrido ou remoto conforme a equipe.",2026-03-23 10:10:00
+159,Alpha Cloud,QA Júnior,Remoto - Brasil,"Buscamos pessoas com interesse em tecnologia, vontade de aprender, boa comunicação e conhecimentos básicos na área.",2026-04-08 10:56:00
+160,BlueSoft,Pessoa Aprendiz em TI,Remoto - Brasil,"Vaga aberta para todas as pessoas. Perfil proativo, colaborativo e interesse em desenvolvimento de soluções.",2026-05-02 10:32:00
+161,Sigma Digital,Pessoa Aprendiz em TI,"Florianópolis, SC","Vaga aberta para todas as pessoas. Perfil proativo, colaborativo e interesse em desenvolvimento de soluções.",2025-08-07 10:13:00
+162,Alpha Cloud,Desenvolvedor(a) Júnior,"São Paulo, SP","Buscamos pessoas com interesse em tecnologia, vontade de aprender, boa comunicação e conhecimentos básicos na área.",2025-09-02 10:38:00
+163,BlueSoft,Desenvolvedor(a) Back-end Júnior,"Recife, PE","Vaga aberta para todas as pessoas. Perfil proativo, colaborativo e interesse em desenvolvimento de soluções.",2025-10-06 10:32:00
+164,DigitalCore,Desenvolvedor(a) Front-end Júnior,"Porto Alegre, RS","Atuação em equipe ágil, desenvolvimento de software e aprendizado contínuo. Modelo híbrido ou remoto conforme a equipe.",2025-11-02 10:21:00
+165,Pixel Systems,QA Júnior,"Recife, PE","Buscamos pessoas com interesse em tecnologia, vontade de aprender, boa comunicação e conhecimentos básicos na área.",2025-12-28 10:46:00
+166,BlueSoft,Estágio em Ciência de Dados,"Porto Alegre, RS","Oportunidade para início de carreira. Conhecimentos em lógica de programação, SQL ou Git serão diferenciais.",2026-01-09 10:55:00
+167,DataBridge,Desenvolvedor(a) Júnior,"Rio de Janeiro, RJ","Vaga aberta para todas as pessoas. Perfil proativo, colaborativo e interesse em desenvolvimento de soluções.",2026-02-21 10:47:00
+168,InovaTI,Estágio em QA,"Salvador, BA","Oportunidade para início de carreira. Conhecimentos em lógica de programação, SQL ou Git serão diferenciais.",2026-03-08 10:12:00
+169,TechNova,Desenvolvedor(a) Back-end Júnior,"Rio de Janeiro, RJ","Buscamos pessoas com interesse em tecnologia, vontade de aprender, boa comunicação e conhecimentos básicos na área.",2026-04-17 10:29:00
+170,DataBridge,Desenvolvedor(a) Front-end Júnior,"Salvador, BA","Atuação em equipe ágil, desenvolvimento de software e aprendizado contínuo. Modelo híbrido ou remoto conforme a equipe.",2026-05-19 10:37:00
+171,VisionData,Estágio em QA,"Recife, PE","Oportunidade para início de carreira. Conhecimentos em lógica de programação, SQL ou Git serão diferenciais.",2025-08-07 10:04:00
+172,DigitalCore,QA Júnior,"Florianópolis, SC","Atuação em equipe ágil, desenvolvimento de software e aprendizado contínuo. Modelo híbrido ou remoto conforme a equipe.",2025-09-13 10:59:00
+173,ByteWorks,Estágio em Desenvolvimento,"Curitiba, PR","Buscamos pessoas com interesse em tecnologia, vontade de aprender, boa comunicação e conhecimentos básicos na área.",2025-10-13 10:43:00
+174,DevPoint,Estágio em Ciência de Dados,"Porto Alegre, RS","Oportunidade para início de carreira. Conhecimentos em lógica de programação, SQL ou Git serão diferenciais.",2025-11-15 10:25:00
+175,ByteWorks,QA Júnior,"Curitiba, PR","Buscamos pessoas com interesse em tecnologia, vontade de aprender, boa comunicação e conhecimentos básicos na área.",2025-12-28 10:51:00
+176,DevPoint,Pessoa Aprendiz em TI,"Porto Alegre, RS","Atuação em equipe ágil, desenvolvimento de software e aprendizado contínuo. Modelo híbrido ou remoto conforme a equipe.",2026-01-17 10:12:00
+177,ByteWorks,Estágio em Desenvolvimento,"Belo Horizonte, MG","Atuação em equipe ágil, desenvolvimento de software e aprendizado contínuo. Modelo híbrido ou remoto conforme a equipe.",2026-02-10 10:28:00
+178,BlueSoft,Estágio em Dados,"São Paulo, SP","Vaga aberta para todas as pessoas. Perfil proativo, colaborativo e interesse em desenvolvimento de soluções.",2026-03-22 10:39:00
+179,DigitalCore,Desenvolvedor(a) Júnior,"Belo Horizonte, MG","Atuação em equipe ágil, desenvolvimento de software e aprendizado contínuo. Modelo híbrido ou remoto conforme a equipe.",2026-04-06 10:08:00
+180,ByteWorks,Desenvolvedor(a) Front-end Júnior,"Salvador, BA","Oportunidade para início de carreira. Conhecimentos em lógica de programação, SQL ou Git serão diferenciais.",2026-05-20 10:46:00
+181,NextGen Tech,Desenvolvedor(a) Front-end Júnior,"Recife, PE","Oportunidade para início de carreira. Conhecimentos em lógica de programação, SQL ou Git serão diferenciais.",2025-08-10 10:30:00
+182,ByteWorks,Analista de Suporte Júnior,"Porto Alegre, RS","Atuação em equipe ágil, desenvolvimento de software e aprendizado contínuo. Modelo híbrido ou remoto conforme a equipe.",2025-09-22 10:55:00
+183,DevPoint,Estágio em QA,"São Paulo, SP","Atuação em equipe ágil, desenvolvimento de software e aprendizado contínuo. Modelo híbrido ou remoto conforme a equipe.",2025-10-12 10:49:00
+184,DevPoint,Desenvolvedor(a) Júnior,"Campinas, SP","Atuação em equipe ágil, desenvolvimento de software e aprendizado contínuo. Modelo híbrido ou remoto conforme a equipe.",2025-11-28 10:28:00
+185,NextGen Tech,Desenvolvedor(a) Front-end Júnior,"Belo Horizonte, MG","Atuação em equipe ágil, desenvolvimento de software e aprendizado contínuo. Modelo híbrido ou remoto conforme a equipe.",2025-12-28 10:52:00
+186,NextGen Tech,Pessoa Aprendiz em TI,"Campinas, SP","Vaga aberta para todas as pessoas. Perfil proativo, colaborativo e interesse em desenvolvimento de soluções.",2026-01-27 10:40:00
+187,CloudSync,Desenvolvedor(a) Front-end Júnior,"Florianópolis, SC","Oportunidade para início de carreira. Conhecimentos em lógica de programação, SQL ou Git serão diferenciais.",2026-02-24 10:07:00
+188,DataBridge,Pessoa Aprendiz em TI,"São Paulo, SP","Oportunidade para início de carreira. Conhecimentos em lógica de programação, SQL ou Git serão diferenciais.",2026-03-14 10:48:00
+189,TechNova,Estágio em Desenvolvimento,"Porto Alegre, RS","Atuação em equipe ágil, desenvolvimento de software e aprendizado contínuo. Modelo híbrido ou remoto conforme a equipe.",2026-04-05 10:29:00
+190,TechNova,Desenvolvedor(a) Back-end Júnior,"Belo Horizonte, MG","Vaga aberta para todas as pessoas. Perfil proativo, colaborativo e interesse em desenvolvimento de soluções.",2026-05-01 10:22:00
+191,NextGen Tech,Desenvolvedor(a) Back-end Júnior,"Recife, PE","Vaga aberta para todas as pessoas. Perfil proativo, colaborativo e interesse em desenvolvimento de soluções.",2025-08-14 10:43:00
+192,DataBridge,Desenvolvedor(a) Back-end Júnior,"Belo Horizonte, MG","Buscamos pessoas com interesse em tecnologia, vontade de aprender, boa comunicação e conhecimentos básicos na área.",2025-09-04 10:35:00
+193,SmartLabs,Desenvolvedor(a) Júnior,"Belo Horizonte, MG","Buscamos pessoas com interesse em tecnologia, vontade de aprender, boa comunicação e conhecimentos básicos na área.",2025-10-28 10:16:00
+194,Sigma Digital,Estágio em Desenvolvimento,"Porto Alegre, RS","Oportunidade para início de carreira. Conhecimentos em lógica de programação, SQL ou Git serão diferenciais.",2025-11-17 10:51:00
+195,Sigma Digital,Pessoa Aprendiz em TI,"Salvador, BA","Buscamos pessoas com interesse em tecnologia, vontade de aprender, boa comunicação e conhecimentos básicos na área.",2025-12-10 10:19:00
+196,Pixel Systems,Estágio em QA,"São Paulo, SP","Atuação em equipe ágil, desenvolvimento de software e aprendizado contínuo. Modelo híbrido ou remoto conforme a equipe.",2026-01-23 10:48:00
+197,DigitalCore,Pessoa Aprendiz em TI,"Porto Alegre, RS","Buscamos pessoas com interesse em tecnologia, vontade de aprender, boa comunicação e conhecimentos básicos na área.",2026-02-17 10:24:00
+198,SmartLabs,Desenvolvedor(a) Júnior,"Curitiba, PR","Vaga aberta para todas as pessoas. Perfil proativo, colaborativo e interesse em desenvolvimento de soluções.",2026-03-12 10:21:00
+199,Pixel Systems,Desenvolvedor(a) Júnior,"Florianópolis, SC","Buscamos pessoas com interesse em tecnologia, vontade de aprender, boa comunicação e conhecimentos básicos na área.",2026-04-13 10:21:00
+200,Pixel Systems,Desenvolvedor(a) Júnior,"Campinas, SP","Buscamos pessoas com interesse em tecnologia, vontade de aprender, boa comunicação e conhecimentos básicos na área.",2026-05-02 10:10:00
