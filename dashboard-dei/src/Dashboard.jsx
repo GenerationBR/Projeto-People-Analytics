@@ -38,7 +38,7 @@ const NAV_ITEMS = [
 
 /* Taxonomias oficiais usadas ao longo do relatório (seniority + área ampla) */
 const AREAS = ["Dados", "Desenvolvimento", "Gestão", "Infraestrutura", "UX/UI"];
-const CARGOS = ["Estagiário", "Júnior", "Pleno", "Sênior", "Gerente", "Especialista", "Diretor", "CTO/CIO"];
+const CARGOS = ["Estagiário", "Júnior", "Pleno", "Sênior", "Gerente", "Diretor", "CTO/CIO"];
 const ANOS = ["2019", "2020", "2021", "2022", "2023", "2024"];
 
 const FONTE_COLOR = { inep: C.deepest, datahackers: C.dark, global: C.mid };
@@ -62,130 +62,122 @@ function interp(start, end, n) {
 /*  · Generation — vagas afirmativas (dado cedido, webscraping)       */
 /* ---------------------------------------------------------------- */
 
-/* A Base — INEP */
+/* A Base — INEP (5 cursos: SI/CC/ADS/ES presencial + CD pres+EaD) */
 const inepIngressantes = [
-  { ano: "2019", total: 248000, pctFem: 18.2 },
-  { ano: "2020", total: 256000, pctFem: 18.6 },
-  { ano: "2021", total: 264000, pctFem: 19.1 },
-  { ano: "2022", total: 271000, pctFem: 19.7 },
-  { ano: "2023", total: 279000, pctFem: 20.3 },
-  { ano: "2024", total: 286000, pctFem: 20.8 },
+  { ano: "2019", total: 75455,  pctFem: 13.9 },
+  { ano: "2020", total: 78381,  pctFem: 15.8 },
+  { ano: "2021", total: 67246,  pctFem: 18.2 },
+  { ano: "2022", total: 105168, pctFem: 17.9 },
+  { ano: "2023", total: 122416, pctFem: 18.1 },
+  { ano: "2024", total: 125899, pctFem: 18.4 },
 ];
-const mulheresIngressantes2024 = Math.round(286000 * 0.208);
-const mulheresConcluintes2024 = Math.round(167000 * 0.191);
+const mulheresIngressantes2024 = 104176; // INEP 2024 real · CINE 06 pres+EaD
+const mulheresConcluintes2024 = 19253;  // INEP 2024 real · CINE 06 pres+EaD
 
 const distribuicaoCurso = [
-  { name: "Sistemas de Informação", value: 28.7 },
-  { name: "Ciência da Computação", value: 23.4 },
-  { name: "Análise e Desenv. de Sistemas", value: 18.9 },
-  { name: "Engenharia de Software", value: 12.5 },
-  { name: "Ciência de Dados", value: 8.7 },
-  { name: "Outros", value: 7.8 },
+  { name: "Análise e Desenv. de Sistemas", value: 44.2 },
+  { name: "Ciência da Computação", value: 23.8 },
+  { name: "Sistemas de Informação", value: 17.4 },
+  { name: "Ciência de Dados", value: 8.2 },
+  { name: "Engenharia de Software", value: 6.3 },
 ];
-const donutColors = [C.deepest, C.deep, C.dark, C.mid, C.light, C.pale2];
+const donutColors = [C.deepest, C.deep, C.dark, C.mid, C.light];
 
 const evasaoPorCurso = [
-  { curso: "SI", cursoFull: "Sistemas de Informação", mulheres: 24.8, homens: 19.6 },
-  { curso: "CC", cursoFull: "Ciência da Computação", mulheres: 23.1, homens: 18.9 },
-  { curso: "ADS", cursoFull: "Análise e Desenvolvimento de Sistemas", mulheres: 20.7, homens: 17.8 },
-  { curso: "ES", cursoFull: "Engenharia de Software", mulheres: 19.4, homens: 16.5 },
-  { curso: "CD", cursoFull: "Ciência de Dados", mulheres: 16.9, homens: 15.2 },
+  { curso: "SI", cursoFull: "Sistemas de Informação", mulheres: 77.8, homens: 69.6 },
+  { curso: "CC", cursoFull: "Ciência da Computação", mulheres: 85.7, homens: 75.4 },
+  { curso: "ADS", cursoFull: "Análise e Desenvolvimento de Sistemas", mulheres: 67.6, homens: 70.8 },
+  { curso: "ES", cursoFull: "Engenharia de Software", mulheres: 50.0, homens: 72.2 },
+  { curso: "CD", cursoFull: "Ciência de Dados", mulheres: 83.3, homens: 97.4 },
 ];
 
 const rankingInstituicoes = [
-  { nome: "UFSCAR", pct: 46.2 }, { nome: "UNIFEI", pct: 43.8 },
-  { nome: "UFRGS", pct: 42.1 }, { nome: "UNICAMP", pct: 41.7 },
-  { nome: "UTFPR", pct: 41.3 },
+  { nome: "USP", pct: 17.7 }, { nome: "Insper", pct: 17.0 },
+  { nome: "FIAP", pct: 16.7 }, { nome: "PUC-SP", pct: 16.4 },
+  { nome: "UFMG", pct: 14.4 },
 ];
 
-/* O Mercado — State of Data Brasil 2021 (Data Hackers), n = 2.645 */
+/* O Mercado — State of Data Brasil 2021 (Data Hackers), n = 2.645 · valores calculados sobre microdados */
 const representacaoFuncaoDados = [
-  { funcao: "Business Analyst", pct: 33.4 },
-  { funcao: "Analista de Dados", pct: 32.1 },
-  { funcao: "Analista de BI", pct: 29.7 },
-  { funcao: "Data Product Manager", pct: 27.2 },
-  { funcao: "Cientista de Dados", pct: 23.6 },
-  { funcao: "Analytics Engineer", pct: 18.9 },
-  { funcao: "Engenheiro de Dados", pct: 15.8 },
-  { funcao: "DBA", pct: 14.7 },
-  { funcao: "Arquiteto de Dados", pct: 11.5 },
+  { funcao: "Business Analyst", pct: 26.0 },
+  { funcao: "Analista de Dados", pct: 25.6 },
+  { funcao: "Analista de BI", pct: 19.8 },
+  { funcao: "Cientista de Dados", pct: 19.0 },
+  { funcao: "Analytics Engineer", pct: 19.8 },
+  { funcao: "Engenheiro de Dados", pct: 13.4 },
+  { funcao: "DBA", pct: 7.1 },
 ];
 
 const nivelGeneroDados = [
-  { nivel: "Estágio", mulheres: 9.4, homens: 6.1 },
-  { nivel: "Júnior", mulheres: 27.8, homens: 21.6 },
-  { nivel: "Pleno", mulheres: 37.9, homens: 34.8 },
-  { nivel: "Sênior", mulheres: 24.9, homens: 37.5 },
+  { nivel: "Júnior", mulheres: 39.0, homens: 32.0 },
+  { nivel: "Pleno", mulheres: 35.5, homens: 35.4 },
+  { nivel: "Sênior", mulheres: 25.5, homens: 32.6 },
 ];
 
 const faixaSalarialDados = [
-  { faixa: "Até R$4k", mulheres: 13.8, homens: 8.6 },
-  { faixa: "R$4–8k", mulheres: 31.5, homens: 23.9 },
-  { faixa: "R$8–12k", mulheres: 27.6, homens: 27.1 },
-  { faixa: "R$12–16k", mulheres: 14.2, homens: 19.4 },
-  { faixa: "R$16–20k", mulheres: 7.1, homens: 11.8 },
-  { faixa: "Acima de R$20k", mulheres: 5.8, homens: 9.2 },
+  { faixa: "Até R$4k", mulheres: 24.8, homens: 21.4 },
+  { faixa: "R$4–8k", mulheres: 37.4, homens: 32.7 },
+  { faixa: "R$8–12k", mulheres: 22.2, homens: 19.9 },
+  { faixa: "R$12–16k", mulheres: 7.8, homens: 11.9 },
+  { faixa: "R$16–20k", mulheres: 3.7, homens: 5.9 },
+  { faixa: "Acima de R$20k", mulheres: 4.1, homens: 8.2 },
 ];
 
 const brokenRung = [
   { label: "Homens promovidos a gestão", value: 100 },
-  { label: "Mulheres promovidas a gestão", value: 87 },
+  { label: "Mulheres promovidas a gestão", value: 66 },
 ];
 
 const gapComparativoSalarial = [
-  { escopo: "Dados (Brasil)", pct: 23.5, fonte: "datahackers" },
-  { escopo: "TIC geral (Brasil)", pct: 27.0, fonte: "global" },
+  { escopo: "Dados (Brasil)", pct: 17.1, fonte: "datahackers" },
+  { escopo: "TIC geral (Brasil)", pct: 29.8, fonte: "global" },
 ];
 
-/* Vagas afirmativas — dado cedido pela Generation (webscraping LinkedIn) · período completo do dataset: ago/2025–mai/2026 */
+/* Vagas afirmativas — dado cedido pela Generation (webscraping LinkedIn) · vagas de tecnologia (excl. Comercial e Suporte Técnico) · meses com dados disponíveis: ago/25, set/25, out/25, mar/26, abr/26 */
 const vagasGeneration = [
-  { mes: "ago/25", total: 17, afirmativas: 2 },
-  { mes: "set/25", total: 18, afirmativas: 2 },
-  { mes: "out/25", total: 19, afirmativas: 3 },
-  { mes: "nov/25", total: 20, afirmativas: 4 },
-  { mes: "dez/25", total: 16, afirmativas: 3 },
-  { mes: "jan/26", total: 19, afirmativas: 5 },
-  { mes: "fev/26", total: 21, afirmativas: 6 },
-  { mes: "mar/26", total: 23, afirmativas: 8 },
-  { mes: "abr/26", total: 24, afirmativas: 9 },
-  { mes: "mai/26", total: 23, afirmativas: 9 },
+  { mes: "ago/25", total: 177, afirmativas: 3 },
+  { mes: "set/25", total: 17,  afirmativas: 0 },
+  { mes: "out/25", total: 11,  afirmativas: 0 },
+  { mes: "mar/26", total: 3,   afirmativas: 0 },
+  { mes: "abr/26", total: 187, afirmativas: 4 },
 ].map((d) => ({ ...d, naoAfirmativas: d.total - d.afirmativas }));
 
 const tipoDiBreakdown = [
-  { tipo: "Mulheres na Tecnologia", n: 22 },
-  { tipo: "Pessoas Negras", n: 13 },
-  { tipo: "PCD", n: 10 },
-  { tipo: "PCD e Mulheres", n: 6 },
+  { tipo: "PCD",                    n: 5 },
+  { tipo: "Mulheres na Tecnologia", n: 2 },
 ];
 
 /* Home — comparativo de representação entre recortes (o que é comparável) */
 const representacaoComparativa = [
-  { recorte: "Ingressantes (Computação)", pct: 20.8, fonte: "inep" },
-  { recorte: "Profissionais de Dados", pct: 26.8, fonte: "datahackers" },
-  { recorte: "Força de trabalho em TIC", pct: 34.2, fonte: "global" },
+  { recorte: "Ingressantes (Computação)", pct: 20.6, fonte: "inep" },
+  { recorte: "Profissionais de Dados", pct: 18.7, fonte: "datahackers" },
+  { recorte: "Força de trabalho em TIC", pct: 39.1, fonte: "global" },
   { recorte: "C-Suite em tecnologia", pct: 29.0, fonte: "global" },
   { recorte: "CTO / liderança técnica", pct: 15.0, fonte: "global" },
 ];
 
 /* Funil — trajetória por etapa (fontes e populações distintas) */
 const trajectoryStages = [
-  { name: "Ingressantes em Computação", pctFem: 20.8, tag: "INEP · população, 2024" },
-  { name: "Profissionais na área de Dados", pctFem: 26.8, tag: "State of Data Brasil 2021 · amostra n=2.645" },
-  { name: "Cargos de gestão em Dados", pctFem: 14.6, tag: "State of Data Brasil 2021 · amostra" },
+  { name: "Ingressantes em Computação", pctFem: 20.6, tag: "INEP · CINE 06 pres+EaD, 2024" },
+  { name: "Profissionais na área de Dados", pctFem: 18.7, tag: "State of Data Brasil 2021 · n=2.645" },
+  { name: "Cargos de gestão em Dados", pctFem: 13.2, tag: "State of Data Brasil 2021 · n=508 gestores" },
   { name: "C-Suite em tecnologia", pctFem: 29.0, tag: "WomenHack 2026 · benchmark global" },
   { name: "CTO / liderança técnica", pctFem: 15.0, tag: "WomenHack 2026 · benchmark global" },
 ];
 
-/* IRF — área (estimativa de mercado, exceto Dados = real) e cargo (seniority) */
-const pctMulheresPorArea = { Dados: 26.8, Desenvolvimento: 19.5, Gestão: 31.0, Infraestrutura: 14.0, "UX/UI": 44.5 };
-const BASELINE_TIC = 34.2; // Brasscom — % mulheres na força de trabalho em TIC (Brasil)
+/* IRF — área (estimativa de mercado, exceto Dados = real) e cargo (fontes reais) */
+/* pctMulheresPorArea: Dados=State of Data 2021 · Desenvolvimento/UX/UI=WomenHack 2026 · Infraestrutura=WomenHack 2026 · Gestão=Brasscom 2025 */
+const pctMulheresPorArea = { Dados: 18.7, Desenvolvimento: 22.0, Gestão: 35.5, Infraestrutura: 14.0, "UX/UI": 46.0 };
+const BASELINE_TIC = 39.1; // Brasscom 2025 — % mulheres na força de trabalho em TIC (Brasil, 2024)
 const irfArea = AREAS.map((a) => ({ name: a, v: Math.round((pctMulheresPorArea[a] / BASELINE_TIC) * 100) / 100 }));
 
+/* pctMulheresPorCargo: apenas níveis com fonte real disponível */
+/* Gerente/Diretor = Brasscom 2025 (Diretoria/Gerência TIC, 2024) · CTO/CIO = WomenHack 2026 (McKinsey, 2025) */
+const CARGOS_IRF = ["Gerente", "Diretor", "CTO/CIO"];
 const pctMulheresPorCargo = {
-  "Estagiário": 48.5, "Júnior": 39.3, "Pleno": 32.5, "Sênior": 25.3,
-  "Gerente": 20.9, "Especialista": 23.6, "Diretor": 17.1, "CTO/CIO": 15.0,
+  "Gerente": 35.5, "Diretor": 35.5, "CTO/CIO": 15.0,
 };
-const irfCargo = CARGOS.map((c) => ({ name: c, v: Math.round((pctMulheresPorCargo[c] / BASELINE_TIC) * 100) / 100 }));
+const irfCargo = CARGOS_IRF.map((c) => ({ name: c, v: Math.round((pctMulheresPorCargo[c] / BASELINE_TIC) * 100) / 100 }));
 function irfColor(v) {
   if (v >= 1.05) return C.deepest;
   if (v >= 0.9) return C.dark;
@@ -194,13 +186,15 @@ function irfColor(v) {
 }
 
 /* Simulador RH — área x cargo, sem filtro de região */
+/* Salários: médias masculinas por nível · Brasscom 2025 (base_mercado_tech_brasil.csv) */
 const baseSalaryByCargo = {
-  "Estagiário": 1900, "Júnior": 5200, "Pleno": 9200, "Sênior": 14500,
-  "Gerente": 19800, "Especialista": 16200, "Diretor": 28500, "CTO/CIO": 38000,
+  "Estagiário": 2425, "Júnior": 3187, "Pleno": 3962, "Sênior": 4824,
+  "Gerente": 6291, "Diretor": 9505, "CTO/CIO": 16474,
 };
+/* Gap 29,8% uniforme por nível · Brasscom 2025 */
 const gapPctByCargo = {
-  "Estagiário": 0.03, "Júnior": 0.08, "Pleno": 0.14, "Sênior": 0.21,
-  "Gerente": 0.27, "Especialista": 0.19, "Diretor": 0.33, "CTO/CIO": 0.38,
+  "Estagiário": 0.298, "Júnior": 0.298, "Pleno": 0.298, "Sênior": 0.298,
+  "Gerente": 0.298, "Diretor": 0.298, "CTO/CIO": 0.298,
 };
 const areaMultiplier = { Dados: 1.00, Desenvolvimento: 0.92, Gestão: 1.15, Infraestrutura: 0.88, "UX/UI": 0.80 };
 const areaTrendRange = {
@@ -372,9 +366,9 @@ function HomePage() {
     <div className="page">
       <PageHeader title="Visão geral" sub="Educação, mercado de Dados e benchmarks globais · panorama consolidado · 2019–2024" />
       <div className="kpi-grid">
-        <KpiCard label="% mulheres entre ingressantes" value="20,8%" sub="Computação · INEP, 2024" trend="+2,6 p.p. desde 2019" />
-        <KpiCard label="% mulheres na área de Dados" value="26,8%" sub="State of Data Brasil 2021 · n = 2.645" />
-        <KpiCard label="Gap salarial em Dados (Brasil)" value="23,5%" sub="vs. 27% no setor de TIC geral (Brasscom)" />
+        <KpiCard label="% mulheres entre ingressantes" value="20,6%" sub="CINE 06 · INEP, 2024" trend="+4,5 p.p. desde 2019" />
+        <KpiCard label="% mulheres na área de Dados" value="18,7%" sub="State of Data Brasil 2021 · n = 2.645" />
+        <KpiCard label="Gap salarial em Dados (Brasil)" value="17,1%" sub="vs. 29,8% no setor de TIC geral (Brasscom)" />
         <KpiCard label="Mulheres em C-Suite tech" value="29%" sub="WomenHack 2026 · cai para 15% em CTO" />
       </div>
       <div className="chart-grid cols-2">
@@ -383,7 +377,7 @@ function HomePage() {
             <LineChart data={inepIngressantes} margin={{ top: 8, right: 8, left: -16, bottom: 0 }}>
               <CartesianGrid stroke={C.pale2} strokeDasharray="3 3" vertical={false} />
               <XAxis dataKey="ano" {...axisProps} />
-              <YAxis domain={[15, 24]} {...axisProps} tickFormatter={(v) => `${v}%`} />
+              <YAxis domain={[10, 22]} {...axisProps} tickFormatter={(v) => `${v}%`} />
               <Tooltip {...tooltipStyle} formatter={(v) => `${v}%`} />
               <Line type="monotone" dataKey="pctFem" stroke={C.deepest} strokeWidth={2.4} dot={{ r: 3, fill: C.deepest }} />
             </LineChart>
@@ -417,10 +411,10 @@ function BasePage() {
     <div className="page">
       <PageHeader title="A Base" sub="Educação Superior · Censo da Educação Superior (INEP) · 2019–2024" />
       <div className="kpi-grid">
-        <KpiCard label="Mulheres ingressantes" value={mulheresIngressantes2024.toLocaleString("pt-BR")} sub="Cursos de Computação · 2024" />
-        <KpiCard label="Mulheres concluintes" value={mulheresConcluintes2024.toLocaleString("pt-BR")} sub="Cursos de Computação · 2024" />
-        <KpiCard label="Taxa de evasão" value="21,4%" sub="Média geral, todos os gêneros" />
-        <KpiCard label="Participação feminina entre ingressantes" value="20,8%" sub="Faixa do período: 18%–21% (2019–2024)" />
+        <KpiCard label="Mulheres ingressantes" value={mulheresIngressantes2024.toLocaleString("pt-BR")} sub="Computação e TIC · pres+EaD · INEP, 2024" />
+        <KpiCard label="Mulheres concluintes" value={mulheresConcluintes2024.toLocaleString("pt-BR")} sub="Computação e TIC · pres+EaD · INEP, 2024" />
+        <KpiCard label="Taxa de não-conclusão no prazo" value="62,6%" sub="Média geral · 5 cursos · cohorts 2019–2020" />
+        <KpiCard label="Participação feminina entre ingressantes" value="20,6%" sub="CINE 06 · INEP, 2024 · série 2019–2024: 14%→18%" />
       </div>
       <div className="chart-grid cols-2">
         <ChartCard title="Evolução da % de mulheres entre ingressantes" sub="Cursos de Computação · 2019–2024">
@@ -428,7 +422,7 @@ function BasePage() {
             <LineChart data={inepIngressantes} margin={{ top: 8, right: 8, left: -8, bottom: 0 }}>
               <CartesianGrid stroke={C.pale2} strokeDasharray="3 3" vertical={false} />
               <XAxis dataKey="ano" {...axisProps} />
-              <YAxis domain={[15, 24]} {...axisProps} tickFormatter={(v) => `${v}%`} />
+              <YAxis domain={[10, 22]} {...axisProps} tickFormatter={(v) => `${v}%`} />
               <Tooltip {...tooltipStyle} formatter={(v) => `${v}%`} />
               <Line type="monotone" dataKey="pctFem" stroke={C.deepest} strokeWidth={2.4} dot={{ r: 3, fill: C.deepest }} />
             </LineChart>
@@ -460,8 +454,8 @@ function BasePage() {
       </div>
       <div className="chart-grid cols-2">
         <ChartCard
-          title="Evasão por gênero, segundo o curso"
-          sub="Mulheres evadem mais que homens em todos os cursos"
+          title="Não-conclusão no prazo, por gênero e curso"
+          sub="Em SI e CC mulheres lideram; em ADS e ES os homens têm maior não-conclusão"
           isNew
           legend={[{ label: "Mulheres", color: C.dark }, { label: "Homens", color: C.taupe }]}
           footer={<p className="abbrev-caption">SI = Sistemas de Informação · CC = Ciência da Computação · ADS = Análise e Desenvolvimento de Sistemas · ES = Engenharia de Software · CD = Ciência de Dados</p>}
@@ -481,7 +475,7 @@ function BasePage() {
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={rankingInstituicoes} layout="vertical" margin={{ top: 8, right: 28, left: 8, bottom: 0 }}>
               <CartesianGrid stroke={C.pale2} strokeDasharray="3 3" horizontal={false} />
-              <XAxis type="number" domain={[0, 50]} {...axisProps} tickFormatter={(v) => `${v}%`} />
+              <XAxis type="number" domain={[0, 22]} {...axisProps} tickFormatter={(v) => `${v}%`} />
               <YAxis type="category" dataKey="nome" {...axisProps} width={70} />
               <Tooltip {...tooltipStyle} formatter={(v) => `${v}%`} />
               <Bar dataKey="pct" radius={[0, 6, 6, 0]} barSize={16}>
@@ -492,7 +486,7 @@ function BasePage() {
           </ResponsiveContainer>
         </ChartCard>
       </div>
-      <PageFooter>Fonte: INEP — Censo da Educação Superior (2019–2024). Participação feminina entre ingressantes mockada dentro da faixa real informada (18%–21%).</PageFooter>
+      <PageFooter>Fonte: INEP — Censo da Educação Superior (2019–2024). Contagens de ingressantes e concluintes são dados reais (CINE 06, pres+EaD). Percentuais da série histórica e distribuição por curso são calculados sobre os 5 cursos da base (SI, CC, ADS, ES, CD). Taxa de não-conclusão: cohorts 2019–2020, prazo teórico de conclusão.</PageFooter>
     </div>
   );
 }
@@ -503,16 +497,16 @@ function MercadoPage() {
       <PageHeader title="O Mercado de Dados" sub="Base oficial: State of Data Brasil 2021 (Data Hackers) · n = 2.645 respondentes" />
       <div className="kpi-grid">
         <KpiCard label="Respondentes na pesquisa" value="2.645" sub="State of Data Brasil 2021" />
-        <KpiCard label="% mulheres na área de Dados" value="26,8%" sub="Do total de respondentes" />
-        <KpiCard label="Gap salarial em Dados" value="23,5%" sub="Homens × Mulheres, Brasil" />
-        <KpiCard label="% mulheres em cargos de gestão" value="14,6%" sub="vs. 21,3% dos homens" />
+        <KpiCard label="% mulheres na área de Dados" value="18,7%" sub="Do total de respondentes" />
+        <KpiCard label="Gap salarial em Dados" value="17,1%" sub="Homens × Mulheres, Brasil" />
+        <KpiCard label="% mulheres em cargos de gestão" value="13,2%" sub="vs. 20,6% dos homens" />
       </div>
       <div className="chart-grid cols-2">
         <ChartCard title="Representação feminina por função" sub="% mulheres em cada função, área de Dados" isNew>
           <HBars
             data={representacaoFuncaoDados}
-            xKey="pct" yKey="funcao" domain={[0, 40]} height={260} width={140}
-            colorFn={() => C.dark} refLine={26.8}
+            xKey="pct" yKey="funcao" domain={[0, 30]} height={260} width={140}
+            colorFn={() => C.dark} refLine={18.7}
           />
         </ChartCard>
         <ChartCard
@@ -558,17 +552,17 @@ function MercadoPage() {
           height="auto"
         >
           <BrokenRungBars data={brokenRung} />
-          <p className="rung-caption">Para cada 100 homens promovidos a cargos de gestão, apenas 87 mulheres são — um padrão global (McKinsey &amp; LeanIn) consistente com a sub-representação de gestoras que medimos na nossa base nacional de Dados (14,6%).</p>
+          <p className="rung-caption">Para cada 100 homens promovidos a cargos de gestão, apenas 66 mulheres são — cálculo direto sobre a base do State of Data Brasil 2021 (n=2.645), onde 13,2% das profissionais de Dados ocupam cargos de gestão, contra 20,6% dos homens.</p>
         </ChartCard>
       </div>
-      <PageFooter>Fonte: State of Data Brasil 2021 (Data Hackers) · n = 2.645 respondentes. Quebras por função, nível e faixa salarial são estimativas ilustrativas com base na estrutura da pesquisa, a recalcular no Power BI a partir da base real.</PageFooter>
+      <PageFooter>Fonte: State of Data Brasil 2021 (Data Hackers) · n = 2.645 respondentes. Percentuais calculados diretamente sobre os microdados. Gap salarial de 17,1% estimado pela média das faixas de remuneração declaradas (salário mediano feminino e masculino coincidem na faixa R$6–8k).</PageFooter>
 
       <SectionDivider label="Comparativo global" tag="WomenHack 2026 · Brasscom 2024/2025 · McKinsey & LeanIn 2025" icon={Globe} />
       <div className="kpi-grid">
         <KpiCard label="Mulheres em C-Suite tech" value="29%" sub="WomenHack 2026 (global)" />
         <KpiCard label="Mulheres em cargos técnicos de liderança" value="15%" sub="CTO · WomenHack 2026 (global)" />
         <KpiCard label="Retenção média — mulheres" value="3,1 anos" sub="vs. 4,2 anos para homens · WomenHack 2026" />
-        <KpiCard label="Mulheres na força de trabalho em TIC" value="34,2%" sub="Brasil · Brasscom 2024/2025" />
+        <KpiCard label="Mulheres na força de trabalho em TIC" value="39,1%" sub="Brasil · Brasscom 2025 (setor TIC, 2024)" />
       </div>
       <ChartCard
         title="Gap salarial: Dados (Brasil) vs. TIC geral (Brasil)"
@@ -585,8 +579,8 @@ function MercadoPage() {
 
       <SectionDivider label="Vagas afirmativas no mercado" tag="dado cedido · Generation" />
       <div className="kpi-grid kpi-grid-2">
-        <KpiCard label="% de vagas afirmativas no período" value="25,5%" sub="ago/25–mai/26 · 51 de 200 vagas mapeadas" />
-        <KpiCard label="Crescimento no período" value="+27,3 p.p." sub="De 11,8% (ago/25) para 39,1% (mai/26)" trend="iniciativas em alta" />
+        <KpiCard label="% de vagas afirmativas no período" value="1,8%" sub="ago/25–abr/26 · 7 de 395 vagas tech" />
+        <KpiCard label="Vagas afirmativas no período" value="7" sub="PCD: 5 · Mulheres: 2 · ago/25–abr/26" />
       </div>
       <div className="chart-grid cols-2">
         <ChartCard
@@ -606,15 +600,15 @@ function MercadoPage() {
             </BarChart>
           </ResponsiveContainer>
         </ChartCard>
-        <ChartCard title="Vagas afirmativas por tipo de ação" sub="Distribuição das 51 vagas afirmativas no período" isNew>
+        <ChartCard title="Vagas afirmativas por tipo de ação" sub="Distribuição das 7 vagas afirmativas (vagas tech)" isNew>
           <HBars
             data={tipoDiBreakdown}
-            xKey="n" yKey="tipo" domain={[0, 26]} height={210} width={130} suffix=""
+            xKey="n" yKey="tipo" domain={[0, 6]} height={210} width={130} suffix=""
             colorFn={(_, i) => [C.deepest, C.dark, C.mid, C.light][i]}
           />
         </ChartCard>
       </div>
-      <PageFooter>Vagas afirmativas: dado cedido pela Generation Brasil (webscraping LinkedIn, ago/2025–mai/2026).</PageFooter>
+      <PageFooter>Vagas afirmativas: dado cedido pela Generation Brasil (webscraping LinkedIn). Análise restrita a vagas de tecnologia (excl. Comercial e Suporte Técnico). Meses com dados disponíveis: ago/25, set/25, out/25, mar/26, abr/26. Total: 395 vagas tech · 7 afirmativas (1,8%).</PageFooter>
     </div>
   );
 }
@@ -634,8 +628,8 @@ function FunilPage() {
           <div className="callout">
             <TrendingDown size={26} strokeWidth={1.6} />
             <div>
-              <strong>Maior recuo: −12,2 p.p.</strong>
-              <p>Entre profissionais de Dados (26,8%) e quem chega à gestão na área (14,6%) — o ponto mais agudo de perda de representatividade que medimos na base nacional.</p>
+              <strong>Maior recuo: −5,5 p.p.</strong>
+              <p>Entre profissionais de Dados (18,7%) e quem chega à gestão na área (13,2%) — o ponto mais agudo de perda de representatividade que medimos na base nacional.</p>
             </div>
           </div>
           <div className="callout-note">
@@ -651,9 +645,9 @@ function FunilPage() {
 function IrfPage() {
   return (
     <div className="page">
-      <PageHeader title="Índice de Representatividade Feminina" sub="IRF = % mulheres na categoria ÷ % mulheres na força de trabalho em TIC (34,2%, Brasscom)" />
+      <PageHeader title="Índice de Representatividade Feminina" sub="IRF = % mulheres na categoria ÷ % mulheres na força de trabalho em TIC (39,1%, Brasscom 2025)" />
       <NoteBanner>
-        <strong>Nota metodológica:</strong> a área <strong>Dados</strong> usa a pesquisa real State of Data Brasil 2021 (n = 2.645); as demais áreas e o eixo de cargos seguem estimativas de mercado (Brasscom, WomenHack).
+        <strong>Nota metodológica:</strong> a área <strong>Dados</strong> usa o State of Data Brasil 2021 (n = 2.645). Áreas: Desenvolvimento/UX/UI/Infraestrutura = WomenHack 2026 · Gestão = Brasscom 2025 (Diretoria/Gerência TIC, Brasil). Cargos: Gerente/Diretor = Brasscom 2025 (35,5% Diretoria/Gerência TIC) · CTO/CIO = WomenHack 2026 (McKinsey, 15%).
       </NoteBanner>
       <div className="legend-row" style={{ marginBottom: 16 }}>
         <span className="legend-item"><span className="legend-dot" style={{ background: C.deepest }} /> Acima da média (IRF ≥ 1,05)</span>
@@ -664,11 +658,11 @@ function IrfPage() {
         <ChartCard title="IRF por área" sub="Dados (real) · Desenvolvimento, Gestão, Infraestrutura e UX/UI (estimativa)" height={220}>
           <HBars data={irfArea} xKey="v" yKey="name" domain={[0, 1.6]} height={220} suffix="" refLine={1} colorFn={(d) => irfColor(d.v)} />
         </ChartCard>
-        <ChartCard title="IRF por cargo" sub="A liderança é o ponto de maior sub-representação" height={300}>
-          <HBars data={irfCargo} xKey="v" yKey="name" domain={[0, 1.6]} height={300} suffix="" refLine={1} width={110} colorFn={(d) => irfColor(d.v)} />
+        <ChartCard title="IRF por cargo" sub="Gerente/Diretor = Brasscom 2025 (TIC Brasil) · CTO/CIO = WomenHack 2026" height={180}>
+          <HBars data={irfCargo} xKey="v" yKey="name" domain={[0, 1.6]} height={180} suffix="" refLine={1} width={110} colorFn={(d) => irfColor(d.v)} />
         </ChartCard>
       </div>
-      <PageFooter>Fonte: cálculo próprio (% mulheres na categoria ÷ 34,2%) com base em State of Data Brasil 2021, Brasscom e WomenHack. IRF de CTO/CIO ancorado no dado real de WomenHack (15%).</PageFooter>
+      <PageFooter>Fonte: cálculo próprio (% mulheres na categoria ÷ 39,1%, Brasscom 2025) com base em State of Data Brasil 2021 (Dados), WomenHack 2026 (Desenvolvimento, UX/UI, Infraestrutura, CTO/CIO) e Brasscom 2025 (Gestão, Gerente, Diretor).</PageFooter>
     </div>
   );
 }
@@ -703,7 +697,7 @@ function SimuladorPage() {
           </select>
         </label>
       </div>
-      <p className="disclaimer">Valores ilustrativos para fins de prototipagem; a versão final deve usar dados reais de RH.</p>
+      <p className="disclaimer">Salários baseados em médias reais do setor TIC Brasil (Brasscom 2025); gap salarial de 29,8% aplicado uniformemente por nível.</p>
       <div className="kpi-grid kpi-grid-3">
         <KpiCard label="Salário médio · mulheres" value={brl(mulheres)} sub={`${cargo} · ${area}`} />
         <KpiCard label="Salário médio · homens" value={brl(homens)} sub={`${cargo} · ${area}`} />
@@ -720,7 +714,7 @@ function SimuladorPage() {
           </LineChart>
         </ResponsiveContainer>
       </ChartCard>
-      <PageFooter>Dados ilustrativos com base na metodologia State of Data Brasil 2021 / Brasscom, para fins de prototipagem.</PageFooter>
+      <PageFooter>Salários e gap salarial: Brasscom 2025 — Relatório de Diversidade, Equidade e Inclusão no Setor de TIC.</PageFooter>
     </div>
   );
 }
