@@ -98,12 +98,12 @@ const rankingInstituicoes = [
 ];
 
 /* O Mercado — State of Data Brasil 2021 (Data Hackers), n = 2.645 · valores calculados sobre microdados */
+/* "Analista de Dados/Business Analyst" agrupados (mesma função no CSV): (25+83)/(96+324)=25,7% */
+/* "Analista de BI/Analytics Engineer" já eram a mesma categoria no State of Data 2021 */
 const representacaoFuncaoDados = [
-  { funcao: "Business Analyst", pct: 26.0 },
-  { funcao: "Analista de Dados", pct: 25.6 },
-  { funcao: "Analista de BI", pct: 19.8 },
+  { funcao: "Analista de Dados / Business Analyst", pct: 25.7 },
+  { funcao: "Analista de BI / Analytics Engineer", pct: 19.8 },
   { funcao: "Cientista de Dados", pct: 19.0 },
-  { funcao: "Analytics Engineer", pct: 19.8 },
   { funcao: "Engenheiro de Dados", pct: 13.4 },
   { funcao: "DBA", pct: 7.1 },
 ];
@@ -149,7 +149,7 @@ const tipoDiBreakdown = [
 
 /* Home — comparativo de representação entre recortes (o que é comparável) */
 const representacaoComparativa = [
-  { recorte: "Ingressantes (Computação)", pct: 20.6, fonte: "inep" },
+  { recorte: "Ingressantes (Computação)", pct: 18.4, fonte: "inep" },
   { recorte: "Profissionais de Dados", pct: 18.7, fonte: "datahackers" },
   { recorte: "Força de trabalho em TIC", pct: 39.1, fonte: "global" },
   { recorte: "C-Suite em tecnologia", pct: 29.0, fonte: "global" },
@@ -158,7 +158,7 @@ const representacaoComparativa = [
 
 /* Funil — trajetória por etapa (fontes e populações distintas) */
 const trajectoryStages = [
-  { name: "Ingressantes em Computação", pctFem: 20.6, tag: "INEP · CINE 06 pres+EaD, 2024" },
+  { name: "Ingressantes em Computação", pctFem: 18.4, tag: "INEP · 5 cursos (SI/CC/ADS/ES/CD) · 2024" },
   { name: "Profissionais na área de Dados", pctFem: 18.7, tag: "State of Data Brasil 2021 · n=2.645" },
   { name: "Cargos de gestão em Dados", pctFem: 13.2, tag: "State of Data Brasil 2021 · n=508 gestores" },
   { name: "C-Suite em tecnologia", pctFem: 29.0, tag: "WomenHack 2026 · benchmark global" },
@@ -191,11 +191,13 @@ const baseSalaryByCargo = {
   "Estagiário": 2425, "Júnior": 3187, "Pleno": 3962, "Sênior": 4824,
   "Gerente": 6291, "Diretor": 9505, "CTO/CIO": 16474,
 };
-/* Gap 29,8% uniforme por nível · Brasscom 2025 */
+/* Gap para demais áreas (não-Dados): 29,8% uniforme · Brasscom 2025 */
 const gapPctByCargo = {
   "Estagiário": 0.298, "Júnior": 0.298, "Pleno": 0.298, "Sênior": 0.298,
   "Gerente": 0.298, "Diretor": 0.298, "CTO/CIO": 0.298,
 };
+/* Gap para área de Dados: State of Data Brasil 2021 · n=2.645 */
+const GAP_DADOS = 0.171;
 const areaMultiplier = { Dados: 1.00, Desenvolvimento: 0.92, Gestão: 1.15, Infraestrutura: 0.88, "UX/UI": 0.80 };
 const areaTrendRange = {
   Dados: [16, 28], Desenvolvimento: [14, 22], Gestão: [26, 38],
@@ -366,7 +368,7 @@ function HomePage() {
     <div className="page">
       <PageHeader title="Visão geral" sub="Educação, mercado de Dados e benchmarks globais · panorama consolidado · 2019–2024" />
       <div className="kpi-grid">
-        <KpiCard label="% mulheres entre ingressantes" value="20,6%" sub="CINE 06 · INEP, 2024" trend="+4,5 p.p. desde 2019" />
+        <KpiCard label="% mulheres entre ingressantes" value="18,4%" sub="5 cursos de Computação · INEP, 2024" trend="+4,5 p.p. desde 2019" />
         <KpiCard label="% mulheres na área de Dados" value="18,7%" sub="State of Data Brasil 2021 · n = 2.645" />
         <KpiCard label="Gap salarial em Dados (Brasil)" value="17,1%" sub="vs. 29,8% no setor de TIC geral (Brasscom)" />
         <KpiCard label="Mulheres em C-Suite tech" value="29%" sub="WomenHack 2026 · cai para 15% em CTO" />
@@ -414,7 +416,7 @@ function BasePage() {
         <KpiCard label="Mulheres ingressantes" value={mulheresIngressantes2024.toLocaleString("pt-BR")} sub="Computação e TIC · pres+EaD · INEP, 2024" />
         <KpiCard label="Mulheres concluintes" value={mulheresConcluintes2024.toLocaleString("pt-BR")} sub="Computação e TIC · pres+EaD · INEP, 2024" />
         <KpiCard label="Taxa de não-conclusão no prazo" value="62,6%" sub="Média geral · 5 cursos · cohorts 2019–2020" />
-        <KpiCard label="Participação feminina entre ingressantes" value="20,6%" sub="CINE 06 · INEP, 2024 · série 2019–2024: 14%→18%" />
+        <KpiCard label="Participação feminina entre ingressantes" value="18,4%" sub="5 cursos de Computação · INEP, 2024 · série 2019–2024: 14%→18%" />
       </div>
       <div className="chart-grid cols-2">
         <ChartCard title="Evolução da % de mulheres entre ingressantes" sub="Cursos de Computação · 2019–2024">
@@ -499,13 +501,13 @@ function MercadoPage() {
         <KpiCard label="Respondentes na pesquisa" value="2.645" sub="State of Data Brasil 2021" />
         <KpiCard label="% mulheres na área de Dados" value="18,7%" sub="Do total de respondentes" />
         <KpiCard label="Gap salarial em Dados" value="17,1%" sub="Homens × Mulheres, Brasil" />
-        <KpiCard label="% mulheres em cargos de gestão" value="13,2%" sub="vs. 20,6% dos homens" />
+        <KpiCard label="% mulheres em cargos de gestão" value="13,6%" sub="vs. 20,6% dos homens" />
       </div>
       <div className="chart-grid cols-2">
         <ChartCard title="Representação feminina por função" sub="% mulheres em cada função, área de Dados" isNew>
           <HBars
             data={representacaoFuncaoDados}
-            xKey="pct" yKey="funcao" domain={[0, 30]} height={260} width={140}
+            xKey="pct" yKey="funcao" domain={[0, 30]} height={205} width={200}
             colorFn={() => C.dark} refLine={18.7}
           />
         </ChartCard>
@@ -552,7 +554,7 @@ function MercadoPage() {
           height="auto"
         >
           <BrokenRungBars data={brokenRung} />
-          <p className="rung-caption">Para cada 100 homens promovidos a cargos de gestão, apenas 66 mulheres são — cálculo direto sobre a base do State of Data Brasil 2021 (n=2.645), onde 13,2% das profissionais de Dados ocupam cargos de gestão, contra 20,6% dos homens.</p>
+          <p className="rung-caption">Para cada 100 homens promovidos a cargos de gestão, apenas 66 mulheres são — cálculo direto sobre a base do State of Data Brasil 2021 (n=2.645), onde 13,6% das profissionais de Dados ocupam cargos de gestão, contra 20,6% dos homens.</p>
         </ChartCard>
       </div>
       <PageFooter>Fonte: State of Data Brasil 2021 (Data Hackers) · n = 2.645 respondentes. Percentuais calculados diretamente sobre os microdados. Gap salarial de 17,1% estimado pela média das faixas de remuneração declaradas (salário mediano feminino e masculino coincidem na faixa R$6–8k).</PageFooter>
@@ -672,7 +674,7 @@ function SimuladorPage() {
   const [cargo, setCargo] = useState("Pleno");
 
   const homens = Math.round(baseSalaryByCargo[cargo] * areaMultiplier[area]);
-  const gapPct = gapPctByCargo[cargo];
+  const gapPct = area === "Dados" ? GAP_DADOS : gapPctByCargo[cargo];
   const mulheres = Math.round(homens * (1 - gapPct));
   const [start, end] = areaTrendRange[area];
   const serieArea = interp(start, end, ANOS.length).map((v, i) => ({ ano: ANOS[i], pct: v }));
@@ -681,7 +683,7 @@ function SimuladorPage() {
     <div className="page">
       <PageHeader title="Simulador de RH" sub="Consulta de gap salarial e formação por área e cargo" />
       <NoteBanner>
-        <strong>Nota metodológica:</strong> selecione <strong>Dados</strong> para a área com lastro em pesquisa real (State of Data Brasil 2021); as demais áreas usam estimativas de mercado.
+        <strong>Nota metodológica:</strong> selecione <strong>Dados</strong> para a área com lastro em pesquisa real (State of Data Brasil 2021, gap de 17,1%); as demais áreas usam estimativas <strong>Brasscom 2025</strong> (salários e gap de 29,8%).
       </NoteBanner>
       <div className="select-row">
         <label className="select-field">
@@ -697,11 +699,22 @@ function SimuladorPage() {
           </select>
         </label>
       </div>
-      <p className="disclaimer">Salários baseados em médias reais do setor TIC Brasil (Brasscom 2025); gap salarial de 29,8% aplicado uniformemente por nível.</p>
+      <p className="disclaimer">
+        {area === "Dados"
+          ? "Gap salarial: 17,1% · State of Data Brasil 2021 (n=2.645, setor de Dados). Salários base por nível: Brasscom 2025."
+          : "Salários e gap salarial de 29,8%: Brasscom 2025 — Relatório de Diversidade, Equidade e Inclusão no Setor de TIC."}
+      </p>
+      {cargo === "Estagiário" && (
+        <p className="disclaimer">⚠️ Dados de Estagiário são estimativas de mercado — nenhuma das pesquisas consultadas (State of Data Brasil 2021 / Brasscom 2025) localizou gap salarial específico para este cargo.</p>
+      )}
       <div className="kpi-grid kpi-grid-3">
         <KpiCard label="Salário médio · mulheres" value={brl(mulheres)} sub={`${cargo} · ${area}`} />
         <KpiCard label="Salário médio · homens" value={brl(homens)} sub={`${cargo} · ${area}`} />
-        <KpiCard label="Gap salarial neste cargo" value={`${(gapPct * 100).toFixed(1)}%`} sub="Homens × mulheres" />
+        <KpiCard
+          label={area === "Dados" ? "Gap salarial em Dados" : "Gap salarial neste cargo"}
+          value={`${(gapPct * 100).toFixed(1)}%`}
+          sub={area === "Dados" ? "State of Data Brasil 2021" : "Brasscom 2025"}
+        />
       </div>
       <ChartCard title={`Histórico de formação feminina em ${area}`} sub="% de matriculadas mulheres · INEP, 2019–2024" height={230}>
         <ResponsiveContainer width="100%" height="100%">
@@ -714,7 +727,7 @@ function SimuladorPage() {
           </LineChart>
         </ResponsiveContainer>
       </ChartCard>
-      <PageFooter>Salários e gap salarial: Brasscom 2025 — Relatório de Diversidade, Equidade e Inclusão no Setor de TIC.</PageFooter>
+      <PageFooter>Salários base por nível: Brasscom 2025. Gap salarial — Dados: State of Data Brasil 2021 (17,1%); demais áreas: Brasscom 2025 (29,8%). Dados de Estagiário são estimativas de mercado.</PageFooter>
     </div>
   );
 }
