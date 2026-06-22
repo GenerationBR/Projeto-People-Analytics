@@ -1,0 +1,32 @@
+DAX
+Concluíram Mulheres = CALCULATE(COUNTROWS('base_campus_ti_brasil'), 'base_campus_ti_brasil'[Gênero] = "Feminino", 'base_campus_ti_brasil'[concluiu] = 1)
+
+Taxa Conclusão Mulheres = DIVIDE([Concluíram Mulheres], [Total Ingressantes Mulheres])
+
+Total Ingressantes Mulheres = CALCULATE(COUNTROWS('base_campus_ti_brasil'), 'base_campus_ti_brasil'[Gênero] = "Feminino")
+
+% Mulheres = DIVIDE([Total Mulheres], [Total Profissionais])
+
+% Mulheres Liderança = DIVIDE([Mulheres Liderança], [Total Liderança])
+
+Gender Pay Gap = DIVIDE([Salário Médio Homens] - [Salário Médio Mulheres], [Salário Médio Homens])
+
+Mulheres Liderança = CALCULATE(COUNTROWS('base_mercado_tech_brasil_v3'), 'base_mercado_tech_brasil_v3'[genero] = "Feminino", 'base_mercado_tech_brasil_v3'[cargo] IN {"Gerente", "Diretor", "Executivo/C-Level"})
+
+Salário Médio Homens = CALCULATE(AVERAGE('base_mercado_tech_brasil_v3'[salario_base]), 'base_mercado_tech_brasil_v3'[genero] = "Masculino")
+
+Salário Médio Mulheres = CALCULATE(AVERAGE('base_mercado_tech_brasil_v3'[salario_base]), 'base_mercado_tech_brasil_v3'[genero] = "Feminino")
+
+Taxa Retenção Homens = CALCULATE(AVERAGE('base_mercado_tech_brasil_v3'[tempo_empresa_meses]), 'base_mercado_tech_brasil_v3'[genero] = "Masculino")
+
+Taxa Retenção Mulheres = CALCULATE(AVERAGE('base_mercado_tech_brasil_v3'[tempo_empresa_meses]), 'base_mercado_tech_brasil_v3'[genero] = "Feminino")
+
+Total Liderança = CALCULATE(COUNTROWS('base_mercado_tech_brasil_v3'), 'base_mercado_tech_brasil_v3'[cargo] IN {"Gerente", "Diretor", "Executivo/C-Level"})
+
+Total Mulheres = CALCULATE(COUNTROWS('base_mercado_tech_brasil_v3'), 'base_mercado_tech_brasil_v3'[genero] = "Feminino")
+
+Total Profissionais = COUNTROWS('base_mercado_tech_brasil_v3')
+
+Tipo de Vaga = IF(CONTAINSSTRING('generation_linkedin_vagas_tecnologia'[Descrição], "afirmativo para mulheres") || CONTAINSSTRING('generation_linkedin_vagas_tecnologia'[Descrição], "exclusiva para mulheres") || CONTAINSSTRING('generation_linkedin_vagas_tecnologia'[Descrição], "mulheres cis e trans"), "Vaga Afirmativa","Vaga Geral")
+
+Total Vagas = COUNTROWS('generation_linkedin_vagas_tecnologia')
