@@ -195,6 +195,20 @@ const representacaoFuncaoGlobal = [
   { funcao: "Cibersegurança",        pct: 12 },
 ];
 
+/* Generation Brasil — Turma Java 84 · dado cedido · gênero inferido por nome (1 aluno/a excluído/a por nome ambíguo; n=41) · início = V1 pré-programa · conclusão = V3 Módulo III */
+const java84Evasao = [
+  { modulo: "Pré-programa", mulheres: 29, homens: 12 },
+  { modulo: "Módulo III",   mulheres: 14, homens:  5 },
+];
+/* Generation Brasil — Turma Java 84 · perfil de vulnerabilidade no ingresso (V1 pré-programa, n=42, excl. "prefiro não responder") */
+const java84Vulnerabilidade = [
+  { fator: "Periférico/a",           pct: 62 },
+  { fator: "Saúde mental afetada",   pct: 32 },
+  { fator: "Cadastro Único",         pct: 28 },
+  { fator: "Financ. limitada",       pct: 15 },
+  { fator: "Com filhos/dependentes", pct: 14 },
+];
+
 /* Vagas afirmativas — dado cedido pela Generation (webscraping LinkedIn) · vagas de tecnologia (excl. Comercial e Suporte Técnico) · meses com dados disponíveis: ago/25, set/25, out/25, mar/26, abr/26 */
 const vagasGeneration = [
   { mes: "ago/25", total: 177, afirmativas: 3 },
@@ -603,6 +617,58 @@ function BasePage() {
         </ChartCard>
       </div>
       <PageFooter>Fonte: INEP — Censo da Educação Superior (2019–2024). Contagens de ingressantes e concluintes são dados reais (CINE 06, pres+EaD). Série histórica por curso: presencial para ADS/CC/SI/ES; EaD para CD (curso predominantemente a distância). Ingressantes × Concluintes: snapshot 2024, coortes distintas. Taxa de não-conclusão: cohorts 2019–2020, prazo teórico de conclusão.</PageFooter>
+
+      <SectionDivider label="Formação inclusiva em tecnologia" tag="dado cedido · Generation Brasil · Turma Java 84" />
+      <div className="kpi-grid kpi-grid-2">
+        <KpiCard
+          label="Composição feminina da turma Java 84"
+          value="71%"
+          sub="29 de 41 alunos/as com gênero identificado · pré-programa · Generation Brasil 2025"
+        />
+        <KpiCard
+          label="Taxa de evasão feminina × masculina"
+          value="52% / 58%"
+          sub="Taxas praticamente equivalentes — programa sem viés de gênero detectado · F: 52% · M: 58%"
+        />
+      </div>
+      <div className="chart-grid cols-2">
+        <ChartCard
+          title="Composição por gênero: início × conclusão"
+          sub="Pré-programa = quem ingressou · Módulo III = quem concluiu · Turma Java 84 · Generation Brasil 2025"
+          isNew
+          legend={[{ label: "Mulheres", color: C.dark }, { label: "Homens", color: C.taupe }]}
+          footer={<p className="abbrev-caption">Das 29 mulheres que ingressaram, 14 concluíram o Módulo III (52% de evasão). Dos 12 homens, 5 concluíram (58% de evasão) — diferença de apenas 6 p.p., equivalente para esse n.</p>}
+        >
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={java84Evasao} margin={{ top: 20, right: 16, left: -8, bottom: 0 }}>
+              <CartesianGrid stroke={C.pale2} strokeDasharray="3 3" vertical={false} />
+              <XAxis dataKey="modulo" {...axisProps} />
+              <YAxis {...axisProps} domain={[0, 34]} />
+              <Tooltip {...tooltipStyle} formatter={(v) => `${v} alunos/as`} />
+              <Bar dataKey="mulheres" name="Mulheres" fill={C.dark} radius={[4, 4, 0, 0]} barSize={30}>
+                <LabelList dataKey="mulheres" position="top" fill={C.ink} fontSize={11} />
+              </Bar>
+              <Bar dataKey="homens" name="Homens" fill={C.taupe} radius={[4, 4, 0, 0]} barSize={30}>
+                <LabelList dataKey="homens" position="top" fill={C.ink} fontSize={11} />
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
+        </ChartCard>
+        <ChartCard
+          title="Perfil de vulnerabilidade da turma"
+          sub="% de alunos/as com cada fator ao ingressar no programa · pesquisa pré-curso (V1) · n = 42"
+          isNew
+          height={290}
+          footer={<p className="abbrev-caption">Dados autodeclarados antes do início do programa. Quem respondeu "prefiro não responder" foi excluído do denominador de cada indicador individualmente.</p>}
+        >
+          <HBars
+            data={java84Vulnerabilidade}
+            xKey="pct" yKey="fator" domain={[0, 80]} height={290} width={175}
+            colorFn={(_, i) => [C.deepest, C.deep, C.dark, C.mid, C.taupe][i] ?? C.dark}
+          />
+        </ChartCard>
+      </div>
+      <PageFooter>Formação Generation Brasil: dado cedido pela Generation Brasil. Turma Java 84 (programa Java Developer). Composição e evasão: calculadas entre pesquisa pré-programa V1 (n=42) e Módulo III (n=29). Gênero inferido por nome — 1 aluno/a excluído/a por nome ambíguo (n analisado = 41). Perfil de vulnerabilidade: pesquisa autodeclarada pré-programa (V1, n=42). Indicadores com "prefiro não responder" excluídos do denominador individualmente.</PageFooter>
     </div>
   );
 }
