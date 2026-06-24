@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import {
   ResponsiveContainer, LineChart, Line, BarChart, Bar, XAxis, YAxis,
   CartesianGrid, Tooltip, PieChart, Pie, Cell, LabelList, ReferenceLine,
@@ -38,7 +38,6 @@ const NAV_ITEMS = [
 
 /* Taxonomias oficiais usadas ao longo do relatório (seniority + área ampla) */
 const AREAS = ["Dados", "Desenvolvimento", "Gestão", "Infraestrutura", "UX/UI"];
-const CARGOS = ["Estagiário", "Júnior", "Pleno", "Sênior", "Gerente", "Diretor", "CTO/CIO"];
 const ANOS = ["2019", "2020", "2021", "2022", "2023", "2024"];
 
 const FONTE_COLOR = { inep: C.deepest, datahackers: C.dark, global: C.mid };
@@ -216,7 +215,11 @@ const vagasGeneration = [
   { mes: "out/25", total: 11,  afirmativas: 0 },
   { mes: "mar/26", total: 3,   afirmativas: 0 },
   { mes: "abr/26", total: 187, afirmativas: 4 },
-].map((d) => ({ ...d, naoAfirmativas: d.total - d.afirmativas }));
+].map((d) => ({
+  ...d,
+  naoAfirmativas: d.total - d.afirmativas,
+  pct: d.total > 0 ? parseFloat(((d.afirmativas / d.total) * 100).toFixed(2)) : 0,
+}));
 
 const tipoDiBreakdown = [
   { tipo: "PCD",                    n: 5 },
@@ -250,40 +253,28 @@ function irfColor(v) {
   return C.light;
 }
 
-/* Simulador RH — área x cargo, sem filtro de região */
-/* Salários: médias masculinas por nível · Brasscom 2025 (base_mercado_tech_brasil.csv) */
-const baseSalaryByCargo = {
-  "Estagiário": 2425, "Júnior": 3187, "Pleno": 3962, "Sênior": 4824,
-  "Gerente": 6291, "Diretor": 9505, "CTO/CIO": 16474,
-};
-/* Gap para demais áreas (não-Dados): 29,8% uniforme · Brasscom 2025 */
-const gapPctByCargo = {
-  "Estagiário": 0.298, "Júnior": 0.298, "Pleno": 0.298, "Sênior": 0.298,
-  "Gerente": 0.298, "Diretor": 0.298, "CTO/CIO": 0.298,
-};
-/* Gap para área de Dados: State of Data Brasil 2021 · n=2.645 */
-const GAP_DADOS = 0.171;
-const areaMultiplier = { Dados: 1.00, Desenvolvimento: 0.92, Gestão: 1.15, Infraestrutura: 0.88, "UX/UI": 0.80 };
-const areaTrendRange = {
-  Dados: [16, 28], Desenvolvimento: [14, 22], Gestão: [26, 38],
-  Infraestrutura: [9, 16], "UX/UI": [30, 42],
-};
+/* Painel de Referência Salarial — snapshot ILO/OIT Brasil 2025
+   Dataset: DF_EAR_EMTA_SEX_ECO_CUR_NB · remuneração média mensal em BRL
+   Fonte primária: PNAD Contínua (IBGE) · via ILOSTAT · consultado jun/2026
+   Usado como fallback caso a API ao vivo retorne CORS error no browser */
+const ILO_BR_2025 = [
+  { label: "Inform. e Comunicação (TIC)",   eco: "ECO_ISIC4_J",     F: 5019.83, M: 6215.70 },
+  { label: "Financeiro e Seguros",           eco: "ECO_ISIC4_K",     F: 6178.84, M: 8490.02 },
+  { label: "Ativ. Prof. / Científicas",      eco: "ECO_ISIC4_M",     F: 3865.23, M: 5399.00 },
+  { label: "Administração Pública",          eco: "ECO_ISIC4_O",     F: 5557.39, M: 6383.06 },
+  { label: "Educação",                       eco: "ECO_ISIC4_P",     F: 3929.16, M: 5207.60 },
+  { label: "Saúde e Serv. Sociais",          eco: "ECO_ISIC4_Q",     F: 3606.37, M: 5505.08 },
+  { label: "Indústria Manufatureira",        eco: "ECO_ISIC4_C",     F: 3018.22, M: 3593.72 },
+  { label: "Média — todos os setores",       eco: "ECO_ISIC4_TOTAL", F: 3034.75, M: 3710.07 },
+];
+const FAIXAS_SALARIAIS = [
+  2000, 3000, 4000, 5000, 6000, 7000, 8000, 10000, 12000, 15000, 20000,
+];
 
 /* ---------------------------------------------------------------- */
 /* COMPONENTES BASE                                                  */
 /* ---------------------------------------------------------------- */
 
-function BrandMark() {
-  return (
-    <svg width="26" height="26" viewBox="0 0 24 24" fill="none">
-      <circle cx="12" cy="6" r="4" stroke="var(--deepest)" strokeWidth="1.3" />
-      <circle cx="12" cy="18" r="4" stroke="var(--deepest)" strokeWidth="1.3" />
-      <circle cx="6" cy="12" r="4" stroke="var(--deepest)" strokeWidth="1.3" />
-      <circle cx="18" cy="12" r="4" stroke="var(--deepest)" strokeWidth="1.3" />
-      <circle cx="12" cy="12" r="2.3" fill="var(--deepest)" />
-    </svg>
-  );
-}
 
 function KpiCard({ label, value, sub, trend }) {
   return (
@@ -302,14 +293,13 @@ function KpiCard({ label, value, sub, trend }) {
   );
 }
 
-function ChartCard({ title, sub, isNew, height = 280, children, legend, footer }) {
+function ChartCard({ title, sub, height = 280, children, legend, footer }) {
   return (
     <div className="chart-card">
       <div className="chart-card-head">
         <div>
           <div className="chart-card-title-row">
             <span className="chart-card-title">{title}</span>
-            {isNew && <span className="badge-new">novo</span>}
           </div>
           {sub && <span className="chart-card-sub">{sub}</span>}
         </div>
@@ -414,7 +404,7 @@ function BrokenRungBars({ data }) {
           <div className="rung-track">
             <div
               className="rung-fill"
-              style={{ width: `${d.value}%`, background: d.label.startsWith("Mulheres") ? C.dark : C.taupe }}
+              style={{ width: `${d.value}%`, background: d.label.startsWith("Mulheres") ? C.dark : "var(--men)" }}
             />
           </div>
           <span className="rung-value">{d.value}</span>
@@ -478,7 +468,6 @@ function BasePage() {
         <ChartCard
           title="% de mulheres ingressantes por curso"
           sub="Evolução 2019–2024 · presencial (ADS/CC/SI/ES) + EaD (CD) · INEP"
-          isNew
           height={250}
           legend={[
             { label: "CD", color: CURSO_LINE_COLORS.CD },
@@ -511,7 +500,6 @@ function BasePage() {
         <ChartCard
           title="Ingressantes × Concluintes 2024"
           sub="% de mulheres por curso · snapshot INEP 2024 · coortes distintas"
-          isNew
           height={250}
           legend={[{ label: "Ingressantes", color: C.dark }, { label: "Concluintes", color: C.taupe }]}
           footer={<p className="abbrev-caption">Ingressantes e concluintes pertencem a coortes distintas — não é rastreamento de uma mesma turma. Leitura: representação feminina em quem entrou vs. quem concluiu em 2024.</p>}
@@ -532,8 +520,7 @@ function BasePage() {
         <ChartCard
           title="Não-conclusão no prazo, por gênero e curso"
           sub="Em SI e CC mulheres lideram; em ADS e ES os homens têm maior não-conclusão"
-          isNew
-          legend={[{ label: "Mulheres", color: C.dark }, { label: "Homens", color: C.taupe }]}
+          legend={[{ label: "Mulheres", color: C.dark }, { label: "Homens", color: "var(--men)" }]}
           footer={<p className="abbrev-caption">SI = Sistemas de Informação · CC = Ciência da Computação · ADS = Análise e Desenvolvimento de Sistemas · ES = Engenharia de Software · CD = Ciência de Dados</p>}
         >
           <ResponsiveContainer width="100%" height="100%">
@@ -543,7 +530,7 @@ function BasePage() {
               <YAxis {...axisProps} tickFormatter={(v) => `${v}%`} />
               <Tooltip {...tooltipStyle} formatter={(v) => `${v}%`} labelFormatter={(label) => evasaoPorCurso.find((d) => d.curso === label)?.cursoFull || label} />
               <Bar dataKey="mulheres" fill={C.dark} radius={[4, 4, 0, 0]} barSize={16} />
-              <Bar dataKey="homens" fill={C.taupe} radius={[4, 4, 0, 0]} barSize={16} />
+              <Bar dataKey="homens" fill="var(--men)" radius={[4, 4, 0, 0]} barSize={16} />
             </BarChart>
           </ResponsiveContainer>
         </ChartCard>
@@ -581,8 +568,7 @@ function BasePage() {
         <ChartCard
           title="Composição por gênero: início × conclusão"
           sub="Pré-programa = quem ingressou · Módulo III = quem concluiu · Turma Java 84 · Generation Brasil 2025"
-          isNew
-          legend={[{ label: "Mulheres", color: C.dark }, { label: "Homens", color: C.taupe }]}
+          legend={[{ label: "Mulheres", color: C.dark }, { label: "Homens", color: "var(--men)" }]}
           footer={<p className="abbrev-caption">Das 30 mulheres que ingressaram, 15 concluíram o Módulo III (50% de evasão). Dos 12 homens, 5 concluíram (58% de evasão) — diferença de 8 p.p., equivalente para esse n.</p>}
         >
           <ResponsiveContainer width="100%" height="100%">
@@ -594,7 +580,7 @@ function BasePage() {
               <Bar dataKey="mulheres" name="Mulheres" fill={C.dark} radius={[4, 4, 0, 0]} barSize={30}>
                 <LabelList dataKey="mulheres" position="top" fill={C.ink} fontSize={11} />
               </Bar>
-              <Bar dataKey="homens" name="Homens" fill={C.taupe} radius={[4, 4, 0, 0]} barSize={30}>
+              <Bar dataKey="homens" name="Homens" fill="var(--men)" radius={[4, 4, 0, 0]} barSize={30}>
                 <LabelList dataKey="homens" position="top" fill={C.ink} fontSize={11} />
               </Bar>
             </BarChart>
@@ -603,7 +589,6 @@ function BasePage() {
         <ChartCard
           title="Perfil de vulnerabilidade da turma"
           sub="% de alunos/as com cada fator ao ingressar no programa · pesquisa pré-curso (V1) · n = 42"
-          isNew
           height={290}
           footer={<p className="abbrev-caption">Dados autodeclarados antes do início do programa. Quem respondeu "prefiro não responder" foi excluído do denominador de cada indicador individualmente.</p>}
         >
@@ -630,7 +615,7 @@ function MercadoPage() {
         <KpiCard label="% mulheres em cargos de gestão" value="13,6%" sub="vs. 20,6% dos homens" />
       </div>
       <div className="chart-grid cols-2">
-        <ChartCard title="Representação feminina por função" sub="% mulheres em cada função, área de Dados" isNew>
+        <ChartCard title="Representação feminina por função" sub="% mulheres em cada função, área de Dados">
           <HBars
             data={representacaoFuncaoDados}
             xKey="pct" yKey="funcao" domain={[0, 30]} height={205} width={200}
@@ -640,8 +625,7 @@ function MercadoPage() {
         <ChartCard
           title="Distribuição por nível, segundo o gênero"
           sub="% dentro de cada gênero"
-          isNew
-          legend={[{ label: "Mulheres", color: C.dark }, { label: "Homens", color: C.taupe }]}
+          legend={[{ label: "Mulheres", color: C.dark }, { label: "Homens", color: "var(--men)" }]}
         >
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={nivelGeneroDados} margin={{ top: 8, right: 8, left: -8, bottom: 0 }}>
@@ -650,7 +634,7 @@ function MercadoPage() {
               <YAxis {...axisProps} tickFormatter={(v) => `${v}%`} />
               <Tooltip {...tooltipStyle} formatter={(v) => `${v}%`} />
               <Bar dataKey="mulheres" fill={C.dark} radius={[4, 4, 0, 0]} barSize={20} />
-              <Bar dataKey="homens" fill={C.taupe} radius={[4, 4, 0, 0]} barSize={20} />
+              <Bar dataKey="homens" fill="var(--men)" radius={[4, 4, 0, 0]} barSize={20} />
             </BarChart>
           </ResponsiveContainer>
         </ChartCard>
@@ -660,8 +644,7 @@ function MercadoPage() {
         <ChartCard
           title="Modelo de trabalho atual"
           sub="% dentro de cada gênero · State of Data Brasil 2021"
-          isNew
-          legend={[{ label: "Mulheres", color: C.dark }, { label: "Homens", color: C.taupe }]}
+          legend={[{ label: "Mulheres", color: C.dark }, { label: "Homens", color: "var(--men)" }]}
         >
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={modeloTrabalhoDados} margin={{ top: 8, right: 8, left: -8, bottom: 0 }}>
@@ -670,15 +653,14 @@ function MercadoPage() {
               <YAxis {...axisProps} tickFormatter={(v) => `${v}%`} domain={[0, 72]} />
               <Tooltip {...tooltipStyle} formatter={(v) => `${v}%`} />
               <Bar dataKey="mulheres" name="Mulheres" fill={C.dark} radius={[4, 4, 0, 0]} barSize={20} />
-              <Bar dataKey="homens" name="Homens" fill={C.taupe} radius={[4, 4, 0, 0]} barSize={20} />
+              <Bar dataKey="homens" name="Homens" fill="var(--men)" radius={[4, 4, 0, 0]} barSize={20} />
             </BarChart>
           </ResponsiveContainer>
         </ChartCard>
         <ChartCard
           title="Tempo de experiência na área de Dados"
           sub="% dentro de cada gênero · State of Data Brasil 2021"
-          isNew
-          legend={[{ label: "Mulheres", color: C.dark }, { label: "Homens", color: C.taupe }]}
+          legend={[{ label: "Mulheres", color: C.dark }, { label: "Homens", color: "var(--men)" }]}
         >
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={experienciaDados} margin={{ top: 8, right: 8, left: -8, bottom: 0 }}>
@@ -687,7 +669,7 @@ function MercadoPage() {
               <YAxis {...axisProps} tickFormatter={(v) => `${v}%`} domain={[0, 26]} />
               <Tooltip {...tooltipStyle} formatter={(v) => `${v}%`} />
               <Bar dataKey="mulheres" name="Mulheres" fill={C.dark} radius={[4, 4, 0, 0]} barSize={16} />
-              <Bar dataKey="homens" name="Homens" fill={C.taupe} radius={[4, 4, 0, 0]} barSize={16} />
+              <Bar dataKey="homens" name="Homens" fill="var(--men)" radius={[4, 4, 0, 0]} barSize={16} />
             </BarChart>
           </ResponsiveContainer>
         </ChartCard>
@@ -696,8 +678,7 @@ function MercadoPage() {
         <ChartCard
           title="Faixa salarial, segundo o gênero"
           sub="% dentro de cada gênero, por faixa mensal"
-          isNew
-          legend={[{ label: "Mulheres", color: C.dark }, { label: "Homens", color: C.taupe }]}
+          legend={[{ label: "Mulheres", color: C.dark }, { label: "Homens", color: "var(--men)" }]}
         >
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={faixaSalarialDados} margin={{ top: 8, right: 8, left: -8, bottom: 0 }}>
@@ -706,14 +687,13 @@ function MercadoPage() {
               <YAxis {...axisProps} tickFormatter={(v) => `${v}%`} />
               <Tooltip {...tooltipStyle} formatter={(v) => `${v}%`} />
               <Bar dataKey="mulheres" fill={C.dark} radius={[4, 4, 0, 0]} barSize={13} />
-              <Bar dataKey="homens" fill={C.taupe} radius={[4, 4, 0, 0]} barSize={13} />
+              <Bar dataKey="homens" fill="var(--men)" radius={[4, 4, 0, 0]} barSize={13} />
             </BarChart>
           </ResponsiveContainer>
         </ChartCard>
         <ChartCard
           title="Degrau quebrado da liderança"
           sub="Promoções a cargos de gestão, a cada 100 homens · McKinsey & LeanIn, 2025"
-          isNew
           height="auto"
         >
           <BrokenRungBars data={brokenRung} />
@@ -727,8 +707,7 @@ function MercadoPage() {
         <ChartCard
           title="Evolução salarial TIC: mulheres × homens"
           sub="Salário médio mensal no setor TIC · Brasil · Brasscom 2025"
-          isNew
-          legend={[{ label: "Mulheres", color: C.dark }, { label: "Homens", color: C.taupe }]}
+          legend={[{ label: "Mulheres", color: C.dark }, { label: "Homens", color: "var(--men)" }]}
           footer={<p className="abbrev-caption">Em 2023 a equidade atingiu 73,3% — melhor marca da série. Em 2024, o gap voltou a 29,8%: salários masculinos cresceram 13,8% vs. 8,9% dos femininos.</p>}
         >
           <ResponsiveContainer width="100%" height="100%">
@@ -738,15 +717,14 @@ function MercadoPage() {
               <YAxis {...axisProps} tickFormatter={(v) => `R$${(v / 1000).toFixed(1)}k`} />
               <Tooltip {...tooltipStyle} formatter={(v) => `R$ ${v.toLocaleString("pt-BR")}`} />
               <Line type="monotone" dataKey="feminino" name="Mulheres" stroke={C.dark} strokeWidth={2.4} dot={{ r: 3, fill: C.dark }} />
-              <Line type="monotone" dataKey="masculino" name="Homens" stroke={C.taupe} strokeWidth={2} dot={{ r: 3, fill: C.taupe }} />
+              <Line type="monotone" dataKey="masculino" name="Homens" stroke="var(--men)" strokeWidth={2} dot={{ r: 3, fill: "var(--men)" }} />
             </LineChart>
           </ResponsiveContainer>
         </ChartCard>
         <ChartCard
           title="Escolaridade em liderança TIC"
           sub="Diretoria e Gerência TIC · % por nível de escolaridade · Brasscom 2025"
-          isNew
-          legend={[{ label: "Mulheres", color: C.dark }, { label: "Homens", color: C.taupe }]}
+          legend={[{ label: "Mulheres", color: C.dark }, { label: "Homens", color: "var(--men)" }]}
           footer={<p className="abbrev-caption">Mulheres em liderança TIC são mais escolarizadas: 84% têm Superior Completo ou mais, vs. 79% dos homens nos mesmos cargos — a "penalidade da qualificação".</p>}
         >
           <ResponsiveContainer width="100%" height="100%">
@@ -756,7 +734,7 @@ function MercadoPage() {
               <YAxis {...axisProps} tickFormatter={(v) => `${v}%`} />
               <Tooltip {...tooltipStyle} formatter={(v) => `${v}%`} />
               <Bar dataKey="mulheres" name="Mulheres" fill={C.dark} radius={[4, 4, 0, 0]} barSize={18} />
-              <Bar dataKey="homens" name="Homens" fill={C.taupe} radius={[4, 4, 0, 0]} barSize={18} />
+              <Bar dataKey="homens" name="Homens" fill="var(--men)" radius={[4, 4, 0, 0]} barSize={18} />
             </BarChart>
           </ResponsiveContainer>
         </ChartCard>
@@ -773,7 +751,6 @@ function MercadoPage() {
       <ChartCard
         title="Gap salarial: Dados (Brasil) vs. TIC geral (Brasil)"
         sub="State of Data Brasil 2021 vs. Brasscom — Relatório de Diversidade 2024/2025"
-        isNew
         height={170}
       >
         <HBars
@@ -785,7 +762,6 @@ function MercadoPage() {
       <ChartCard
         title="% feminino por função em tech"
         sub="Representação feminina por área de atuação · global · WomenHack 2026 (BLS / WEF / Zippia / Stanford AI)"
-        isNew
         height={290}
       >
         <HBars
@@ -803,23 +779,40 @@ function MercadoPage() {
       </div>
       <div className="chart-grid cols-2">
         <ChartCard
-          title="Vagas afirmativas x vagas totais"
-          sub="Vagas de tecnologia mapeadas por mês, via webscraping de LinkedIn"
-          isNew
-          legend={[{ label: "Vagas afirmativas", color: C.dark }, { label: "Demais vagas", color: C.pale2 }]}
+          title="% de vagas afirmativas por mês"
+          sub="Proporção de vagas afirmativas sobre o total de vagas tech · webscraping LinkedIn"
+          footer={<p className="abbrev-caption">Rótulos mostram o total de vagas mapeadas no mês. Linha tracejada = média do período (1,8%). Meses sem barra tiveram 0 vagas afirmativas.</p>}
         >
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={vagasGeneration} margin={{ top: 8, right: 8, left: -8, bottom: 0 }}>
+            <BarChart data={vagasGeneration} margin={{ top: 28, right: 16, left: -8, bottom: 0 }}>
               <CartesianGrid stroke={C.pale2} strokeDasharray="3 3" vertical={false} />
               <XAxis dataKey="mes" {...axisProps} />
-              <YAxis {...axisProps} />
-              <Tooltip {...tooltipStyle} formatter={(v) => `${v} vagas`} />
-              <Bar dataKey="afirmativas" stackId="v" fill={C.dark} barSize={20} />
-              <Bar dataKey="naoAfirmativas" stackId="v" fill={C.pale2} radius={[6, 6, 0, 0]} barSize={20} />
+              <YAxis {...axisProps} tickFormatter={(v) => `${v}%`} domain={[0, 4]} />
+              <Tooltip
+                {...tooltipStyle}
+                labelFormatter={(label, payload) => {
+                  const d = payload?.[0]?.payload;
+                  return `${label}${d ? ` · ${d.total} vagas no total` : ""}`;
+                }}
+                formatter={(v, n) => n === "pct"
+                  ? [`${v}%  (${vagasGeneration.find(d => d.pct === v)?.afirmativas ?? "—"} vagas)`, "Afirmativas"]
+                  : [v, n]}
+              />
+              <ReferenceLine y={1.8} stroke={C.mid} strokeDasharray="5 3"
+                label={{ value: "média 1,8%", position: "insideTopRight", fontSize: 10, fill: C.inkMuted, dy: -4 }} />
+              <Bar dataKey="pct" name="pct" fill={C.dark} radius={[6, 6, 0, 0]} barSize={32}>
+                <LabelList
+                  dataKey="total"
+                  position="top"
+                  formatter={(v) => `${v} vagas`}
+                  fill={C.inkMuted}
+                  fontSize={10}
+                />
+              </Bar>
             </BarChart>
           </ResponsiveContainer>
         </ChartCard>
-        <ChartCard title="Vagas afirmativas por tipo de ação" sub="Distribuição das 7 vagas afirmativas (vagas tech)" isNew>
+        <ChartCard title="Vagas afirmativas por tipo de ação" sub="Distribuição das 7 vagas afirmativas (vagas tech)">
           <HBars
             data={tipoDiBreakdown}
             xKey="n" yKey="tipo" domain={[0, 6]} height={210} width={130} suffix=""
@@ -841,7 +834,7 @@ function FunilPage() {
           <TrajectoryBars stages={trajectoryStages} />
         </ChartCard>
         <div className="stacked-col">
-          <ChartCard title="Degrau quebrado da liderança" sub="A cada 100 homens promovidos a gestão · McKinsey & LeanIn, 2025" isNew height="auto">
+          <ChartCard title="Degrau quebrado da liderança" sub="A cada 100 homens promovidos a gestão · McKinsey & LeanIn, 2025" height="auto">
             <BrokenRungBars data={brokenRung} />
           </ChartCard>
           <div className="callout">
@@ -918,64 +911,223 @@ function IrfPage() {
 }
 
 function SimuladorPage() {
-  const [area, setArea] = useState("Dados");
-  const [cargo, setCargo] = useState("Pleno");
+  const [setor, setSetor] = useState("ECO_ISIC4_J");
+  const [salario, setSalario] = useState(5000);
+  const anoRef = "2022";
+  const [ipcaData, setIpcaData] = useState([]);
+  const [ipcaLoading, setIpcaLoading] = useState(true);
+  const [iloData, setIloData] = useState(ILO_BR_2025);
 
-  const homens = Math.round(baseSalaryByCargo[cargo] * areaMultiplier[area]);
-  const gapPct = area === "Dados" ? GAP_DADOS : gapPctByCargo[cargo];
-  const mulheres = Math.round(homens * (1 - gapPct));
-  const [start, end] = areaTrendRange[area];
-  const serieArea = interp(start, end, ANOS.length).map((v, i) => ({ ano: ANOS[i], pct: v }));
+  /* Busca IPCA mensal BCB (série 433) ao montar */
+  useEffect(() => {
+    fetch("https://api.bcb.gov.br/dados/serie/bcdata.sgs.433/dados?formato=json&dataInicial=01/01/2015")
+      .then((r) => r.json())
+      .then((d) => { setIpcaData(d); setIpcaLoading(false); })
+      .catch(() => setIpcaLoading(false));
+  }, []);
+
+  /* Tenta buscar ILO ao vivo; cai no snapshot embutido se CORS bloquear */
+  useEffect(() => {
+    const ILO_API = "https://sdmx.ilo.org/rest/data/ILO,DF_EAR_EMTA_SEX_ECO_CUR_NB,1.0/BRA.....?format=jsondata";
+    fetch(ILO_API)
+      .then((r) => r.json())
+      .then((d) => {
+        const struct = d.data.structures[0];
+        const dimVals = struct.dimensions.series.map((x) => x.values);
+        const obsVals = struct.dimensions.observation[0].values;
+        const series = d.data.dataSets[0].series;
+        const map = {};
+        for (const [key, val] of Object.entries(series)) {
+          const parts = key.split(":").map(Number);
+          const eco  = dimVals[4][parts[4]].id;
+          const sex  = dimVals[3][parts[3]].id;
+          const cur  = dimVals[5][parts[5]].id;
+          if (cur !== "CUR_TYPE_LCU") continue;
+          for (const [t, v] of Object.entries(val.observations)) {
+            if (v[0] == null) continue;
+            if (!map[eco]) map[eco] = {};
+            map[eco][sex] = v[0];
+          }
+        }
+        const live = ILO_BR_2025.map((d) => ({
+          ...d,
+          F: map[d.eco]?.SEX_F ?? d.F,
+          M: map[d.eco]?.SEX_M ?? d.M,
+        }));
+        setIloData(live);
+      })
+      .catch(() => {}); // mantém snapshot embutido
+  }, []);
+
+  /* Setor selecionado */
+  const setorData = iloData.find((d) => d.eco === setor) ?? iloData[0];
+  const gapSetor  = (((setorData.M - setorData.F) / setorData.M) * 100).toFixed(1);
+  const equitativo = salario >= setorData.F;
+
+  /* IPCA acumulado desde anoRef */
+  const ipca = useMemo(() => {
+    if (!ipcaData.length) return null;
+    const base = new Date(`${anoRef}-01-01`);
+    const relevant = ipcaData.filter((d) => {
+      const [dd, mm, yyyy] = d.data.split("/");
+      return new Date(`${yyyy}-${mm}-${dd}`) >= base;
+    });
+    const fator = relevant.reduce((acc, d) => acc * (1 + parseFloat(d.valor) / 100), 1);
+    return { fator, pct: ((fator - 1) * 100).toFixed(1), valorReal: Math.round(salario * fator) };
+  }, [ipcaData, anoRef, salario]);
+
+  /* Série anual para o gráfico IPCA */
+  const ipcaChart = useMemo(() => {
+    if (!ipcaData.length) return [];
+    const base = new Date(`${anoRef}-01-01`);
+    let cum = 1;
+    const pts = [];
+    ipcaData.forEach((d, i) => {
+      const [dd, mm, yyyy] = d.data.split("/");
+      const dt = new Date(`${yyyy}-${mm}-${dd}`);
+      if (dt < base) return;
+      cum *= 1 + parseFloat(d.valor) / 100;
+      const isLast = i === ipcaData.length - 1;
+      if (mm === "12" || isLast) {
+        pts.push({ ano: yyyy, valorReal: Math.round(salario * cum), ipca: parseFloat(((cum - 1) * 100).toFixed(1)) });
+      }
+    });
+    return pts;
+  }, [ipcaData, anoRef, salario]);
+
+  /* Dados para gráfico de setores (ordenados por remuneração feminina) */
+  const chartSetores = [...iloData]
+    .sort((a, b) => a.F - b.F)
+    .map((d) => ({ label: d.label, Mulheres: d.F, Homens: d.M, selected: d.eco === setor }));
 
   return (
     <div className="page">
-      <PageHeader title="Simulador de RH" sub="Consulta de gap salarial e formação por área e cargo" />
+      <PageHeader
+        title="Painel de Referência Salarial"
+        sub="Benchmark setorial real · ILO/OIT 2025 · Correção inflacionária BCB/IPCA · Brasil"
+      />
       <NoteBanner>
-        <strong>Nota metodológica:</strong> selecione <strong>Dados</strong> para a área com lastro em pesquisa real (State of Data Brasil 2021, gap de 17,1%); as demais áreas usam estimativas <strong>Brasscom 2025</strong> (salários e gap de 29,8%).
+        <strong>Dados em tempo real:</strong> remunerações médias por setor — <strong>ILO ILOSTAT</strong> (Organização Internacional do Trabalho), Brasil 2025, via PNAD Contínua. Correção inflacionária: série <strong>IPCA · BCB</strong>, atualizada mensalmente.
       </NoteBanner>
-      <div className="select-row">
+
+      {/* ── Filtros ───────────────────────────────────────────────── */}
+      <div className="sim-filters">
         <label className="select-field">
-          <span>Área</span>
-          <select value={area} onChange={(e) => setArea(e.target.value)}>
-            {AREAS.map((a) => <option key={a} value={a}>{a}</option>)}
+          <span>Setor de referência</span>
+          <select value={setor} onChange={(e) => setSetor(e.target.value)}>
+            {iloData.map((d) => <option key={d.eco} value={d.eco}>{d.label}</option>)}
           </select>
         </label>
         <label className="select-field">
-          <span>Cargo</span>
-          <select value={cargo} onChange={(e) => setCargo(e.target.value)}>
-            {CARGOS.map((c) => <option key={c} value={c}>{c}</option>)}
+          <span>Faixa salarial proposta</span>
+          <select value={salario} onChange={(e) => setSalario(Number(e.target.value))}>
+            {FAIXAS_SALARIAIS.map((v) => (
+              <option key={v} value={v}>{`R$ ${v.toLocaleString("pt-BR")}`}</option>
+            ))}
           </select>
         </label>
       </div>
-      <p className="disclaimer">
-        {area === "Dados"
-          ? "Gap salarial: 17,1% · State of Data Brasil 2021 (n=2.645, setor de Dados). Salários base por nível: Brasscom 2025."
-          : "Salários e gap salarial de 29,8%: Brasscom 2025 — Relatório de Diversidade, Equidade e Inclusão no Setor de TIC."}
-      </p>
-      {cargo === "Estagiário" && (
-        <p className="disclaimer">⚠️ Dados de Estagiário são estimativas de mercado — nenhuma das pesquisas consultadas (State of Data Brasil 2021 / Brasscom 2025) localizou gap salarial específico para este cargo.</p>
-      )}
-      <div className="kpi-grid kpi-grid-3">
-        <KpiCard label="Salário médio · mulheres" value={brl(mulheres)} sub={`${cargo} · ${area}`} />
-        <KpiCard label="Salário médio · homens" value={brl(homens)} sub={`${cargo} · ${area}`} />
+
+      {/* ── KPIs benchmark ILO ────────────────────────────────────── */}
+      <SectionDivider label="Benchmark salarial por gênero" tag={`ILO/OIT · Brasil 2025 · ${setorData.label}`} />
+      <div className="kpi-grid">
         <KpiCard
-          label={area === "Dados" ? "Gap salarial em Dados" : "Gap salarial neste cargo"}
-          value={`${(gapPct * 100).toFixed(1)}%`}
-          sub={area === "Dados" ? "State of Data Brasil 2021" : "Brasscom 2025"}
+          label="Remuneração média — mulheres"
+          value={brl(setorData.F)}
+          sub={`${setorData.label} · Brasil 2025 · ILO ILOSTAT`}
+        />
+        <KpiCard
+          label="Remuneração média — homens"
+          value={brl(setorData.M)}
+          sub={`${setorData.label} · Brasil 2025 · ILO ILOSTAT`}
+        />
+        <KpiCard
+          label="Gap salarial no setor"
+          value={`${gapSetor}%`}
+          sub="(M − F) ÷ M · quanto maior, menos equitativo · meta de equidade = 0%"
+        />
+        <KpiCard
+          label="Avaliação da oferta"
+          value={equitativo ? "Equitativa ✓" : "Abaixo da mediana F"}
+          sub={equitativo
+            ? `R$ ${salario.toLocaleString("pt-BR")} ≥ mediana feminina do setor (${brl(setorData.F)})`
+            : `Para equidade, considere ofertar pelo menos ${brl(Math.round(setorData.F))} neste setor`}
         />
       </div>
-      <ChartCard title={`Histórico de formação feminina em ${area}`} sub="% de matriculadas mulheres · INEP, 2019–2024" height={230}>
+
+      {/* ── Gráfico: benchmark por setor ─────────────────────────── */}
+      <ChartCard
+        title="Remuneração média mensal por setor — mulheres × homens"
+        sub="Média em R$ · Brasil 2025 · ILO/OIT · setor filtrado em destaque no tooltip"
+        height={300}
+        legend={[{ label: "Mulheres", color: C.dark }, { label: "Homens", color: "var(--men)" }]}
+        footer={<p className="abbrev-caption">ILO ILOSTAT · DF_EAR_EMTA_SEX_ECO_CUR_NB · remuneração média mensal em BRL · Brasil · 2025. Fonte primária: PNAD Contínua (IBGE). Moeda: Real (BRL). Setores: classificação ISIC Revisão 4.</p>}
+      >
         <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={serieArea} margin={{ top: 8, right: 8, left: -8, bottom: 0 }}>
-            <CartesianGrid stroke={C.pale2} strokeDasharray="3 3" vertical={false} />
-            <XAxis dataKey="ano" {...axisProps} />
-            <YAxis domain={[0, 45]} {...axisProps} tickFormatter={(v) => `${v}%`} />
-            <Tooltip {...tooltipStyle} formatter={(v) => `${v}%`} />
-            <Line type="monotone" dataKey="pct" stroke={C.deepest} strokeWidth={2.4} dot={{ r: 3 }} />
-          </LineChart>
+          <BarChart data={chartSetores} layout="vertical" margin={{ top: 4, right: 70, left: 8, bottom: 4 }}>
+            <CartesianGrid stroke={C.pale2} strokeDasharray="3 3" horizontal={false} />
+            <XAxis type="number" {...axisProps} tickFormatter={(v) => `R$${(v / 1000).toFixed(0)}k`} domain={[0, 10000]} />
+            <YAxis type="category" dataKey="label" {...axisProps} width={180} tick={{ fontSize: 10, fill: C.inkMuted }} />
+            <Tooltip {...tooltipStyle} formatter={(v) => brl(v)} />
+            <Bar dataKey="Mulheres" name="Mulheres" fill={C.dark} radius={[0, 4, 4, 0]} barSize={9}>
+              <LabelList dataKey="Mulheres" position="right" formatter={(v) => brl(v)} fill={C.ink} fontSize={10} />
+            </Bar>
+            <Bar dataKey="Homens" name="Homens" fill="var(--men)" radius={[0, 4, 4, 0]} barSize={9}>
+              <LabelList dataKey="Homens" position="right" formatter={(v) => brl(v)} fill={C.ink} fontSize={10} />
+            </Bar>
+          </BarChart>
         </ResponsiveContainer>
       </ChartCard>
-      <PageFooter>Salários base por nível: Brasscom 2025. Gap salarial — Dados: State of Data Brasil 2021 (17,1%); demais áreas: Brasscom 2025 (29,8%). Dados de Estagiário são estimativas de mercado.</PageFooter>
+
+      {/* ── Seção IPCA ────────────────────────────────────────────── */}
+      <SectionDivider label="Correção pelo IPCA" tag={`BCB · série 433 · acumulado desde jan/${anoRef}`} />
+      {ipcaLoading ? (
+        <p className="sim-loading">Carregando dados do Banco Central do Brasil…</p>
+      ) : ipca ? (
+        <>
+          <div className="kpi-grid kpi-grid-3">
+            <KpiCard
+              label={`Salário proposto (referência ${anoRef})`}
+              value={brl(salario)}
+              sub="Valor nominal informado pelo usuário"
+            />
+            <KpiCard
+              label="IPCA acumulado no período"
+              value={`+${ipca.pct}%`}
+              sub={`De jan/${anoRef} até o último mês disponível · BCB série 433`}
+            />
+            <KpiCard
+              label="Equivalente em valores atuais"
+              value={brl(ipca.valorReal)}
+              sub={`Para preservar o mesmo poder de compra de ${anoRef}, a oferta hoje deve ser este valor`}
+            />
+          </div>
+          <ChartCard
+            title={`Poder de compra do salário proposto — evolução real desde ${anoRef}`}
+            sub={`Valor de R$ ${salario.toLocaleString("pt-BR")} corrigido pelo IPCA mensal · BCB série 433 · R$ de cada ano`}
+            height={220}
+            footer={<p className="abbrev-caption">Banco Central do Brasil · Série 433 (IPCA variação mensal %). Cada ponto representa o valor equivalente ao final do ano, aplicando a inflação acumulada desde jan/{anoRef}. Use como referência mínima para reajustes anuais que preservem poder de compra.</p>}
+          >
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={ipcaChart} margin={{ top: 20, right: 64, left: 8, bottom: 0 }}>
+                <CartesianGrid stroke={C.pale2} strokeDasharray="3 3" vertical={false} />
+                <XAxis dataKey="ano" {...axisProps} />
+                <YAxis {...axisProps} tickFormatter={(v) => `R$${(v / 1000).toFixed(0)}k`} />
+                <Tooltip {...tooltipStyle} formatter={(v, n) => n === "valorReal" ? brl(v) : `+${v}%`} />
+                <Line type="monotone" dataKey="valorReal" name="Valor real" stroke={C.deepest} strokeWidth={2.4} dot={{ r: 3, fill: C.deepest }}>
+                  <LabelList dataKey="valorReal" position="top" formatter={(v) => brl(v)} fill={C.ink} fontSize={10} />
+                </Line>
+              </LineChart>
+            </ResponsiveContainer>
+          </ChartCard>
+        </>
+      ) : (
+        <p className="sim-loading">Não foi possível carregar os dados do BCB. Verifique sua conexão.</p>
+      )}
+
+      <PageFooter>
+        Remunerações médias mensais: ILO ILOSTAT (Organização Internacional do Trabalho) · Dataset DF_EAR_EMTA_SEX_ECO_CUR_NB · Brasil · Moeda local (BRL) · 2025. Fonte primária: PNAD Contínua (IBGE). Gap salarial: (M − F) ÷ M. Correção inflacionária: BCB série 433 (IPCA variação mensal). Oferta equitativa: salário ≥ remuneração média feminina do setor. Dados ILO atualizam automaticamente se API disponível; caso contrário, usa snapshot de jun/2026.
+      </PageFooter>
     </div>
   );
 }
@@ -1002,6 +1154,7 @@ export default function App() {
           --white:${C.white}; --bg:${C.bg}; --pale:${C.pale}; --pale2:${C.pale2};
           --light:${C.light}; --mid:${C.mid}; --dark:${C.dark}; --deep:${C.deep}; --deepest:${C.deepest};
           --ink:${C.ink}; --inkMuted:${C.inkMuted};
+          --men: #09124f;
           background: var(--bg);
           min-height: 100%;
           font-family: 'Sora', Georgia, serif;
@@ -1015,6 +1168,7 @@ export default function App() {
           position: sticky; top:0; z-index:10;
         }
         .brand { display:flex; align-items:center; gap:10px; }
+        .brand-logo { height:42px; width:auto; object-fit:contain; border-radius:6px; display:block; }
         .brand-text { display:flex; flex-direction:column; line-height:1.1; }
         .brand-title { font-family:'Fraunces', Georgia, serif; font-weight:600; font-size:16px; color:var(--deepest); letter-spacing:.01em; }
         .brand-sub { font-size:10.5px; color:var(--inkMuted); text-transform:uppercase; letter-spacing:.08em; }
@@ -1058,7 +1212,6 @@ export default function App() {
         .chart-card-title { font-family:'Fraunces', Georgia, serif; font-weight:600; font-size:14.5px; color:var(--deepest); }
         .chart-card-sub { font-size:11.5px; color:var(--inkMuted); }
         .chart-card-footer { margin-top:10px; }
-        .badge-new { background:var(--deepest); color:var(--white); font-size:9.5px; padding:2px 8px; border-radius:999px; text-transform:uppercase; letter-spacing:.04em; }
 
         .legend-row { display:flex; gap:14px; flex-wrap:wrap; }
         .legend-item { display:flex; align-items:center; gap:6px; font-size:11px; color:var(--inkMuted); }
@@ -1106,6 +1259,20 @@ export default function App() {
         .select-field select:focus { outline:2px solid var(--light); }
         .disclaimer { font-size:11px; color:var(--inkMuted); font-style:italic; margin:0 0 18px; }
 
+        /* ── Painel de Referência Salarial ─────────────────────────── */
+        .sim-filters { display:flex; gap:16px; margin-bottom:10px; flex-wrap:wrap; }
+        .sim-filters .select-field { flex:1; min-width:200px; }
+        .sim-input {
+          font-family:'Sora', sans-serif; font-size:13.5px; color:var(--ink); text-transform:none; letter-spacing:0;
+          padding:9px 12px; border-radius:10px; border:1px solid var(--pale2); background:var(--white);
+          cursor:text; width:100%;
+        }
+        .sim-input:focus { outline:2px solid var(--light); }
+        .sim-loading { font-size:12px; color:var(--inkMuted); font-style:italic; padding:24px 0; text-align:center; }
+        .sim-equity-ok { color:#2d7a45; }
+        .sim-equity-warn { color:#c0392b; }
+        .dei-dashboard.dark-mode .sim-input { color:var(--ink); background:var(--pale); border-color:var(--pale2); }
+
         @media (max-width: 880px) {
           .topbar { flex-direction:column; align-items:flex-start; gap:10px; }
           .kpi-grid, .kpi-grid-3, .kpi-grid-2 { grid-template-columns:repeat(2,1fr); }
@@ -1126,60 +1293,61 @@ export default function App() {
 
         /* ── MODO ESCURO ────────────────────────────────────────────── */
         .dei-dashboard.dark-mode {
-          --white:   #251620;
-          --bg:      #1a0f15;
-          --pale:    #2e1c27;
-          --pale2:   #4a2d3c;
-          --light:   #7a3d56;
-          --ink:     #f0e0e8;
-          --inkMuted:#c4a2b2;
-          --deepest: #f2c4d4;
+          --white:   #3d3d3d;   /* cards e topbar — elevado acima do bg */
+          --bg:      #333333;   /* fundo global da página */
+          --pale:    #474747;   /* superfícies elevadas: callout-note, selects */
+          --pale2:   #575757;   /* bordas e linhas de grid */
+          --light:   #888888;   /* contornos de foco */
+          --dark:    #e8839e;   /* tags de seção e trends de KPI (vinho original fica invisível em cinza) */
+          --ink:     #f0f0f0;   /* texto principal — neutro para combinar com cinza */
+          --inkMuted:#b0b0b0;   /* texto secundário */
+          --deepest: #f2c4d4;   /* destaque de títulos — rosa claro como acento de marca */
+          --men:     #7b9ef5;   /* cor dos dados de homens — azul claro */
         }
         /* Textos SVG (ticks de eixo, LabelList) herdam --ink em vez do hardcoded C.ink */
         .dei-dashboard.dark-mode text { fill: var(--ink); }
-        /* Callout: mantém gradiente escuro em modo dark (senão ficaria rosa claro→vinho) */
+        /* Callout: gradiente rosa mantém identidade de marca sobre fundo cinza */
         .dei-dashboard.dark-mode .callout {
-          background: linear-gradient(135deg, #3d1828, #7d2249);
-          color: #f0e0e8;
+          background: linear-gradient(135deg, #7d2249, #c24a79);
+          color: #f9eef3;
         }
-        .dei-dashboard.dark-mode .callout p { opacity:.9; }
-        /* Select: texto e fundo precisam contrastar com o campo dark */
+        .dei-dashboard.dark-mode .callout p { opacity:.92; }
+        /* Select e input: texto e fundo sobre cinza elevado */
         .dei-dashboard.dark-mode .select-field select {
           color: var(--ink);
           background: var(--pale);
           border-color: var(--pale2);
         }
         /* Fundo da página (body) fora do container do dashboard */
-        body.dei-dark-body { background: #1a0f15; }
+        body.dei-dark-body { background: #333333; }
         /* ── Tooltip Recharts em dark mode ──────────────────────────
            tooltipStyle usa C.* hardcoded → inline style attr →
            precisa de !important para sobrescrever.
-           Classes padrão do Recharts:
-             .recharts-default-tooltip   → caixa do tooltip
-             .recharts-tooltip-label     → cabeçalho (ex: nome do eixo)
-             .recharts-tooltip-item      → cada linha de dado
-             .recharts-tooltip-cursor    → retângulo de hover nos gráficos
         ────────────────────────────────────────────────────────── */
         .dei-dashboard.dark-mode .recharts-default-tooltip {
-          background: #251620 !important;
-          border: 1px solid #4a2d3c !important;
+          background: #3d3d3d !important;
+          border: 1px solid #575757 !important;
           border-radius: 10px !important;
         }
         .dei-dashboard.dark-mode .recharts-tooltip-label {
           color: #f2c4d4 !important;
         }
         .dei-dashboard.dark-mode .recharts-tooltip-item {
-          color: #f0e0e8 !important;
+          color: #f0f0f0 !important;
         }
         .dei-dashboard.dark-mode .recharts-tooltip-cursor {
-          fill: #4a2d3c !important;
-          fill-opacity: 0.5 !important;
+          fill: #474747 !important;
+          fill-opacity: 0.6 !important;
         }
       `}</style>
 
       <div className="topbar">
         <div className="brand">
-          <BrandMark />
+          <img
+            src={`${import.meta.env.BASE_URL}logo.PNG`}
+            alt="Logo People Analytics DEI"
+            className="brand-logo"
+          />
           <div className="brand-text">
             <span className="brand-title">People Analytics · DEI</span>
             <span className="brand-sub">Trajetória feminina · câmpus ao mercado tech</span>
