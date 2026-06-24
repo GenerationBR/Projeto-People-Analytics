@@ -253,23 +253,27 @@ function irfColor(v) {
   return C.light;
 }
 
-/* Painel de Referência Salarial — snapshot ILO/OIT Brasil 2025
-   Dataset: DF_EAR_EMTA_SEX_ECO_CUR_NB · remuneração média mensal em BRL
-   Fonte primária: PNAD Contínua (IBGE) · via ILOSTAT · consultado jun/2026
-   Usado como fallback caso a API ao vivo retorne CORS error no browser */
-const ILO_BR_2025 = [
-  { label: "Inform. e Comunicação (TIC)",   eco: "ECO_ISIC4_J",     F: 5019.83, M: 6215.70 },
-  { label: "Financeiro e Seguros",           eco: "ECO_ISIC4_K",     F: 6178.84, M: 8490.02 },
-  { label: "Ativ. Prof. / Científicas",      eco: "ECO_ISIC4_M",     F: 3865.23, M: 5399.00 },
-  { label: "Administração Pública",          eco: "ECO_ISIC4_O",     F: 5557.39, M: 6383.06 },
-  { label: "Educação",                       eco: "ECO_ISIC4_P",     F: 3929.16, M: 5207.60 },
-  { label: "Saúde e Serv. Sociais",          eco: "ECO_ISIC4_Q",     F: 3606.37, M: 5505.08 },
-  { label: "Indústria Manufatureira",        eco: "ECO_ISIC4_C",     F: 3018.22, M: 3593.72 },
-  { label: "Média — todos os setores",       eco: "ECO_ISIC4_TOTAL", F: 3034.75, M: 3710.07 },
-];
-const FAIXAS_SALARIAIS = [
-  2000, 3000, 4000, 5000, 6000, 7000, 8000, 10000, 12000, 15000, 20000,
-];
+/* Simulador — salários base por cargo (Brasscom 2025 · média masculina TIC · RAIS/MTE) */
+const CARGOS = ["Estagiário", "Júnior", "Pleno", "Sênior", "Gerente", "Diretor", "CTO/CIO"];
+const baseSalaryByCargo = {
+  "Estagiário": 2000, "Júnior": 5000, "Pleno": 8500, "Sênior": 13000,
+  "Gerente": 18000, "Diretor": 28000, "CTO/CIO": 42000,
+};
+const gapPctByCargo = {
+  "Estagiário": 0.298, "Júnior": 0.298, "Pleno": 0.298, "Sênior": 0.298,
+  "Gerente": 0.298, "Diretor": 0.298, "CTO/CIO": 0.298,
+};
+const GAP_DADOS = 0.171;
+const areaMultiplier = {
+  Dados: 1.00, Desenvolvimento: 0.92, Gestão: 1.15, Infraestrutura: 0.88, "UX/UI": 0.80,
+};
+const AREA_CURSOS_INEP = {
+  Dados:           ["CD", "SI", "CC"],
+  Desenvolvimento: ["ADS", "ES", "CC"],
+  Gestão:          ["CC", "SI", "CD"],
+  Infraestrutura:  ["ADS", "SI", "ES"],
+  "UX/UI":         ["SI", "ADS", "ES"],
+};
 
 /* ---------------------------------------------------------------- */
 /* COMPONENTES BASE                                                  */
@@ -911,14 +915,12 @@ function IrfPage() {
 }
 
 function SimuladorPage() {
-  const [setor, setSetor] = useState("ECO_ISIC4_J");
-  const [salario, setSalario] = useState(5000);
-  const anoRef = "2022";
-  const [ipcaData, setIpcaData] = useState([]);
+  const [area,  setArea]  = useState("Dados");
+  const [cargo, setCargo] = useState("Pleno");
+  const [ipcaData,    setIpcaData]    = useState([]);
   const [ipcaLoading, setIpcaLoading] = useState(true);
-  const [iloData, setIloData] = useState(ILO_BR_2025);
+  const anoRef = "2022";
 
-  /* Busca IPCA mensal BCB (série 433) ao montar */
   useEffect(() => {
     fetch("https://api.bcb.gov.br/dados/serie/bcdata.sgs.433/dados?formato=json&dataInicial=01/01/2015")
       .then((r) => r.json())
@@ -926,45 +928,10 @@ function SimuladorPage() {
       .catch(() => setIpcaLoading(false));
   }, []);
 
-  /* Tenta buscar ILO ao vivo; cai no snapshot embutido se CORS bloquear */
-  useEffect(() => {
-    const ILO_API = "https://sdmx.ilo.org/rest/data/ILO,DF_EAR_EMTA_SEX_ECO_CUR_NB,1.0/BRA.....?format=jsondata";
-    fetch(ILO_API)
-      .then((r) => r.json())
-      .then((d) => {
-        const struct = d.data.structures[0];
-        const dimVals = struct.dimensions.series.map((x) => x.values);
-        const obsVals = struct.dimensions.observation[0].values;
-        const series = d.data.dataSets[0].series;
-        const map = {};
-        for (const [key, val] of Object.entries(series)) {
-          const parts = key.split(":").map(Number);
-          const eco  = dimVals[4][parts[4]].id;
-          const sex  = dimVals[3][parts[3]].id;
-          const cur  = dimVals[5][parts[5]].id;
-          if (cur !== "CUR_TYPE_LCU") continue;
-          for (const [t, v] of Object.entries(val.observations)) {
-            if (v[0] == null) continue;
-            if (!map[eco]) map[eco] = {};
-            map[eco][sex] = v[0];
-          }
-        }
-        const live = ILO_BR_2025.map((d) => ({
-          ...d,
-          F: map[d.eco]?.SEX_F ?? d.F,
-          M: map[d.eco]?.SEX_M ?? d.M,
-        }));
-        setIloData(live);
-      })
-      .catch(() => {}); // mantém snapshot embutido
-  }, []);
+  const homens   = Math.round(baseSalaryByCargo[cargo] * areaMultiplier[area]);
+  const gapPct   = area === "Dados" ? GAP_DADOS : gapPctByCargo[cargo];
+  const mulheres = Math.round(homens * (1 - gapPct));
 
-  /* Setor selecionado */
-  const setorData = iloData.find((d) => d.eco === setor) ?? iloData[0];
-  const gapSetor  = (((setorData.M - setorData.F) / setorData.M) * 100).toFixed(1);
-  const equitativo = salario >= setorData.F;
-
-  /* IPCA acumulado desde anoRef */
   const ipca = useMemo(() => {
     if (!ipcaData.length) return null;
     const base = new Date(`${anoRef}-01-01`);
@@ -973,10 +940,9 @@ function SimuladorPage() {
       return new Date(`${yyyy}-${mm}-${dd}`) >= base;
     });
     const fator = relevant.reduce((acc, d) => acc * (1 + parseFloat(d.valor) / 100), 1);
-    return { fator, pct: ((fator - 1) * 100).toFixed(1), valorReal: Math.round(salario * fator) };
-  }, [ipcaData, anoRef, salario]);
+    return { pct: ((fator - 1) * 100).toFixed(1), valorReal: Math.round(mulheres * fator) };
+  }, [ipcaData, anoRef, mulheres]);
 
-  /* Série anual para o gráfico IPCA */
   const ipcaChart = useMemo(() => {
     if (!ipcaData.length) return [];
     const base = new Date(`${anoRef}-01-01`);
@@ -988,108 +954,92 @@ function SimuladorPage() {
       if (dt < base) return;
       cum *= 1 + parseFloat(d.valor) / 100;
       const isLast = i === ipcaData.length - 1;
-      if (mm === "12" || isLast) {
-        pts.push({ ano: yyyy, valorReal: Math.round(salario * cum), ipca: parseFloat(((cum - 1) * 100).toFixed(1)) });
-      }
+      if (mm === "12" || isLast)
+        pts.push({ ano: yyyy, valorReal: Math.round(mulheres * cum) });
     });
     return pts;
-  }, [ipcaData, anoRef, salario]);
+  }, [ipcaData, anoRef, mulheres]);
 
-  /* Dados para gráfico de setores (ordenados por remuneração feminina) */
-  const chartSetores = [...iloData]
-    .sort((a, b) => a.F - b.F)
-    .map((d) => ({ label: d.label, Mulheres: d.F, Homens: d.M, selected: d.eco === setor }));
+  const inepSnap = ingConclPorCurso.filter((d) => AREA_CURSOS_INEP[area].includes(d.curso));
 
   return (
     <div className="page">
-      <PageHeader
-        title="Painel de Referência Salarial"
-        sub="Benchmark setorial real · ILO/OIT 2025 · Correção inflacionária BCB/IPCA · Brasil"
-      />
+      <PageHeader title="Simulador de RH" sub="Consulta de gap salarial e formação por área e cargo" />
       <NoteBanner>
-        <strong>Dados em tempo real:</strong> remunerações médias por setor — <strong>ILO ILOSTAT</strong> (Organização Internacional do Trabalho), Brasil 2025, via PNAD Contínua. Correção inflacionária: série <strong>IPCA · BCB</strong>, atualizada mensalmente.
+        <strong>Nota metodológica:</strong> selecione <strong>Dados</strong> para a área com lastro em pesquisa real (State of Data Brasil 2021, gap de 17,1%); as demais áreas usam estimativas <strong>Brasscom 2025</strong> (salários e gap de 29,8%). Correção inflacionária: <strong>BCB · IPCA série 433</strong> (em tempo real).
       </NoteBanner>
 
       {/* ── Filtros ───────────────────────────────────────────────── */}
-      <div className="sim-filters">
+      <div className="select-row">
         <label className="select-field">
-          <span>Setor de referência</span>
-          <select value={setor} onChange={(e) => setSetor(e.target.value)}>
-            {iloData.map((d) => <option key={d.eco} value={d.eco}>{d.label}</option>)}
+          <span>Área</span>
+          <select value={area} onChange={(e) => setArea(e.target.value)}>
+            {AREAS.map((a) => <option key={a} value={a}>{a}</option>)}
           </select>
         </label>
         <label className="select-field">
-          <span>Faixa salarial proposta</span>
-          <select value={salario} onChange={(e) => setSalario(Number(e.target.value))}>
-            {FAIXAS_SALARIAIS.map((v) => (
-              <option key={v} value={v}>{`R$ ${v.toLocaleString("pt-BR")}`}</option>
-            ))}
+          <span>Cargo / Senioridade</span>
+          <select value={cargo} onChange={(e) => setCargo(e.target.value)}>
+            {CARGOS.map((c) => <option key={c} value={c}>{c}</option>)}
           </select>
         </label>
       </div>
+      <p className="disclaimer">
+        {area === "Dados"
+          ? "Salários base: Robert Half 2025 (midpoint por nível · mercado tech Brasil). Gap salarial: 17,1% · State of Data Brasil 2021 (n=2.645)."
+          : "Salários base: Robert Half 2025 (midpoint por nível · mercado tech Brasil). Gap salarial: 29,8% · Brasscom 2025 (RAIS/MTE)."}
+      </p>
+      {cargo === "Estagiário" && (
+        <p className="disclaimer">⚠️ Dados de Estagiário são estimativas de mercado — nenhuma das pesquisas consultadas (State of Data Brasil 2021 / Brasscom 2025) localizou gap salarial específico para este cargo.</p>
+      )}
 
-      {/* ── KPIs benchmark ILO ────────────────────────────────────── */}
-      <SectionDivider label="Benchmark salarial por gênero" tag={`ILO/OIT · Brasil 2025 · ${setorData.label}`} />
-      <div className="kpi-grid">
+      {/* ── KPIs ─────────────────────────────────────────────────── */}
+      <div className="kpi-grid kpi-grid-3">
+        <KpiCard label="Salário médio · mulheres" value={brl(mulheres)} sub={`${cargo} · ${area}`} />
+        <KpiCard label="Salário médio · homens"   value={brl(homens)}   sub={`${cargo} · ${area}`} />
         <KpiCard
-          label="Remuneração média — mulheres"
-          value={brl(setorData.F)}
-          sub={`${setorData.label} · Brasil 2025 · ILO ILOSTAT`}
-        />
-        <KpiCard
-          label="Remuneração média — homens"
-          value={brl(setorData.M)}
-          sub={`${setorData.label} · Brasil 2025 · ILO ILOSTAT`}
-        />
-        <KpiCard
-          label="Gap salarial no setor"
-          value={`${gapSetor}%`}
-          sub="(M − F) ÷ M · quanto maior, menos equitativo · meta de equidade = 0%"
-        />
-        <KpiCard
-          label="Avaliação da oferta"
-          value={equitativo ? "Equitativa ✓" : "Abaixo da mediana F"}
-          sub={equitativo
-            ? `R$ ${salario.toLocaleString("pt-BR")} ≥ mediana feminina do setor (${brl(setorData.F)})`
-            : `Para equidade, considere ofertar pelo menos ${brl(Math.round(setorData.F))} neste setor`}
+          label={area === "Dados" ? "Gap salarial em Dados" : "Gap salarial neste cargo"}
+          value={`${(gapPct * 100).toFixed(1)}%`}
+          sub={area === "Dados" ? "State of Data Brasil 2021" : "Brasscom 2025"}
         />
       </div>
 
-      {/* ── Gráfico: benchmark por setor ─────────────────────────── */}
+      {/* ── INEP snapshot 2024 ────────────────────────────────────── */}
+      <SectionDivider label="Formação na área" tag="INEP 2024 · % feminino — ingressantes e concluintes" />
       <ChartCard
-        title="Remuneração média mensal por setor — mulheres × homens"
-        sub="Média em R$ · Brasil 2025 · ILO/OIT · setor filtrado em destaque no tooltip"
-        height={300}
-        legend={[{ label: "Mulheres", color: C.dark }, { label: "Homens", color: "var(--men)" }]}
-        footer={<p className="abbrev-caption">ILO ILOSTAT · DF_EAR_EMTA_SEX_ECO_CUR_NB · remuneração média mensal em BRL · Brasil · 2025. Fonte primária: PNAD Contínua (IBGE). Moeda: Real (BRL). Setores: classificação ISIC Revisão 4.</p>}
+        title="% feminino por curso — snapshot INEP 2024"
+        sub="Cursos com maior aderência à área · ingressantes e concluintes são coortes independentes"
+        height={200}
+        legend={[{ label: "Ingressantes", color: C.dark }, { label: "Concluintes", color: C.mid }]}
+        footer={<p className="abbrev-caption">INEP · Censo da Educação Superior 2024. ADS = Análise e Desenvolvimento de Sistemas · CC = Ciência da Computação · SI = Sistemas de Informação · ES = Engenharia de Software · CD = Ciência de Dados.</p>}
       >
         <ResponsiveContainer width="100%" height="100%">
-          <BarChart data={chartSetores} layout="vertical" margin={{ top: 4, right: 70, left: 8, bottom: 4 }}>
-            <CartesianGrid stroke={C.pale2} strokeDasharray="3 3" horizontal={false} />
-            <XAxis type="number" {...axisProps} tickFormatter={(v) => `R$${(v / 1000).toFixed(0)}k`} domain={[0, 10000]} />
-            <YAxis type="category" dataKey="label" {...axisProps} width={180} tick={{ fontSize: 10, fill: C.inkMuted }} />
-            <Tooltip {...tooltipStyle} formatter={(v) => brl(v)} />
-            <Bar dataKey="Mulheres" name="Mulheres" fill={C.dark} radius={[0, 4, 4, 0]} barSize={9}>
-              <LabelList dataKey="Mulheres" position="right" formatter={(v) => brl(v)} fill={C.ink} fontSize={10} />
+          <BarChart data={inepSnap} margin={{ top: 8, right: 16, left: -8, bottom: 0 }}>
+            <CartesianGrid stroke={C.pale2} strokeDasharray="3 3" vertical={false} />
+            <XAxis dataKey="curso" {...axisProps} />
+            <YAxis {...axisProps} tickFormatter={(v) => `${v}%`} domain={[0, 35]} />
+            <Tooltip {...tooltipStyle} formatter={(v) => `${v}%`} />
+            <Bar dataKey="ing"  name="Ingressantes" fill={C.dark} radius={[4, 4, 0, 0]} barSize={18}>
+              <LabelList dataKey="ing"  position="top" formatter={(v) => `${v}%`} fill={C.ink} fontSize={10} />
             </Bar>
-            <Bar dataKey="Homens" name="Homens" fill="var(--men)" radius={[0, 4, 4, 0]} barSize={9}>
-              <LabelList dataKey="Homens" position="right" formatter={(v) => brl(v)} fill={C.ink} fontSize={10} />
+            <Bar dataKey="conc" name="Concluintes"  fill={C.mid}  radius={[4, 4, 0, 0]} barSize={18}>
+              <LabelList dataKey="conc" position="top" formatter={(v) => `${v}%`} fill={C.ink} fontSize={10} />
             </Bar>
           </BarChart>
         </ResponsiveContainer>
       </ChartCard>
 
-      {/* ── Seção IPCA ────────────────────────────────────────────── */}
-      <SectionDivider label="Correção pelo IPCA" tag={`BCB · série 433 · acumulado desde jan/${anoRef}`} />
+      {/* ── Poder de compra (BCB/IPCA) ───────────────────────────── */}
+      <SectionDivider label="Poder de compra" tag={`BCB · série 433 · salário feminino corrigido desde jan/${anoRef}`} />
       {ipcaLoading ? (
         <p className="sim-loading">Carregando dados do Banco Central do Brasil…</p>
       ) : ipca ? (
         <>
           <div className="kpi-grid kpi-grid-3">
             <KpiCard
-              label={`Salário proposto (referência ${anoRef})`}
-              value={brl(salario)}
-              sub="Valor nominal informado pelo usuário"
+              label={`Salário feminino · ${cargo} · ${area}`}
+              value={brl(mulheres)}
+              sub={`Referência ${anoRef} · Brasscom 2025`}
             />
             <KpiCard
               label="IPCA acumulado no período"
@@ -1099,21 +1049,21 @@ function SimuladorPage() {
             <KpiCard
               label="Equivalente em valores atuais"
               value={brl(ipca.valorReal)}
-              sub={`Para preservar o mesmo poder de compra de ${anoRef}, a oferta hoje deve ser este valor`}
+              sub={`Para preservar o poder de compra de ${anoRef}, o salário feminino hoje deve ser este valor`}
             />
           </div>
           <ChartCard
-            title={`Poder de compra do salário proposto — evolução real desde ${anoRef}`}
-            sub={`Valor de R$ ${salario.toLocaleString("pt-BR")} corrigido pelo IPCA mensal · BCB série 433 · R$ de cada ano`}
+            title={`Poder de compra do salário feminino — ${cargo} · ${area}`}
+            sub={`${brl(mulheres)} corrigido pelo IPCA mensal desde ${anoRef} · BCB série 433`}
             height={220}
-            footer={<p className="abbrev-caption">Banco Central do Brasil · Série 433 (IPCA variação mensal %). Cada ponto representa o valor equivalente ao final do ano, aplicando a inflação acumulada desde jan/{anoRef}. Use como referência mínima para reajustes anuais que preservem poder de compra.</p>}
+            footer={<p className="abbrev-caption">Banco Central do Brasil · Série 433 (IPCA variação mensal %). Cada ponto representa o valor equivalente ao final do ano, aplicando a inflação acumulada desde jan/{anoRef}. Referência de salário feminino calculada sobre Brasscom 2025 · Ajuste pelo cargo e área selecionados.</p>}
           >
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={ipcaChart} margin={{ top: 20, right: 64, left: 8, bottom: 0 }}>
                 <CartesianGrid stroke={C.pale2} strokeDasharray="3 3" vertical={false} />
                 <XAxis dataKey="ano" {...axisProps} />
                 <YAxis {...axisProps} tickFormatter={(v) => `R$${(v / 1000).toFixed(0)}k`} />
-                <Tooltip {...tooltipStyle} formatter={(v, n) => n === "valorReal" ? brl(v) : `+${v}%`} />
+                <Tooltip {...tooltipStyle} formatter={(v) => brl(v)} />
                 <Line type="monotone" dataKey="valorReal" name="Valor real" stroke={C.deepest} strokeWidth={2.4} dot={{ r: 3, fill: C.deepest }}>
                   <LabelList dataKey="valorReal" position="top" formatter={(v) => brl(v)} fill={C.ink} fontSize={10} />
                 </Line>
@@ -1126,7 +1076,7 @@ function SimuladorPage() {
       )}
 
       <PageFooter>
-        Remunerações médias mensais: ILO ILOSTAT (Organização Internacional do Trabalho) · Dataset DF_EAR_EMTA_SEX_ECO_CUR_NB · Brasil · Moeda local (BRL) · 2025. Fonte primária: PNAD Contínua (IBGE). Gap salarial: (M − F) ÷ M. Correção inflacionária: BCB série 433 (IPCA variação mensal). Oferta equitativa: salário ≥ remuneração média feminina do setor. Dados ILO atualizam automaticamente se API disponível; caso contrário, usa snapshot de jun/2026.
+        Salários base por nível: Robert Half — Guia Salarial 2025 (midpoints · mercado tech Brasil). Gap salarial — Dados: State of Data Brasil 2021 (17,1% · n=2.645); demais áreas: Brasscom 2025 (29,8% · RAIS/MTE). Dados de Estagiário são estimativas de mercado. Formação: INEP · Censo da Educação Superior 2024. Correção inflacionária: BCB série 433 (IPCA variação mensal · tempo real).
       </PageFooter>
     </div>
   );
@@ -1259,7 +1209,7 @@ export default function App() {
         .select-field select:focus { outline:2px solid var(--light); }
         .disclaimer { font-size:11px; color:var(--inkMuted); font-style:italic; margin:0 0 18px; }
 
-        /* ── Painel de Referência Salarial ─────────────────────────── */
+        /* ── Simulador de RH ─────────────────────────────────────────── */
         .sim-filters { display:flex; gap:16px; margin-bottom:10px; flex-wrap:wrap; }
         .sim-filters .select-field { flex:1; min-width:200px; }
         .sim-input {

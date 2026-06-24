@@ -128,9 +128,11 @@ Projeto People Analytics/
 |---|---|---|
 | INEP — Censo da Educação Superior | 2019–2024 | Página "A Base" |
 | State of Data Brasil 2021 (Data Hackers) | n = 2.645 | Página "O Mercado" |
-| Brasscom — Relatório DEI TIC 2025 | Brasil, 2024 | O Mercado / TIC no Brasil |
+| Brasscom — Relatório DEI TIC 2025 | Brasil, 2024 | O Mercado / TIC no Brasil / gap salarial no Simulador RH |
 | WomenHack — Women in Tech Report 2026 | Global (compilado) | Comparativo global |
 | Generation Brasil — webscraping LinkedIn | ago/25–abr/26 | Vagas afirmativas |
+| Robert Half — Guia Salarial 2025 | Brasil | Salários base por nível no Simulador RH |
+| BCB — Banco Central do Brasil (série 433) | 2015–presente | Simulador RH — correção inflacionária / poder de compra |
 | PwC Global Tech Report 2025 | Global | Funil / interesse de carreira |
 | Accenture — Women in the Workplace 2024 | Global | Funil / saída de carreira |
 | ISACA — State of Cybersecurity 2024 | Global | Funil / cultura organizacional |
@@ -278,6 +280,50 @@ Utilizado exclusivamente como **comparativo global**, sem extrapolação para o 
 - Meses: ago/25, set/25, out/25, mar/26, abr/26
 - Total analisado: **395 vagas tech**, das quais **7 afirmativas (1,8%)**
 - Distribuição: PCD = 5 vagas, Mulheres = 2 vagas
+
+### 15. Simulador RH — salários base e gap salarial
+
+O Simulador RH combina duas fontes independentes para calcular os salários estimados por cargo e área:
+
+**Salários base (masculino de referência):** Robert Half — Guia Salarial 2025, mercado tech Brasil. Utiliza o ponto médio da faixa reportada para cada nível de senioridade:
+
+| Cargo | Salário base (M) · referência Robert Half 2025 |
+|---|---|
+| Estagiário | R$ 2.000 |
+| Júnior | R$ 5.000 |
+| Pleno | R$ 8.500 |
+| Sênior | R$ 13.000 |
+| Gerente | R$ 18.000 |
+| Diretor | R$ 28.000 |
+| CTO/CIO | R$ 42.000 |
+
+Um **multiplicador por área** ajusta o salário base conforme o posicionamento relativo de cada área dentro do setor TIC (derivado de dados estruturais Brasscom 2025):
+
+| Área | Multiplicador |
+|---|---|
+| Dados | 1,00 |
+| Desenvolvimento | 0,92 |
+| Gestão | 1,15 |
+| Infraestrutura | 0,88 |
+| UX/UI | 0,80 |
+
+**Gap de gênero (Brasscom 2025 · RAIS/MTE):** aplicado sobre o salário masculino ajustado para estimar o salário feminino. Fórmula:
+
+```
+salário_F = salário_M × (1 − gap)
+```
+
+- **Área de Dados:** gap de 17,1% — State of Data Brasil 2021 (n = 2.645)
+- **Demais áreas:** gap de 29,8% — Brasscom 2025 (TIC geral · RAIS/MTE)
+
+### 16. Simulador RH — poder de compra (BCB/IPCA)
+
+O Simulador conecta em tempo real a **API do Banco Central do Brasil** (série 433 — IPCA variação mensal) para calcular a perda de poder de compra do salário feminino estimado desde 2022:
+
+- **Endpoint:** `api.bcb.gov.br/dados/serie/bcdata.sgs.433/dados`
+- **Período:** janeiro/2022 até o último mês disponível
+- **Cálculo:** fator de correção acumulado = produto de `(1 + IPCA_mensal/100)` para cada mês do período
+- **Aplicação:** o salário feminino calculado é corrigido pelo fator acumulado para mostrar o equivalente em valores atuais — indicando o reajuste mínimo necessário para preservar poder de compra
 
 ---
 
