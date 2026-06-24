@@ -1,11 +1,12 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   ResponsiveContainer, LineChart, Line, BarChart, Bar, XAxis, YAxis,
   CartesianGrid, Tooltip, PieChart, Pie, Cell, LabelList, ReferenceLine,
 } from "recharts";
 import {
   GraduationCap, Briefcase, Filter, BarChart3, Calculator,
-  Home as HomeIcon, ArrowUpRight, Megaphone, Globe, TrendingDown,
+  ArrowUpRight, Megaphone, Globe, TrendingDown,
+  Moon, Sun,
 } from "lucide-react";
 
 /* ---------------------------------------------------------------- */
@@ -28,12 +29,11 @@ const C = {
 };
 
 const NAV_ITEMS = [
-  { id: "home", label: "Home", icon: HomeIcon },
+  { id: "simulador", label: "Simulador RH", icon: Calculator },
   { id: "base", label: "A Base", icon: GraduationCap },
   { id: "mercado", label: "O Mercado", icon: Briefcase },
   { id: "funil", label: "Funil", icon: Filter },
   { id: "irf", label: "IRF", icon: BarChart3 },
-  { id: "simulador", label: "Simulador RH", icon: Calculator },
 ];
 
 /* Taxonomias oficiais usadas ao longo do relatório (seniority + área ampla) */
@@ -195,10 +195,10 @@ const representacaoFuncaoGlobal = [
   { funcao: "Cibersegurança",        pct: 12 },
 ];
 
-/* Generation Brasil — Turma Java 84 · dado cedido · gênero inferido por nome (1 aluno/a excluído/a por nome ambíguo; n=41) · início = V1 pré-programa · conclusão = V3 Módulo III */
+/* Generation Brasil — Turma Java 84 · dado cedido · gênero autodeclarado ou identificado por nome · n=42 (todos identificados) · início = V1 pré-programa · conclusão = V3 Módulo III */
 const java84Evasao = [
-  { modulo: "Pré-programa", mulheres: 29, homens: 12 },
-  { modulo: "Módulo III",   mulheres: 14, homens:  5 },
+  { modulo: "Pré-programa", mulheres: 30, homens: 12 },
+  { modulo: "Módulo III",   mulheres: 15, homens:  5 },
 ];
 /* Generation Brasil — Turma Java 84 · perfil de vulnerabilidade no ingresso (V1 pré-programa, n=42, excl. "prefiro não responder") */
 const java84Vulnerabilidade = [
@@ -221,15 +221,6 @@ const vagasGeneration = [
 const tipoDiBreakdown = [
   { tipo: "PCD",                    n: 5 },
   { tipo: "Mulheres na Tecnologia", n: 2 },
-];
-
-/* Home — comparativo de representação entre recortes (o que é comparável) */
-const representacaoComparativa = [
-  { recorte: "Ingressantes (Computação)", pct: 18.4, fonte: "inep" },
-  { recorte: "Profissionais de Dados", pct: 18.7, fonte: "datahackers" },
-  { recorte: "Força de trabalho em TIC", pct: 39.1, fonte: "global" },
-  { recorte: "C-Suite em tecnologia", pct: 29.0, fonte: "global" },
-  { recorte: "CTO / liderança técnica", pct: 15.0, fonte: "global" },
 ];
 
 /* Funil — trajetória por etapa (fontes e populações distintas) */
@@ -285,11 +276,11 @@ const areaTrendRange = {
 function BrandMark() {
   return (
     <svg width="26" height="26" viewBox="0 0 24 24" fill="none">
-      <circle cx="12" cy="6" r="4" stroke={C.deepest} strokeWidth="1.3" />
-      <circle cx="12" cy="18" r="4" stroke={C.deepest} strokeWidth="1.3" />
-      <circle cx="6" cy="12" r="4" stroke={C.deepest} strokeWidth="1.3" />
-      <circle cx="18" cy="12" r="4" stroke={C.deepest} strokeWidth="1.3" />
-      <circle cx="12" cy="12" r="2.3" fill={C.deepest} />
+      <circle cx="12" cy="6" r="4" stroke="var(--deepest)" strokeWidth="1.3" />
+      <circle cx="12" cy="18" r="4" stroke="var(--deepest)" strokeWidth="1.3" />
+      <circle cx="6" cy="12" r="4" stroke="var(--deepest)" strokeWidth="1.3" />
+      <circle cx="18" cy="12" r="4" stroke="var(--deepest)" strokeWidth="1.3" />
+      <circle cx="12" cy="12" r="2.3" fill="var(--deepest)" />
     </svg>
   );
 }
@@ -437,51 +428,6 @@ function BrokenRungBars({ data }) {
 /* PÁGINAS                                                            */
 /* ---------------------------------------------------------------- */
 
-function HomePage() {
-  return (
-    <div className="page">
-      <PageHeader title="Visão geral" sub="Educação, mercado de Dados e benchmarks globais · panorama consolidado · 2019–2024" />
-      <div className="kpi-grid">
-        <KpiCard label="% mulheres entre ingressantes" value="18,4%" sub="5 cursos de Computação · INEP, 2024" trend="+4,5 p.p. desde 2019" />
-        <KpiCard label="% mulheres na área de Dados" value="18,7%" sub="State of Data Brasil 2021 · n = 2.645" />
-        <KpiCard label="Gap salarial em Dados (Brasil)" value="17,1%" sub="vs. 29,8% no setor de TIC geral (Brasscom)" />
-        <KpiCard label="Mulheres em C-Suite tech" value="29%" sub="WomenHack 2026 · cai para 15% em CTO" />
-      </div>
-      <div className="chart-grid cols-2">
-        <ChartCard title="Evolução da % de mulheres entre ingressantes" sub="Cursos de Computação · INEP, 2019–2024">
-          <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={inepIngressantes} margin={{ top: 8, right: 8, left: -16, bottom: 0 }}>
-              <CartesianGrid stroke={C.pale2} strokeDasharray="3 3" vertical={false} />
-              <XAxis dataKey="ano" {...axisProps} />
-              <YAxis domain={[10, 22]} {...axisProps} tickFormatter={(v) => `${v}%`} />
-              <Tooltip {...tooltipStyle} formatter={(v) => `${v}%`} />
-              <Line type="monotone" dataKey="pctFem" stroke={C.deepest} strokeWidth={2.4} dot={{ r: 3, fill: C.deepest }} />
-            </LineChart>
-          </ResponsiveContainer>
-        </ChartCard>
-        <ChartCard
-          title="Representação feminina por recorte"
-          sub="Comparação entre fontes, no que é comparável"
-          footer={
-            <div className="legend-row">
-              <span className="legend-item"><span className="legend-dot" style={{ background: FONTE_COLOR.inep }} /> INEP (população)</span>
-              <span className="legend-item"><span className="legend-dot" style={{ background: FONTE_COLOR.datahackers }} /> State of Data 2021 (amostra)</span>
-              <span className="legend-item"><span className="legend-dot" style={{ background: FONTE_COLOR.global }} /> Benchmark global/nacional</span>
-            </div>
-          }
-        >
-          <HBars
-            data={representacaoComparativa}
-            xKey="pct" yKey="recorte" domain={[0, 40]} height={210} width={150}
-            colorFn={(d) => FONTE_COLOR[d.fonte]}
-          />
-        </ChartCard>
-      </div>
-      <PageFooter>Fontes: INEP — Censo da Educação Superior (2019–2024) · State of Data Brasil 2021 (Data Hackers, n = 2.645) · Brasscom — Relatório de Diversidade (2024/2025) · WomenHack (2026) · McKinsey &amp; LeanIn — Women in the Workplace (2025).</PageFooter>
-    </div>
-  );
-}
-
 function BasePage() {
   return (
     <div className="page">
@@ -623,12 +569,12 @@ function BasePage() {
         <KpiCard
           label="Composição feminina da turma Java 84"
           value="71%"
-          sub="29 de 41 alunos/as com gênero identificado · pré-programa · Generation Brasil 2025"
+          sub="30 de 42 alunos/as · pré-programa · Generation Brasil 2025"
         />
         <KpiCard
           label="Taxa de evasão feminina × masculina"
-          value="52% / 58%"
-          sub="Taxas praticamente equivalentes — programa sem viés de gênero detectado · F: 52% · M: 58%"
+          value="50% / 58%"
+          sub="Taxas praticamente equivalentes — programa sem viés de gênero detectado · F: 50% · M: 58%"
         />
       </div>
       <div className="chart-grid cols-2">
@@ -637,7 +583,7 @@ function BasePage() {
           sub="Pré-programa = quem ingressou · Módulo III = quem concluiu · Turma Java 84 · Generation Brasil 2025"
           isNew
           legend={[{ label: "Mulheres", color: C.dark }, { label: "Homens", color: C.taupe }]}
-          footer={<p className="abbrev-caption">Das 29 mulheres que ingressaram, 14 concluíram o Módulo III (52% de evasão). Dos 12 homens, 5 concluíram (58% de evasão) — diferença de apenas 6 p.p., equivalente para esse n.</p>}
+          footer={<p className="abbrev-caption">Das 30 mulheres que ingressaram, 15 concluíram o Módulo III (50% de evasão). Dos 12 homens, 5 concluíram (58% de evasão) — diferença de 8 p.p., equivalente para esse n.</p>}
         >
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={java84Evasao} margin={{ top: 20, right: 16, left: -8, bottom: 0 }}>
@@ -668,7 +614,7 @@ function BasePage() {
           />
         </ChartCard>
       </div>
-      <PageFooter>Formação Generation Brasil: dado cedido pela Generation Brasil. Turma Java 84 (programa Java Developer). Composição e evasão: calculadas entre pesquisa pré-programa V1 (n=42) e Módulo III (n=29). Gênero inferido por nome — 1 aluno/a excluído/a por nome ambíguo (n analisado = 41). Perfil de vulnerabilidade: pesquisa autodeclarada pré-programa (V1, n=42). Indicadores com "prefiro não responder" excluídos do denominador individualmente.</PageFooter>
+      <PageFooter>Formação Generation Brasil: dado cedido pela Generation Brasil. Turma Java 84 (programa Java Developer). Composição e evasão: calculadas entre pesquisa pré-programa V1 (n=42) e Módulo III (n=29); todos os 42 alunos/as com gênero identificado. Perfil de vulnerabilidade: pesquisa autodeclarada pré-programa (V1, n=42). Indicadores com "prefiro não responder" excluídos do denominador individualmente.</PageFooter>
     </div>
   );
 }
@@ -1039,10 +985,16 @@ function SimuladorPage() {
 /* ---------------------------------------------------------------- */
 
 export default function App() {
-  const [page, setPage] = useState("home");
+  const [page, setPage] = useState("simulador");
+  const [darkMode, setDarkMode] = useState(false);
+
+  useEffect(() => {
+    document.body.classList.toggle("dei-dark-body", darkMode);
+    return () => document.body.classList.remove("dei-dark-body");
+  }, [darkMode]);
 
   return (
-    <div className="dei-dashboard">
+    <div className={`dei-dashboard${darkMode ? " dark-mode" : ""}`}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Sora:wght@400;500;600;700&display=swap');
 
@@ -1162,6 +1114,67 @@ export default function App() {
           .section-divider { flex-direction:column; align-items:flex-start; gap:6px; }
           .rung-label { width:120px; }
         }
+
+        /* ── TOGGLE ESCURO/CLARO ────────────────────────────────────── */
+        .dark-toggle {
+          display:flex; align-items:center; justify-content:center;
+          width:36px; height:36px; border-radius:50%; flex-shrink:0; margin-left:8px;
+          border:1px solid var(--pale2); background:transparent;
+          color:var(--inkMuted); cursor:pointer; transition:all .15s ease;
+        }
+        .dark-toggle:hover { background:var(--pale); color:var(--deepest); }
+
+        /* ── MODO ESCURO ────────────────────────────────────────────── */
+        .dei-dashboard.dark-mode {
+          --white:   #251620;
+          --bg:      #1a0f15;
+          --pale:    #2e1c27;
+          --pale2:   #4a2d3c;
+          --light:   #7a3d56;
+          --ink:     #f0e0e8;
+          --inkMuted:#c4a2b2;
+          --deepest: #f2c4d4;
+        }
+        /* Textos SVG (ticks de eixo, LabelList) herdam --ink em vez do hardcoded C.ink */
+        .dei-dashboard.dark-mode text { fill: var(--ink); }
+        /* Callout: mantém gradiente escuro em modo dark (senão ficaria rosa claro→vinho) */
+        .dei-dashboard.dark-mode .callout {
+          background: linear-gradient(135deg, #3d1828, #7d2249);
+          color: #f0e0e8;
+        }
+        .dei-dashboard.dark-mode .callout p { opacity:.9; }
+        /* Select: texto e fundo precisam contrastar com o campo dark */
+        .dei-dashboard.dark-mode .select-field select {
+          color: var(--ink);
+          background: var(--pale);
+          border-color: var(--pale2);
+        }
+        /* Fundo da página (body) fora do container do dashboard */
+        body.dei-dark-body { background: #1a0f15; }
+        /* ── Tooltip Recharts em dark mode ──────────────────────────
+           tooltipStyle usa C.* hardcoded → inline style attr →
+           precisa de !important para sobrescrever.
+           Classes padrão do Recharts:
+             .recharts-default-tooltip   → caixa do tooltip
+             .recharts-tooltip-label     → cabeçalho (ex: nome do eixo)
+             .recharts-tooltip-item      → cada linha de dado
+             .recharts-tooltip-cursor    → retângulo de hover nos gráficos
+        ────────────────────────────────────────────────────────── */
+        .dei-dashboard.dark-mode .recharts-default-tooltip {
+          background: #251620 !important;
+          border: 1px solid #4a2d3c !important;
+          border-radius: 10px !important;
+        }
+        .dei-dashboard.dark-mode .recharts-tooltip-label {
+          color: #f2c4d4 !important;
+        }
+        .dei-dashboard.dark-mode .recharts-tooltip-item {
+          color: #f0e0e8 !important;
+        }
+        .dei-dashboard.dark-mode .recharts-tooltip-cursor {
+          fill: #4a2d3c !important;
+          fill-opacity: 0.5 !important;
+        }
       `}</style>
 
       <div className="topbar">
@@ -1187,9 +1200,16 @@ export default function App() {
             );
           })}
         </nav>
+        <button
+          className="dark-toggle"
+          onClick={() => setDarkMode((d) => !d)}
+          title={darkMode ? "Modo claro" : "Modo escuro"}
+          aria-label={darkMode ? "Ativar modo claro" : "Ativar modo escuro"}
+        >
+          {darkMode ? <Sun size={16} strokeWidth={2} /> : <Moon size={16} strokeWidth={2} />}
+        </button>
       </div>
 
-      {page === "home" && <HomePage />}
       {page === "base" && <BasePage />}
       {page === "mercado" && <MercadoPage />}
       {page === "funil" && <FunilPage />}
