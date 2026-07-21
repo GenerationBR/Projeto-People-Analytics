@@ -1304,10 +1304,6 @@ export default function App() {
           .chart-grid.cols-2 { grid-template-columns:1fr; }
           .select-row { flex-direction:column; }
           .section-divider { flex-direction:column; align-items:flex-start; gap:6px; }
-          .section-divider-tag {
-            white-space:normal; width:100%; border-radius:8px;
-            font-size:9.5px; line-height:1.4; padding:5px 10px;
-          }
           .rung-label { width:120px; }
         }
 
