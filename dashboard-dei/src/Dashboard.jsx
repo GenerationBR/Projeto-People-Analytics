@@ -1354,15 +1354,20 @@ export default function App() {
         .dark-toggle:hover { background:var(--pale); color:var(--deepest); }
 
         /* ── MODO ESCURO ────────────────────────────────────────────── */
+        /* Paleta de modo escuro — segue o Material Design Dark Theme (Google), hoje o
+           padrão de mercado (GitHub, X/Twitter, etc). Base #121212 em vez de preto puro:
+           preto absoluto + texto claro gera halo/glare e cansa a vista, além de não deixar
+           "espaço" para comunicar elevação (cards mais claros que o fundo). #121212 preserva
+           contraste AA/AAA com texto claro e permite essa hierarquia de superfícies. */
         .dei-dashboard.dark-mode {
-          --white:   #3d3d3d;   /* cards e topbar — elevado acima do bg */
-          --bg:      #333333;   /* fundo global da página */
-          --pale:    #474747;   /* superfícies elevadas: callout-note, selects */
-          --pale2:   #575757;   /* bordas e linhas de grid */
-          --light:   #888888;   /* contornos de foco */
+          --white:   #1e1e1e;   /* superfície elevada (cards, topbar) — +1dp sobre o bg */
+          --bg:      #121212;   /* fundo global — base do Material Dark Theme */
+          --pale:    #262626;   /* superfícies elevadas: callout-note, selects */
+          --pale2:   #363636;   /* bordas e linhas de grid */
+          --light:   #5c5c5c;   /* contornos de foco */
           --dark:    #e8839e;   /* tags de seção e trends de KPI (vinho original fica invisível em cinza) */
-          --ink:     #f0f0f0;   /* texto principal — neutro para combinar com cinza */
-          --inkMuted:#b0b0b0;   /* texto secundário */
+          --ink:     #e0e0e0;   /* texto principal a ~87% de branco (não branco puro — reduz glare) */
+          --inkMuted:#a0a0a0;   /* texto secundário a ~60% de branco */
           --deepest: #f2c4d4;   /* destaque de títulos — rosa claro como acento de marca */
           --men:     #7b9ef5;   /* cor dos dados de homens — azul claro */
         }
@@ -1381,24 +1386,24 @@ export default function App() {
           border-color: var(--pale2);
         }
         /* Fundo da página (body) fora do container do dashboard */
-        body.dei-dark-body { background: #333333; }
+        body.dei-dark-body { background: #121212; }
         /* ── Tooltip Recharts em dark mode ──────────────────────────
            tooltipStyle usa C.* hardcoded → inline style attr →
            precisa de !important para sobrescrever.
         ────────────────────────────────────────────────────────── */
         .dei-dashboard.dark-mode .recharts-default-tooltip {
-          background: #3d3d3d !important;
-          border: 1px solid #575757 !important;
+          background: #1e1e1e !important;
+          border: 1px solid #363636 !important;
           border-radius: 10px !important;
         }
         .dei-dashboard.dark-mode .recharts-tooltip-label {
           color: #f2c4d4 !important;
         }
         .dei-dashboard.dark-mode .recharts-tooltip-item {
-          color: #f0f0f0 !important;
+          color: #e0e0e0 !important;
         }
         .dei-dashboard.dark-mode .recharts-tooltip-cursor {
-          fill: #474747 !important;
+          fill: #262626 !important;
           fill-opacity: 0.6 !important;
         }
       `}</style>
